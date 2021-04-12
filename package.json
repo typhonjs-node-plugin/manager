@@ -1,0 +1,48 @@
+{
+  "name": "@typhonjs-plugin/manager",
+  "description": "Provides an eventbus ",
+  "version": "0.0.0",
+  "author": "typhonrt",
+  "type": "module",
+  "main": "src/PluginManager.js",
+  "module": "src/PluginManager.js",
+  "exports": {
+    ".": "./src/PluginManager.js"
+  },
+  "maintainers": [
+    {
+      "name": "Michael Leahy",
+      "email": "support@typhonjs.io",
+      "url": "https://github.com/typhonrt"
+    }
+  ],
+  "dependencies": {
+    "@typhonjs-node-utils/object-util": "typhonjs-node-utils/object-util",
+    "@typhonjs-plugin/eventbus": "typhonjs-plugin/eventbus"
+  },
+  "devDependencies": {
+    "@typhonjs-node-utils/build-test": "^0.1.0"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "/npm-shrinkwrap.json",
+    "/src"
+  ],
+  "homepage": "https://github.com/typhonjs-plugin/manager",
+  "keywords": [
+    "typhonjs",
+    "plugin",
+    "manager"
+  ],
+  "license": "MPL-2.0",
+  "repository": "typhonjs-plugin/manager",
+  "bugs": "https://github.com/typhonjs-plugin/manager/issues",
+  "scripts": {
+    "eslint": "eslint .",
+    "posttest": "npm run eslint",
+    "prepublishOnly": "npm run test",
+    "test": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/**/*.test.js\" --timeout 6000"
+  }
+}
