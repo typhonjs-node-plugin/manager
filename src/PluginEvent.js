@@ -31,7 +31,7 @@ export default class PluginEvent
 
       /**
        * Unique data available in each plugin invoked.
-       * @type {EventProxy} - The active EventProxy for that particular plugin.
+       * @type {EventbusProxy} - The active EventbusProxy for that particular plugin.
        */
       this.eventbus = void 0;
 

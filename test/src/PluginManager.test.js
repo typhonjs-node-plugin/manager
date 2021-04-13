@@ -1,6 +1,5 @@
 import { assert }    from 'chai';
-import EventProxy    from '@typhonjs-plugin/eventbus/EventProxy';
-import TyphonEvents  from '@typhonjs-plugin/eventbus';
+import EventbusProxy from '@typhonjs-plugin/eventbus/EventbusProxy';
 
 import PluginManager from '../../src/PluginManager.js';
 
@@ -143,7 +142,7 @@ describe('PluginManager:', () =>
 
    beforeEach(() =>
    {
-      pluginManager = new PluginManager({ eventbus: new TyphonEvents() });
+      pluginManager = new PluginManager();
       testData = { result: { count: 0 } };
    });
 
@@ -190,15 +189,9 @@ describe('PluginManager:', () =>
       throw new Error('No error thrown: should not reach here!');
    });
 
-   it('PluginManager return undefined for createEventProxy when no eventbus is assigned', () =>
+   it('PluginManager returns EventbusProxy for createEventbusProxy when eventbus is assigned', () =>
    {
-      pluginManager = new PluginManager();
-      assert.isUndefined(pluginManager.createEventProxy());
-   });
-
-   it('PluginManager returns EventProxy for createEventProxy when eventbus is assigned', () =>
-   {
-      assert.isTrue(pluginManager.createEventProxy() instanceof EventProxy);
+      assert.isTrue(pluginManager.createEventbusProxy() instanceof EventbusProxy);
    });
 
    it('invokeAsyncEvent - PluginManager has empty result', async () =>
@@ -385,8 +378,8 @@ describe('PluginManager:', () =>
 
    it('invokeAsyncEvent - PluginManager has invoked both plugins (copy)', async () =>
    {
-      await pluginManager.addAsync({ name: 'PluginTestAsync', instance: new PluginTestAsync() });
-      await pluginManager.addAsync({ name: 'PluginTestAsync2', instance: new PluginTestAsync() });
+      await pluginManager.add({ name: 'PluginTestAsync', instance: new PluginTestAsync() });
+      await pluginManager.add({ name: 'PluginTestAsync2', instance: new PluginTestAsync() });
 
       const event = await pluginManager.invokeAsyncEvent('test2', testData);
 
@@ -408,7 +401,7 @@ describe('PluginManager:', () =>
 
    it('promise - invokeAsync - PluginManager has invoked one result (async)', (done) =>
    {
-      pluginManager.addAsync({ name: 'PluginTestAsync', instance: new PluginTestAsync() }).then(() =>
+      pluginManager.add({ name: 'PluginTestAsync', instance: new PluginTestAsync() }).then(() =>
       {
          pluginManager.invokeAsync('test', [1, 2], 'PluginTestAsync').then((results) =>
          {
@@ -421,7 +414,7 @@ describe('PluginManager:', () =>
 
    it('promise - invokeAsync - PluginManager has invoked two results (async)', (done) =>
    {
-      pluginManager.addAllAsync([
+      pluginManager.addAll([
          { name: 'PluginTestAsync', instance: new PluginTestAsync() },
          { name: 'PluginTestAsync2', instance: new PluginTestAsync() }
       ]).then(() =>
@@ -440,7 +433,7 @@ describe('PluginManager:', () =>
 
    it('async / await - invokeAsync - PluginManager has invoked one result (async)', async () =>
    {
-      await pluginManager.addAsync({ name: 'PluginTestAsync', instance: new PluginTestAsync() });
+      await pluginManager.add({ name: 'PluginTestAsync', instance: new PluginTestAsync() });
 
       const results = await pluginManager.invokeAsync('test', [1, 2], 'PluginTestAsync');
 
@@ -450,8 +443,8 @@ describe('PluginManager:', () =>
 
    it('async / await - invokeAsync - PluginManager has invoked two results (async)', async () =>
    {
-      await pluginManager.addAsync({ name: 'PluginTestAsync', instance: new PluginTestAsync() });
-      await pluginManager.addAsync({ name: 'PluginTestAsync2', instance: new PluginTestAsync() });
+      await pluginManager.add({ name: 'PluginTestAsync', instance: new PluginTestAsync() });
+      await pluginManager.add({ name: 'PluginTestAsync2', instance: new PluginTestAsync() });
 
       const results = await pluginManager.invokeAsync('test', [1, 2]);
 

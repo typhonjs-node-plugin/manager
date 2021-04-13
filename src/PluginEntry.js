@@ -10,11 +10,12 @@ export default class PluginEntry
     *
     * @param {object}      data - Data describing the plugin, manager, and optional module data.
     *
-    * @param {Object}      instance - The loaded plugin instance.
+    * @param {object}      instance - The loaded plugin instance.
     *
-    * @param {EventProxy}  eventProxy - An EventProxy associated with the plugin wrapping the plugin manager eventbus.
+    * @param {EventbusProxy}  eventbusProxy - An EventProxy associated with the plugin wrapping the plugin manager
+    * eventbus.
     */
-   constructor(name, data, instance, eventProxy = void 0)
+   constructor(name, data, instance, eventbusProxy = void 0)
    {
       /**
        * Data describing the plugin, manager, and optional module data.
@@ -45,11 +46,11 @@ export default class PluginEntry
       this._instance = instance;
 
       /**
-       * An EventProxy associated with the plugin wrapping the plugin manager eventbus.
-       * @type {EventProxy}
+       * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
+       * @type {EventbusProxy}
        * @private
        */
-      this._eventProxy = eventProxy;
+      this._eventbusProxy = eventbusProxy;
    }
 
    /**
@@ -103,11 +104,11 @@ export default class PluginEntry
    }
 
    /**
-    * Get associated EventProxy.
+    * Get associated EventbusProxy.
     *
-    * @returns {EventProxy}
+    * @returns {EventbusProxy}
     */
-   get eventProxy() { return this._eventProxy; }
+   get eventbusProxy() { return this._eventbusProxy; }
 
    /**
     * Get plugin instance.
