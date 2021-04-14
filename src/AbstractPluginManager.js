@@ -1,5 +1,3 @@
-import path             from 'path';
-
 import { deepFreeze }   from '@typhonjs-utils/object';
 import Eventbus         from '@typhonjs-plugin/eventbus';
 import EventbusProxy    from '@typhonjs-plugin/eventbus/EventbusProxy';
@@ -18,69 +16,69 @@ import PluginEvent      from './PluginEvent.js';
  * A default eventbus will be created, but you may also pass in an eventbus from `@typhonjs-plugin/eventbus` and the
  * plugin manager will register by default under these event categories:
  *
- * `plugins:async:add` - {@link PluginManager#add}
+ * `plugins:async:add` - {@link AbstractPluginManager#add}
  *
- * `plugins:async:add:all` - {@link PluginManager#addAll}
+ * `plugins:async:add:all` - {@link AbstractPluginManager#addAll}
  *
- * `plugins:async:destroy:manager` - {@link PluginManager#destroy}
+ * `plugins:async:destroy:manager` - {@link AbstractPluginManager#destroy}
  *
- * `plugins:async:invoke` - {@link PluginManager#invokeAsync}
+ * `plugins:async:invoke` - {@link AbstractPluginManager#invokeAsync}
  *
- * `plugins:async:invoke:event` - {@link PluginManager#invokeAsyncEvent}
+ * `plugins:async:invoke:event` - {@link AbstractPluginManager#invokeAsyncEvent}
  *
- * `plugins:async:remove` - {@link PluginManager#remove}
+ * `plugins:async:remove` - {@link AbstractPluginManager#remove}
  *
- * `plugins:async:remove:all` - {@link PluginManager#removeAll}
+ * `plugins:async:remove:all` - {@link AbstractPluginManager#removeAll}
  *
- * `plugins:create:eventbus:proxy` - {@link PluginManager#createEventbusProxy}
+ * `plugins:create:eventbus:proxy` - {@link AbstractPluginManager#createEventbusProxy}
  *
- * `plugins:get:all:plugin:data` - {@link PluginManager#getAllPluginData}
+ * `plugins:get:all:plugin:data` - {@link AbstractPluginManager#getAllPluginData}
  *
- * `plugins:get:extra:event:data` - {@link PluginManager#getExtraEventData}
+ * `plugins:get:extra:event:data` - {@link AbstractPluginManager#getExtraEventData}
  *
- * `plugins:get:method:names` - {@link PluginManager#getMethodNames}
+ * `plugins:get:method:names` - {@link AbstractPluginManager#getMethodNames}
  *
- * `plugins:get:options` - {@link PluginManager#getOptions}
+ * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
  *
- * `plugins:get:plugin:data` - {@link PluginManager#getPluginData}
+ * `plugins:get:plugin:data` - {@link AbstractPluginManager#getPluginData}
  *
- * `plugins:get:plugin:enabled` - {@link PluginManager#getPluginEnabled}
+ * `plugins:get:plugin:enabled` - {@link AbstractPluginManager#getPluginEnabled}
  *
- * `plugins:get:plugin:event:names` - {@link PluginManager#getPluginEventNames}
+ * `plugins:get:plugin:event:names` - {@link AbstractPluginManager#getPluginEventNames}
  *
- * `plugins:get:plugin:method:names` - {@link PluginManager#getPluginMethodNames}
+ * `plugins:get:plugin:method:names` - {@link AbstractPluginManager#getPluginMethodNames}
  *
- * `plugins:get:plugin:names` - {@link PluginManager#getPluginNames}
+ * `plugins:get:plugin:names` - {@link AbstractPluginManager#getPluginNames}
  *
- * `plugins:get:plugin:options` - {@link PluginManager#getPluginOptions}
+ * `plugins:get:plugin:options` - {@link AbstractPluginManager#getPluginOptions}
  *
- * `plugins:get:plugins:enabled` - {@link PluginManager#getPluginsEnabled}
+ * `plugins:get:plugins:enabled` - {@link AbstractPluginManager#getPluginsEnabled}
  *
- * `plugins:get:plugins:by:event:name` - {@link PluginManager#getPluginsByEventName}
+ * `plugins:get:plugins:by:event:name` - {@link AbstractPluginManager#getPluginsByEventName}
  *
- * `plugins:get:plugins:event:names` - {@link PluginManager#getPluginsEventNames}
+ * `plugins:get:plugins:event:names` - {@link AbstractPluginManager#getPluginsEventNames}
  *
- * `plugins:has:method` - {@link PluginManager#hasMethod}
+ * `plugins:has:method` - {@link AbstractPluginManager#hasMethod}
  *
- * `plugins:has:plugin` - {@link PluginManager#hasPlugin}
+ * `plugins:has:plugin` - {@link AbstractPluginManager#hasPlugin}
  *
- * `plugins:has:plugin:method` - {@link PluginManager#hasPluginMethod}
+ * `plugins:has:plugin:method` - {@link AbstractPluginManager#hasPluginMethod}
  *
- * `plugins:invoke` - {@link PluginManager#invoke}
+ * `plugins:invoke` - {@link AbstractPluginManager#invoke}
  *
- * `plugins:is:valid:config` - {@link PluginManager#isValidConfig}
+ * `plugins:is:valid:config` - {@link AbstractPluginManager#isValidConfig}
  *
- * `plugins:set:extra:event:data` - {@link PluginManager#setExtraEventData}
+ * `plugins:set:extra:event:data` - {@link AbstractPluginManager#setExtraEventData}
  *
- * `plugins:set:options` - {@link PluginManager#setOptions}
+ * `plugins:set:options` - {@link AbstractPluginManager#setOptions}
  *
- * `plugins:set:plugin:enabled` - {@link PluginManager#setPluginEnabled}
+ * `plugins:set:plugin:enabled` - {@link AbstractPluginManager#setPluginEnabled}
  *
- * `plugins:set:plugins:enabled` - {@link PluginManager#setPluginsEnabled}
+ * `plugins:set:plugins:enabled` - {@link AbstractPluginManager#setPluginsEnabled}
  *
- * `plugins:sync:invoke` - {@link PluginManager#invokeSync}
+ * `plugins:sync:invoke` - {@link AbstractPluginManager#invokeSync}
  *
- * `plugins:sync:invoke:event` - {@link PluginManager#invokeSyncEvent}
+ * `plugins:sync:invoke:event` - {@link AbstractPluginManager#invokeSyncEvent}
  *
  * Automatically when a plugin is loaded and unloaded respective callbacks `onPluginLoad` and `onPluginUnload` will
  * be attempted to be invoked on the plugin. This is an opportunity for the plugin to receive any associated eventbus
@@ -89,7 +87,8 @@ import PluginEvent      from './PluginEvent.js';
  * a plugin author needing to do this manually in the `onPluginUnload` callback. This solves any dangling event binding
  * issues.
  *
- * By supporting ES Modules in Node and the browser and CJS on Node the plugin manager is by nature asynchronous for the
+ * By supporting ES Modules in Node and the browser and CJS on Node the plugin manager is by nature asynchronous for
+ * the
  * core methods of adding / removing plugins and destroying the manager. The lifecycle methods `onPluginLoad` and
  * `onPluginUnload` will be awaited on such that if a plugin returns a Promise or is an async method
  * then it will complete before execution continues.
@@ -98,7 +97,7 @@ import PluginEvent      from './PluginEvent.js';
  * `createEventbusProxy` method will return a proxy to the default or currently set eventbus.
  *
  * If eventbus functionality is enabled it is important especially if using a process / global level eventbus such as
- * `@typhonjs-plugin/eventbus/instances` to call {@link PluginManager#destroy} to clean up all plugin eventbus
+ * `@typhonjs-plugin/eventbus/instances` to call {@link AbstractPluginManager#destroy} to clean up all plugin eventbus
  * resources and the plugin manager event bindings; this is primarily a testing concern.
  *
  * @see https://www.npmjs.com/package/@typhonjs-plugin/eventbus
@@ -123,15 +122,17 @@ import PluginEvent      from './PluginEvent.js';
  * assert(eventbus.triggerSync('hot:event') === false);
  *
  * // One can also indirectly invoke any method of the plugin via:
- * eventbus.triggerSync('plugins:invoke:sync:event', 'aCoolMethod'); // Any plugin with a method named `aCoolMethod` is invoked.
- * eventbus.triggerSync('plugins:invoke:sync:event', 'aCoolMethod', {}, {}, 'an-npm-plugin-enabled-module'); // specific invocation.
+ * eventbus.triggerSync('plugins:invoke:sync:event', 'aCoolMethod'); // Any plugin with a method named `aCoolMethod` is
+ *    invoked. eventbus.triggerSync('plugins:invoke:sync:event', 'aCoolMethod', {}, {},
+ *    'an-npm-plugin-enabled-module'); // specific invocation.
  *
  * // The 3rd parameter will make a copy of the hash and the 4th defines a pass through object hash sending a single
  * // event / object hash to the invoked method.
  *
  * // -----------------------
  *
- * // Given that `@typhonjs-plugin/eventbus/instances` defines a global / process level eventbus you can import it in an
+ * // Given that `@typhonjs-plugin/eventbus/instances` defines a global / process level eventbus you can import it in
+ *    an
  * entirely different file or even NPM module and invoke methods of loaded plugins like this:
  *
  * import eventbus from '@typhonjs-plugin/eventbus/instances';
@@ -144,13 +145,14 @@ import PluginEvent      from './PluginEvent.js';
  *
  * assert(eventbus.triggerSync('cool:event') === true); // Will now fail!
  *
- * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the main
+ * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the
+ *    main
  * // thread of execution scope to remove all plugins and the plugin manager event bindings!
  */
-export default class PluginManager
+export default class AbstractPluginManager
 {
    /**
-    * Instantiates PluginManager
+    * Instantiates AbstractPluginManager
     *
     * @param {object}   [options] - Provides various configuration options:
     *
@@ -183,7 +185,7 @@ export default class PluginManager
       /**
        * Stores any associated eventbus.
        * @type {Eventbus}
-       * @private
+       * @protected
        */
       this._eventbus = null;
 
@@ -196,7 +198,7 @@ export default class PluginManager
 
       /**
        * Defines options for throwing exceptions. Turned off by default.
-       * @type {PluginManagerOptions}
+       * @type {AbstractPluginManagerOptions}
        * @private
        */
       this._options =
@@ -241,9 +243,11 @@ export default class PluginManager
          throw new TypeError(`'pluginConfig.name' is not a 'string' for entry: ${JSON.stringify(pluginConfig)}.`);
       }
 
-      if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string')
+      if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string' &&
+       !(pluginConfig.target instanceof URL))
       {
-         throw new TypeError(`'pluginConfig.target' is not a string for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(
+          `'pluginConfig.target' is not a string or URL for entry: ${JSON.stringify(pluginConfig)}.`);
       }
 
       if (typeof pluginConfig.options !== 'undefined' && typeof pluginConfig.options !== 'object')
@@ -284,18 +288,12 @@ export default class PluginManager
          // If a target is defined use it instead of the name.
          target = pluginConfig.target || pluginConfig.name;
 
-         if (target.match(/^[.\/\\]/))
-         {
-            instance = require(path.resolve(target)); // eslint-disable global-require
+         instance = await this._loadModule(target);
+      }
 
-            type = 'require-path';
-         }
-         else
-         {
-            instance = require(target);               // eslint-disable global-require
-
-            type = 'require-module';
-         }
+      if (target instanceof URL)
+      {
+         target = target.toString();
       }
 
       // Create an object hash with data describing the plugin, manager, and any extra module data.
@@ -1209,11 +1207,28 @@ export default class PluginManager
 
       if (typeof pluginConfig.name !== 'string') { return false; }
 
-      if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string') { return false; }
+      if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string' &&
+       !(pluginConfig.target instanceof URL))
+      {
+         return false;
+      }
 
       if (typeof pluginConfig.options !== 'undefined' && typeof pluginConfig.options !== 'object') { return false; }
 
       return true;
+   }
+
+   /**
+    * Child implementations provide platform specific module loading by overriding this method.
+    *
+    * @param {string}   moduleOrPath - A module name or file path.
+    *
+    * @returns {Promise<*>}
+    *
+    * @private
+    */
+   async _loadModule(moduleOrPath)
+   {
    }
 
    /**
@@ -1228,7 +1243,7 @@ export default class PluginManager
     * @param {string}     [options.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                        binding targets.
     *
-    * @returns {Promise<PluginManager>}
+    * @returns {Promise<AbstractPluginManager>}
     */
    async setEventbus({ eventbus, eventPrepend = 'plugins'} = {})
    {

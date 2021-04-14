@@ -4,10 +4,13 @@
   "version": "0.0.0",
   "author": "typhonrt",
   "type": "module",
-  "main": "src/PluginManager.js",
-  "module": "src/PluginManager.js",
+  "main": "src/NodePluginManager.js",
+  "module": "src/NodePluginManager.js",
   "exports": {
-    ".": "./src/PluginManager.js"
+    ".": {
+      "node": "./src/NodePluginManager.js",
+      "browser": "./dist/BrowerPluginManager.js"
+    }
   },
   "maintainers": [
     {
@@ -18,16 +21,22 @@
   ],
   "dependencies": {
     "@typhonjs-plugin/eventbus": "typhonjs-plugin/eventbus",
-    "@typhonjs-utils/object": "typhonjs-node-utils/object"
+    "@typhonjs-utils/object": "typhonjs-node-utils/object",
+    "@typhonjs-utils/package-json": "typhonjs-node-utils/package-json"
   },
   "devDependencies": {
-    "@typhonjs-utils/build-test": "^0.1.0"
+    "@rollup/plugin-node-resolve": "^11",
+    "@typhonjs-utils/build-test": "^0.1.0",
+    "http-server": "^0.12.0",
+    "rollup": "^2",
+    "rollup-plugin-terser": "^7"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=12.2.0"
   },
   "files": [
     "/npm-shrinkwrap.json",
+    "/dist",
     "/src"
   ],
   "homepage": "https://github.com/typhonjs-node-plugin/manager",
@@ -40,9 +49,11 @@
   "repository": "typhonjs-node-plugin/manager",
   "bugs": "https://github.com/typhonjs-node-plugin/manager/issues",
   "scripts": {
+    "bundle": "rollup --config",
     "eslint": "eslint .",
     "posttest": "npm run eslint",
     "prepublishOnly": "npm run test",
+    "serve": "http-server \"./test/fixture/public\" --port 8080",
     "test": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/**/*.test.js\" --timeout 6000"
   }
 }
