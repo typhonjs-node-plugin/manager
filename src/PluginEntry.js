@@ -1,3 +1,5 @@
+import { EventbusProxy } from '@typhonjs-plugin/eventbus';
+
 /**
  * Defines a class holding the data associated with a plugin including its instance.
  */

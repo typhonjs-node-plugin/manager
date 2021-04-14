@@ -2,8 +2,10 @@ import { deepFreeze }   from '@typhonjs-utils/object';
 import Eventbus         from '@typhonjs-plugin/eventbus';
 import EventbusProxy    from '@typhonjs-plugin/eventbus/EventbusProxy';
 
-import PluginEntry      from './PluginEntry.js';
-import PluginEvent      from './PluginEvent.js';
+import PluginEntry   from './PluginEntry.js';
+import PluginEvent   from './PluginEvent.js';
+
+import isValidConfig from "./isValidConfig.js";
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -177,6 +179,7 @@ export default class AbstractPluginManager
 
       /**
        * Stores the plugins by name with an associated PluginEntry.
+       *
        * @type {Map<string, PluginEntry>}
        * @private
        */
@@ -184,13 +187,23 @@ export default class AbstractPluginManager
 
       /**
        * Stores any associated eventbus.
+       *
        * @type {Eventbus}
        * @protected
        */
       this._eventbus = null;
 
       /**
+       * Stores any EventbusProxy instances created, so that they may be automatically destroyed.
+       *
+       * @type {EventbusProxy[]}
+       * @private
+       */
+      this._eventbusProxies = [];
+
+      /**
        * Stores any extra options / data to add to PluginEvent callbacks.
+       *
        * @type {Object}
        * @private
        */
@@ -198,7 +211,8 @@ export default class AbstractPluginManager
 
       /**
        * Defines options for throwing exceptions. Turned off by default.
-       * @type {AbstractPluginManagerOptions}
+       *
+       * @type {PluginManagerOptions}
        * @private
        */
       this._options =
@@ -288,9 +302,11 @@ export default class AbstractPluginManager
          // If a target is defined use it instead of the name.
          target = pluginConfig.target || pluginConfig.name;
 
+         // Defer to child class to load module in Node or the browser.
          instance = await this._loadModule(target);
       }
 
+      // Convert any URL target a string.
       if (target instanceof URL)
       {
          target = target.toString();
@@ -404,7 +420,8 @@ export default class AbstractPluginManager
 
    /**
     * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
-     *
+    * It is added to `this._eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
+    *
     * @returns {EventbusProxy}
     */
    createEventbusProxy()
@@ -414,7 +431,11 @@ export default class AbstractPluginManager
          throw new ReferenceError('No eventbus assigned to plugin manager.');
       }
 
-      return new EventbusProxy(this._eventbus);
+      const eventbusProxy = new EventbusProxy(this._eventbus);
+
+      this._eventbusProxies.push(eventbusProxy);
+
+      return eventbusProxy;
    }
 
    /**
@@ -424,7 +445,16 @@ export default class AbstractPluginManager
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
+      // Remove all plugins; this will invoke onPluginUnload.
       await this.removeAll();
+
+      // Destroy any EventbusProxy instances created.
+      for (const eventbusProxy of this._eventbusProxies)
+      {
+         eventbusProxy.destroy();
+      }
+
+      this._eventbusProxies = [];
 
       if (this._eventbus !== null && typeof this._eventbus !== 'undefined')
       {
@@ -1203,19 +1233,7 @@ export default class AbstractPluginManager
     */
    isValidConfig(pluginConfig)
    {
-      if (typeof pluginConfig !== 'object') { return false; }
-
-      if (typeof pluginConfig.name !== 'string') { return false; }
-
-      if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string' &&
-       !(pluginConfig.target instanceof URL))
-      {
-         return false;
-      }
-
-      if (typeof pluginConfig.options !== 'undefined' && typeof pluginConfig.options !== 'object') { return false; }
-
-      return true;
+      return isValidConfig(pluginConfig);
    }
 
    /**

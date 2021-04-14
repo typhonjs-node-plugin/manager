@@ -35,7 +35,7 @@ export default () =>
 
    // This bundle is for the test client.
    return [{
-      input: ['src/BrowserPluginManager.js'],
+      input: ['src/browser/index.js'],
       output: [{
          file: `${s_TEST_PATH}${path.sep}BrowserPluginManager.js`,
          format: 'es',
@@ -51,7 +51,7 @@ export default () =>
 
    // This bundle is for the server.
    {
-      input: ['src/BrowserPluginManager.js'],
+      input: ['src/browser/index.js'],
       output: [{
          file: `${s_DEPLOY_PATH}${path.sep}BrowserPluginManager.js`,
          format: 'es',

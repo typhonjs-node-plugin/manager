@@ -1,11 +1,11 @@
-import fs      from 'fs';
-import module  from 'module';
-import path    from 'path';
-import url     from 'url';
+import fs                     from 'fs';
+import module                 from 'module';
+import path                   from 'path';
+import url                    from 'url';
 
-import { getPackageType } from '@typhonjs-utils/package-json';
+import { getPackageType }     from '@typhonjs-utils/package-json';
 
-import AbstractPluginManager from './AbstractPluginManager.js';
+import AbstractPluginManager  from '../AbstractPluginManager.js';
 
 const require = module.createRequire(import.meta.url);
 
@@ -13,8 +13,8 @@ export default class NodePluginManager extends AbstractPluginManager
 {
    async _loadModule(moduleOrPath)
    {
-      // Convert to file path if an URL.
-      if (moduleOrPath instanceof URL)
+      // Convert to file path if an URL or file URL string.
+      if (moduleOrPath instanceof URL || moduleOrPath.startsWith('file:'))
       {
          moduleOrPath = url.fileURLToPath(moduleOrPath);
       }

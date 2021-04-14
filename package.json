@@ -2,22 +2,18 @@
   "name": "@typhonjs-plugin/manager",
   "description": "Provides a plugin manager with eventbus support.",
   "version": "0.0.0",
-  "author": "typhonrt",
+  "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
-  "main": "src/NodePluginManager.js",
-  "module": "src/NodePluginManager.js",
+  "main": "src/node/index.js",
+  "module": "src/node/index.js",
   "exports": {
     ".": {
-      "node": "./src/NodePluginManager.js",
+      "node": "./src/node/index.js",
       "browser": "./dist/BrowerPluginManager.js"
     }
   },
-  "maintainers": [
-    {
-      "name": "Michael Leahy",
-      "email": "support@typhonjs.io",
-      "url": "https://github.com/typhonrt"
-    }
+  "contributors": [
+    "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
   "dependencies": {
     "@typhonjs-plugin/eventbus": "typhonjs-plugin/eventbus",
@@ -46,13 +42,13 @@
     "manager"
   ],
   "license": "MPL-2.0",
-  "repository": "typhonjs-node-plugin/manager",
+  "repository": "github:typhonjs-node-plugin/manager",
   "bugs": "https://github.com/typhonjs-node-plugin/manager/issues",
   "scripts": {
     "bundle": "rollup --config",
     "eslint": "eslint .",
     "posttest": "npm run eslint",
-    "prepublishOnly": "npm run test",
+    "prepublishOnly": "npm run bundle && npm run test",
     "serve": "http-server \"./test/fixture/public\" --port 8080",
     "test": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/**/*.test.js\" --timeout 6000"
   }

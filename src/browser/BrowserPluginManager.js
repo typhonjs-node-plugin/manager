@@ -1,4 +1,4 @@
-import AbstractPluginManager from './AbstractPluginManager.js';
+import AbstractPluginManager from '../AbstractPluginManager.js';
 
 export default class BrowserPluginManager extends AbstractPluginManager
 {

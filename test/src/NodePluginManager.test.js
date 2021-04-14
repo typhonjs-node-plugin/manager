@@ -1,143 +1,17 @@
-import path          from 'path';
-import url           from 'url';
+import path                from 'path';
+import url                 from 'url';
 
-import { assert }    from 'chai';
-import EventbusProxy from '@typhonjs-plugin/eventbus/EventbusProxy';
+import { assert, expect }  from 'chai';
 
-import NodePluginManager from '../../src/NodePluginManager.js';
+import Eventbus            from '@typhonjs-plugin/eventbus';
+import { EventbusProxy }   from '@typhonjs-plugin/eventbus';
 
-/**
- * A plugin class
- */
-class PluginTest
-{
-   /**
-    * Increments a result count.
-    * @param {PluginEvent} event - A plugin event.
-    */
-   test(event)
-   {
-      event.data.result.count++;
-      assert.strictEqual(event.pluginName, 'PluginTest');
-   }
+import NodePluginManager   from '../../src/node/NodePluginManager.js';
 
-   /**
-    * Register event bindings
-    * @param {PluginEvent} ev - A plugin event.
-    */
-   onPluginLoad(ev)
-   {
-      if (ev.eventbus)
-      {
-         ev.eventbus.on('test:trigger', () => {});
-         ev.eventbus.on('test:trigger2', () => {});
-         ev.eventbus.on('test:trigger3', () => {});
-      }
-   }
-}
-
-/**
- * A plugin object
- */
-const pluginTest =
-{
-   test: (event) =>
-   {
-      event.data.result.count++;
-      assert.strictEqual(event.pluginName, 'pluginTest');
-   },
-
-   onPluginLoad: (ev) =>
-   {
-      if (ev.eventbus)
-      {
-         ev.eventbus.on('test:trigger', () => {});
-         ev.eventbus.on('test:trigger4', () => {});
-         ev.eventbus.on('test:trigger5', () => {});
-      }
-   }
-};
-
-/**
- * Increments a result count.
- */
-class PluginTestNoName2
-{
-   /**
-    * Increments a result count.
-    * @param {PluginEvent} event - A plugin event.
-    */
-   test2(event) { event.data.result.count++; }
-}
-
-/**
- * Defines an asynchronous test class.
- */
-class PluginTestAsync
-{
-   /**
-    * A ctor
-    */
-   constructor() { this.c = 3; }
-
-   /**
-    * Provides a delayed promise.
-    * @returns {Promise}
-    */
-   onPluginLoad()
-   {
-      return new Promise((resolve) =>
-      {
-         setTimeout(() => resolve(), 1000);
-      });
-   }
-
-   /**
-    * Returns a number result.
-    * @param {number} a - A number.
-    * @param {number} b - A number.
-    * @returns {Promise<number>}
-    */
-   test(a, b)
-   {
-      return new Promise((resolve) =>
-      {
-         setTimeout(() => resolve(a + b + this.c), 1000);
-      });
-   }
-
-   /**
-    * Increments a result count after a 1 second delay.
-    * @param {PluginEvent} event - A plugin event.
-    * @returns {Promise<PluginEvent>}
-    */
-   test2(event)
-   {
-      return new Promise((resolve) =>
-      {
-         setTimeout(() => resolve(event.data.result.count++), 1000);
-      });
-   }
-}
-
-/**
- * Defines a synchronous test class.
- */
-class PluginTestSync
-{
-   /**
-    * A ctor
-    */
-   constructor() { this.c = 3; }
-
-   /**
-    * Returns a number result.
-    * @param {number} a - A number.
-    * @param {number} b - A number.
-    * @returns {number}
-    */
-   test(a, b) { return a + b + this.c; }
-}
+import PluginTest          from './plugins/PluginTest.js';
+import PluginTestAsync     from './plugins/PluginTestAsync.js';
+import PluginTestNoName2   from './plugins/PluginTestNoName2.js';
+import PluginTestSync      from './plugins/PluginTestSync.js';
 
 describe('NodePluginManager:', () =>
 {
@@ -147,26 +21,6 @@ describe('NodePluginManager:', () =>
    {
       pluginManager = new NodePluginManager();
       testData = { result: { count: 0 } };
-   });
-
-   it('module loader', async () =>
-   {
-      await pluginManager.add({ name: 'InstancePlugin.js', target: './test/fixture/cjs/InstancePlugin.js' });
-      await pluginManager.add({ name: 'StaticPlugin.js', target: './test/fixture/cjs/StaticPlugin.js' });
-      await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/cjs/namedExport.js' });
-
-      await pluginManager.add({ name: 'InstancePlugin.js', target: './test/fixture/esm/InstancePlugin.js' });
-      await pluginManager.add({ name: 'StaticPlugin.js', target: './test/fixture/esm/StaticPlugin.js' });
-      await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/esm/namedExport.js' });
-
-      // Test loading dev dependency plugin
-      await pluginManager.add({ name: '@typhonjs-utils/package-json/plugin' });
-
-      // Test loading file URL
-      await pluginManager.add({
-         name: 'namedExport.js',
-         target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
-      });
    });
 
    it('constructor function is exported', () =>
@@ -217,6 +71,41 @@ describe('NodePluginManager:', () =>
       assert.isTrue(pluginManager.createEventbusProxy() instanceof EventbusProxy);
    });
 
+   it('EventbusProxy is destroyed when plugin manager destroyed.', async () =>
+   {
+      const eventbusProxy = pluginManager.createEventbusProxy();
+
+      await pluginManager.destroy();
+
+      expect(() => eventbusProxy.eventCount).to.throw(ReferenceError,
+       'This EventbusProxy instance has been destroyed.');
+   });
+
+   it('EventbusProxy shows correct proxy event count.', async () =>
+   {
+      const eventbus = new Eventbus();
+      pluginManager = new NodePluginManager({ eventbus })
+
+      const eventCount = eventbus.eventCount;
+
+      const eventbusProxy = pluginManager.createEventbusProxy();
+
+      eventbusProxy.on('a:test', () => { /***/ });
+
+      assert.strictEqual(eventbus.eventCount, eventCount + 1);
+      assert.strictEqual(eventbusProxy.eventCount, eventCount + 1);
+      assert.strictEqual(eventbusProxy.proxyEventCount, 1);
+
+      eventbusProxy.off();
+
+      assert.strictEqual(eventbus.eventCount, eventCount);
+      assert.strictEqual(eventbusProxy.eventCount, eventCount);
+      assert.strictEqual(eventbusProxy.proxyEventCount, 0);
+
+      await pluginManager.destroy();
+
+   });
+
    it('invokeAsyncEvent - has empty result', async () =>
    {
       const event = await pluginManager.invokeAsyncEvent('test');
@@ -237,7 +126,30 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - w/ plugin and missing method has empty event result', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
+
+      const event = await pluginManager.invokeAsyncEvent('nop');
+
+      assert.isObject(event);
+      assert.lengthOf(Object.keys(event), 2);
+      assert.strictEqual(event.$$plugin_invoke_count, 0);
+   });
+
+   it('invokeAsyncEvent - w/ static plugin and missing method has empty event result', async () =>
+   {
+      await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+
+      const event = await pluginManager.invokeAsyncEvent('nop');
+
+      assert.isObject(event);
+      assert.lengthOf(Object.keys(event), 2);
+      assert.strictEqual(event.$$plugin_invoke_count, 0);
+   });
+
+   it('invokeAsyncEvent - w/ module plugin and missing method has empty event result', async () =>
+   {
+      await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
 
       const event = await pluginManager.invokeAsyncEvent('nop');
 
@@ -248,7 +160,30 @@ describe('NodePluginManager:', () =>
 
    it('invokeSyncEvent - w/ plugin and missing method has empty event result', () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
+
+      const event = pluginManager.invokeSyncEvent('nop');
+
+      assert.isObject(event);
+      assert.lengthOf(Object.keys(event), 2);
+      assert.strictEqual(event.$$plugin_invoke_count, 0);
+   });
+
+   it('invokeSyncEvent - w/ static plugin and missing method has empty event result', async () =>
+   {
+      await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+
+      const event = pluginManager.invokeSyncEvent('nop');
+
+      assert.isObject(event);
+      assert.lengthOf(Object.keys(event), 2);
+      assert.strictEqual(event.$$plugin_invoke_count, 0);
+   });
+
+   it('invokeSyncEvent - w/ module plugin and missing method has empty event result', async () =>
+   {
+      await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
 
       const event = pluginManager.invokeSyncEvent('nop');
 
@@ -259,6 +194,7 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - has valid test / class result (pass through)', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
       const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
@@ -269,9 +205,58 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(event.$$plugin_invoke_count, 1);
    });
 
-   it('invokeSyncEvent - has valid test / class result (pass through)', () =>
+   it('invokeAsyncEvent - static plugin has valid test / class result (pass through)', async () =>
    {
+      await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+
+      const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+
+      assert.isObject(event);
+      assert.strictEqual(event.result.count, 1);
+      assert.strictEqual(testData.result.count, 1);
+      assert.strictEqual(event.$$plugin_invoke_count, 1);
+   });
+
+   it('invokeAsyncEvent - module plugin has valid test / class result (pass through)', async () =>
+   {
+      await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
+
+      const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+
+      assert.isObject(event);
+      assert.strictEqual(event.result.count, 1);
+      assert.strictEqual(testData.result.count, 1);
+      assert.strictEqual(event.$$plugin_invoke_count, 1);
+   });
+
+   it('invokeSyncEvent - instance plugin has valid test / class result (pass through)', () =>
+   {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
+
+      const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+
+      assert.isObject(event);
+      assert.strictEqual(event.result.count, 1);
+      assert.strictEqual(testData.result.count, 1);
+      assert.strictEqual(event.$$plugin_invoke_count, 1);
+   });
+
+   it('invokeSyncEvent - static plugin has valid test / class result (pass through)', async () =>
+   {
+      await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+
+      const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+
+      assert.isObject(event);
+      assert.strictEqual(event.result.count, 1);
+      assert.strictEqual(testData.result.count, 1);
+      assert.strictEqual(event.$$plugin_invoke_count, 1);
+   });
+
+   it('invokeSyncEvent - module plugin has valid test / class result (pass through)', async () =>
+   {
+      await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
 
       const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -283,7 +268,7 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - has valid test / object result (pass through)', async () =>
    {
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
 
@@ -292,9 +277,9 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(testData.result.count, 1);
    });
 
-   it('invokeSyncEvent - has valid test / object result (pass through)', () =>
+   it('invokeSyncEvent - has valid test / object result (pass through)', async () =>
    {
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -305,8 +290,10 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - has invoked both plugins (pass through)', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
 
@@ -315,10 +302,12 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(testData.result.count, 2);
    });
 
-   it('invokeSyncEvent - has invoked both plugins (pass through)', () =>
+   it('invokeSyncEvent - has invoked both plugins (pass through)', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -329,6 +318,7 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - has valid test / class result (copy)', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
       const event = await pluginManager.invokeAsyncEvent('test', testData);
@@ -342,6 +332,7 @@ describe('NodePluginManager:', () =>
 
    it('invokeSyncEvent - has valid test / class result (copy)', () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
       const event = pluginManager.invokeSyncEvent('test', testData);
@@ -355,7 +346,7 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - has valid test / object result (copy)', async () =>
    {
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = await pluginManager.invokeAsyncEvent('test', testData);
 
@@ -364,9 +355,9 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(testData.result.count, 0);
    });
 
-   it('invokeSyncEvent - has valid test / object result (copy)', () =>
+   it('invokeSyncEvent - has valid test / object result (copy)', async () =>
    {
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = pluginManager.invokeSyncEvent('test', testData);
 
@@ -377,8 +368,10 @@ describe('NodePluginManager:', () =>
 
    it('invokeAsyncEvent - has invoked both plugins (copy)', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = await pluginManager.invokeAsyncEvent('test', testData);
 
@@ -387,10 +380,12 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(testData.result.count, 0);
    });
 
-   it('invokeSyncEvent - has invoked both plugins (copy)', () =>
+   it('invokeSyncEvent - has invoked both plugins (copy)', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       const event = pluginManager.invokeSyncEvent('test', testData);
 
@@ -506,6 +501,10 @@ describe('NodePluginManager:', () =>
       assert.isTrue(pluginManager.isValidConfig({ name: 'test', target: 'target' }));
       assert.isTrue(pluginManager.isValidConfig({ name: 'test', target: 'target', options: {} }));
       assert.isTrue(pluginManager.isValidConfig({ name: 'test', options: {} }));
+      assert.isTrue(pluginManager.isValidConfig({
+         name: 'test',
+         target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
+      }));
    });
 
    it('PluginConfig is invalid', () =>
@@ -559,10 +558,12 @@ describe('NodePluginManager:', () =>
       assert(JSON.stringify(results), '[{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","scopedName":"plugins:PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}},{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestNoName2","scopedName":"plugins:PluginTestNoName2","target":"PluginTestNoName2","targetEscaped":"PluginTestNoName2","type":"instance","options":{}}}]');
    });
 
-   it('get plugin event names', () =>
+   it('get plugin event names', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       let results = pluginManager.getPluginsEventNames();
 
@@ -577,10 +578,12 @@ describe('NodePluginManager:', () =>
       assert(JSON.stringify(results), '[{"pluginName":"pluginTest","events":["test:trigger","test:trigger4","test:trigger5"]}]');
    });
 
-   it('get plugin name from event name', () =>
+   it('get plugin name from event name', async () =>
    {
+      // No await necessary as instance used.
       pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
-      pluginManager.add({ name: 'pluginTest', instance: pluginTest });
+
+      await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
       assert.throws(() => pluginManager.getPluginsByEventName());
 
@@ -623,5 +626,31 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(results[0].method, 'test');
       assert.strictEqual(results[1].plugin, 'PluginTestNoName2');
       assert.strictEqual(results[1].method, 'test2');
+   });
+
+   it('module loader', async () =>
+   {
+      await pluginManager.add({ name: 'InstancePlugin.js', target: './test/fixture/cjs/InstancePlugin.js' });
+      await pluginManager.add({ name: 'StaticPlugin.js', target: './test/fixture/cjs/StaticPlugin.js' });
+      await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/cjs/namedExport.js' });
+
+      await pluginManager.add({ name: 'InstancePlugin.js', target: './test/fixture/esm/InstancePlugin.js' });
+      await pluginManager.add({ name: 'StaticPlugin.js', target: './test/fixture/esm/StaticPlugin.js' });
+      await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/esm/namedExport.js' });
+
+      // Test loading dev dependency plugin
+      await pluginManager.add({ name: '@typhonjs-utils/package-json/plugin' });
+
+      // Test loading file URL
+      await pluginManager.add({
+         name: 'namedExport.js',
+         target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
+      });
+
+      // Test loading file URL string
+      await pluginManager.add({
+         name: 'namedExport.js',
+         target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js')).toString()
+      });
    });
 });
