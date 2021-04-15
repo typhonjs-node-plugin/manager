@@ -7,7 +7,7 @@ import { getPackageType }     from '@typhonjs-utils/package-json';
 
 import AbstractPluginManager  from '../AbstractPluginManager.js';
 
-const require = module.createRequire(import.meta.url);
+const requireMod = module.createRequire(import.meta.url);
 
 export default class NodePluginManager extends AbstractPluginManager
 {
@@ -28,7 +28,7 @@ export default class NodePluginManager extends AbstractPluginManager
          throw new Error(`@typhonjs-plugin/manager could not load:\n${loadPath}`);
       }
 
-      const module = isESM ? await import(url.pathToFileURL(filepath)) : require(filepath);
+      const module = isESM ? await import(url.pathToFileURL(filepath)) : requireMod(filepath);
 
       // Please note that a plugin or other logger must be setup on the associated eventbus.
       if (this._eventbus !== null && typeof this._eventbus !== 'undefined')
@@ -100,7 +100,7 @@ function resolvePath(moduleOrPath)
 
    try
    {
-      filepath = require.resolve(moduleOrPath);
+      filepath = requireMod.resolve(moduleOrPath);
       isESM = isPathModule(filepath);
    }
    catch (error)
