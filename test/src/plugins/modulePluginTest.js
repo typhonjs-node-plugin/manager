@@ -6,7 +6,8 @@ import { assert } from 'chai';
 
 /**
  * Increments a result count.
- * @param {PluginEvent} event - A plugin event.
+ *
+ * @param {object} event - PluginEvent - A plugin event.
  */
 export function test(event)
 {
@@ -16,7 +17,8 @@ export function test(event)
 
 /**
  * Register event bindings
- * @param {PluginEvent} ev - A plugin event.
+ *
+ * @param {object} ev - PluginEvent - A plugin event.
  */
 export function onPluginLoad(ev)
 {

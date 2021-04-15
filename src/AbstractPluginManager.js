@@ -204,7 +204,7 @@ export default class AbstractPluginManager
       /**
        * Stores any extra options / data to add to PluginEvent callbacks.
        *
-       * @type {Object}
+       * @type {object}
        * @private
        */
       this._extraEventData = extraEventData;
@@ -244,7 +244,7 @@ export default class AbstractPluginManager
     *
     * @param {object}         [moduleData] - Optional object hash to associate with plugin.
     *
-    * @returns {Promise<PluginData|undefined>}
+    * @returns {Promise<PluginData|undefined>} The PluginData that represents the plugin added.
     */
    async add(pluginConfig, moduleData)
    {
@@ -312,7 +312,11 @@ export default class AbstractPluginManager
          target = target.toString();
       }
 
-      // Create an object hash with data describing the plugin, manager, and any extra module data.
+      /**
+       * Create an object hash with data describing the plugin, manager, and any extra module data.
+       *
+       * @type {PluginData}
+       */
       const pluginData = JSON.parse(JSON.stringify(
       {
          manager:
@@ -358,17 +362,17 @@ export default class AbstractPluginManager
    /**
     * Initializes multiple plugins in a single call.
     *
-    * @param {Array<PluginConfig>}  pluginConfigs - An array of plugin config object hash entries.
+    * @param {PluginConfig[]} pluginConfigs - An array of plugin config object hash entries.
     *
-    * @param {object}               [moduleData] - Optional object hash to associate with all plugins.
+    * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<Array<PluginData>>}
+    * @returns {Promise<PluginData[]>} An array of PluginData objects of all loaded plugins.
     */
    async addAll(pluginConfigs = [], moduleData)
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (!Array.isArray(pluginConfigs)) { throw new TypeError(`'plugins' is not an array.`); }
+      if (!Array.isArray(pluginConfigs)) { throw new TypeError(`'pluginConfigs' is not an array.`); }
 
       const pluginsData = [];
 
@@ -404,11 +408,11 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {Array<PluginConfig>}  pluginConfigs - An array of plugin config object hash entries.
+    * @param {PluginConfig[]} pluginConfigs - An array of plugin config object hash entries.
     *
-    * @param {object}               [moduleData] - Optional object hash to associate with all plugins.
+    * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<Array<PluginData>>}
+    * @returns {Promise<PluginData[]>} An array of PluginData objects of all loaded plugins.
     * @private
     */
    async _addAllEventbus(pluginConfigs, moduleData)
@@ -422,7 +426,7 @@ export default class AbstractPluginManager
     * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
     * It is added to `this._eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
     *
-    * @returns {EventbusProxy}
+    * @returns {EventbusProxy} A proxy for the currently set Eventbus.
     */
    createEventbusProxy()
    {
@@ -433,6 +437,7 @@ export default class AbstractPluginManager
 
       const eventbusProxy = new EventbusProxy(this._eventbus);
 
+      // Store proxy to make sure it is destroyed when the plugin manager is destroyed.
       this._eventbusProxies.push(eventbusProxy);
 
       return eventbusProxy;
@@ -502,6 +507,7 @@ export default class AbstractPluginManager
     * code removing plugins in this manner.
     *
     * @private
+    * @returns {Promise} The promise returned from `destroy` or immediate resolution.
     */
    async _destroyEventbus()
    {
@@ -549,7 +555,7 @@ export default class AbstractPluginManager
    /**
     * Returns the enabled state of a list of plugins.
     *
-    * @param {Array<string>}  pluginNames - An array / iterable of plugin names.
+    * @param {string[]}  pluginNames - An array / iterable of plugin names.
     *
     * @returns {Array<{pluginName: string, enabled: boolean}>} A list of objects with plugin name and enabled state.
     */
@@ -597,7 +603,7 @@ export default class AbstractPluginManager
     *
     * @param {string} eventName - An event name that plugins may have registered.
     *
-    * @returns {Array<string[]>} A list of plugin names that has registered the given event name.
+    * @returns {string[]} A list of plugin names that has registered the given event name.
     */
    getPluginsByEventName(eventName)
    {
@@ -622,7 +628,7 @@ export default class AbstractPluginManager
     *
     * @param {boolean|undefined} enabled - If enabled is a boolean it will return plugins given their enabled state.
     *
-    * @returns {Array<PluginData>}
+    * @returns {PluginData[]} A list of all PluginData or just enabled / disabled plugins.
     */
    getAllPluginData(enabled = void 0)
    {
@@ -636,7 +642,7 @@ export default class AbstractPluginManager
       const results = [];
 
       // Return all plugin data if enabled is not defined.
-      const allPlugins = typeof enabled === 'undefined';
+      const allPlugins = enabled === void 0;
 
       for (const entry of this._pluginMap.values())
       {
@@ -652,7 +658,7 @@ export default class AbstractPluginManager
    /**
     * Returns any associated eventbus.
     *
-    * @returns {Eventbus|null}
+    * @returns {Eventbus|null} The associated eventbus.
     */
    getEventbus()
    {
@@ -664,7 +670,7 @@ export default class AbstractPluginManager
    /**
     * Returns any extra event data associated with PluginEvents.
     *
-    * @returns {*}
+    * @returns {*} Any extra associated event data.
     */
    getExtraEventData()
    {
@@ -675,12 +681,12 @@ export default class AbstractPluginManager
     * Returns all method names or if a boolean is passed in will return method names for plugins by current enabled
     * state.
     *
-    * @param {boolean|undefined} enabled - If enabled is a boolean it will return plugin methods names given their
-    *                                      enabled state.
+    * @param {boolean|undefined} [enabled] - If enabled is a boolean it will return plugin methods names given their
+    *                                        enabled state.
     *
-    * @param {string|undefined}  pluginName - If a string then just this plugins methods names are returned.
+    * @param {string|undefined}  [pluginName] - If a string then just this plugins methods names are returned.
     *
-    * @returns {Array<string>}
+    * @returns {string[]} A list of method names
     */
    getMethodNames(enabled = void 0, pluginName = void 0)
    {
@@ -713,7 +719,7 @@ export default class AbstractPluginManager
    /**
     * Returns a copy of the plugin manager options.
     *
-    * @returns {PluginManagerOptions}
+    * @returns {PluginManagerOptions} A copy of the plugin manager options.
     */
    getOptions()
    {
@@ -727,7 +733,7 @@ export default class AbstractPluginManager
     *
     * @param {string}   pluginName - A plugin name.
     *
-    * @returns {PluginData|undefined}
+    * @returns {PluginData|undefined} The plugin data for a specific plugin.
     */
    getPluginData(pluginName)
    {
@@ -750,7 +756,7 @@ export default class AbstractPluginManager
     *
     * @param {boolean|undefined} enabled - If enabled is a boolean it will return plugins given their enabled state.
     *
-    * @returns {Array<{plugin: string, method: string}>}
+    * @returns {Array<{plugin: string, method: string}>} A list of plugin names and method names.
     */
    getPluginMethodNames(enabled = void 0)
    {
@@ -787,7 +793,7 @@ export default class AbstractPluginManager
     *
     * @param {boolean|undefined} enabled - If enabled is a boolean it will return plugins given their enabled state.
     *
-    * @returns {Array<string>}
+    * @returns {string[]} A list of plugin names optionally by enabled state.
     */
    getPluginNames(enabled = void 0)
    {
@@ -816,7 +822,7 @@ export default class AbstractPluginManager
     *
     * @param {string}   pluginName - Plugin name to retrieve.
     *
-    * @returns {*}
+    * @returns {*} A copy of the given plugin options.
     */
    getPluginOptions(pluginName)
    {
@@ -894,12 +900,11 @@ export default class AbstractPluginManager
    /**
     * This dispatch method simply invokes any plugin targets for the given methodName..
     *
-    * @param {string}               methodName - Method name to invoke.
+    * @param {string}            methodName - Method name to invoke.
     *
-    * @param {*|Array<*>}           [args] - Optional arguments. An array will be spread as multiple arguments.
+    * @param {*|Array<*>}        [args] - Optional arguments. An array will be spread as multiple arguments.
     *
-    * @param {string|Array<string>} [nameOrList] - An optional plugin name or array / iterable of plugin names to
-    *                                              invoke.
+    * @param {string|string[]}   [nameOrList] - An optional plugin name or array / iterable of plugin names to invoke.
     */
    invoke(methodName, args = void 0, nameOrList = void 0)
    {
@@ -974,14 +979,13 @@ export default class AbstractPluginManager
     * construction which passes back a Promise which waits until all Promises complete. Any target invoked may return a
     * Promise or any result. This is very useful to use for any asynchronous operations.
     *
-    * @param {string}               methodName - Method name to invoke.
+    * @param {string}            methodName - Method name to invoke.
     *
-    * @param {*|Array<*>}           [args] - Optional arguments. An array will be spread as multiple arguments.
+    * @param {*|Array<*>}        [args] - Optional arguments. An array will be spread as multiple arguments.
     *
-    * @param {string|Array<string>} [nameOrList] - An optional plugin name or array / iterable of plugin names to
-    *                                              invoke.
+    * @param {string|string[]}   [nameOrList] - An optional plugin name or array / iterable of plugin names to invoke.
     *
-    * @returns {Promise<*|Array<*>>}
+    * @returns {Promise<*|Array<*>>} A Promise with any returned results.
     */
    invokeAsync(methodName, args = void 0, nameOrList = void 0)
    {
@@ -1076,16 +1080,15 @@ export default class AbstractPluginManager
    /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
-    * @param {string}               methodName - Method name to invoke.
+    * @param {string}            methodName - Method name to invoke.
     *
-    * @param {object}               [copyProps={}] - plugin event object.
+    * @param {object}            [copyProps={}] - plugin event object.
     *
-    * @param {object}               [passthruProps={}] - if true, event has plugin option.
+    * @param {object}            [passthruProps={}] - if true, event has plugin option.
     *
-    * @param {string|Array<string>} [nameOrList] - An optional plugin name or array / iterable of plugin names to
-    *                                              invoke.
+    * @param {string|string[]}   [nameOrList] - An optional plugin name or array / iterable of plugin names to invoke.
     *
-    * @returns {Promise<PluginEvent>}
+    * @returns {Promise<PluginEvent>} A PluginEvent representing the invocation results.
     */
    invokeAsyncEvent(methodName, copyProps = {}, passthruProps = {}, nameOrList = void 0)
    {
@@ -1105,14 +1108,13 @@ export default class AbstractPluginManager
     * This dispatch method synchronously passes back a single value or an array with all results returned by any
     * invoked targets.
     *
-    * @param {string}               methodName - Method name to invoke.
+    * @param {string}            methodName - Method name to invoke.
     *
-    * @param {*|Array<*>}           [args] - Optional arguments. An array will be spread as multiple arguments.
+    * @param {*|Array<*>}        [args] - Optional arguments. An array will be spread as multiple arguments.
     *
-    * @param {string|Array<string>} [nameOrList] - An optional plugin name or array / iterable of plugin names to
-    *                                              invoke.
+    * @param {string|string[]}   [nameOrList] - An optional plugin name or array / iterable of plugin names to invoke.
     *
-    * @returns {*|Array<*>}
+    * @returns {*|Array<*>} An array of results.
     */
    invokeSync(methodName, args = void 0, nameOrList = void 0)
    {
@@ -1199,16 +1201,15 @@ export default class AbstractPluginManager
    /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
-    * @param {string}               methodName - Method name to invoke.
+    * @param {string}            methodName - Method name to invoke.
     *
-    * @param {object}               [copyProps={}] - plugin event object.
+    * @param {object}            [copyProps={}] - plugin event object.
     *
-    * @param {object}               [passthruProps={}] - if true, event has plugin option.
+    * @param {object}            [passthruProps={}] - if true, event has plugin option.
     *
-    * @param {string|Array<string>} [nameOrList] - An optional plugin name or array / iterable of plugin names to
-    *                                              invoke.
+    * @param {string|string[]}   [nameOrList] - An optional plugin name or array / iterable of plugin names to invoke.
     *
-    * @returns {PluginEvent|undefined}
+    * @returns {PluginEvent|undefined} A plugin event with invocation results.
     */
    invokeSyncEvent(methodName, copyProps = {}, passthruProps = {}, nameOrList = void 0)
    {
@@ -1241,11 +1242,10 @@ export default class AbstractPluginManager
     *
     * @param {string}   moduleOrPath - A module name or file path.
     *
-    * @returns {Promise<*>}
-    *
+    * @returns {Promise<*>} Loaded module.
     * @private
     */
-   async _loadModule(moduleOrPath)
+   async _loadModule(moduleOrPath)  // eslint-disable-line no-unused-vars
    {
    }
 
@@ -1261,9 +1261,9 @@ export default class AbstractPluginManager
     * @param {string}     [options.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                        binding targets.
     *
-    * @returns {Promise<AbstractPluginManager>}
+    * @returns {Promise<AbstractPluginManager>} This plugin manager.
     */
-   async setEventbus({ eventbus, eventPrepend = 'plugins'} = {})
+   async setEventbus({ eventbus, eventPrepend = 'plugins' } = {})
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1277,6 +1277,7 @@ export default class AbstractPluginManager
 
       /**
        * Stores the prepend string for eventbus registration.
+       *
        * @type {string}
        * @private
        */
@@ -1506,8 +1507,8 @@ export default class AbstractPluginManager
    /**
     * Enables or disables a set of plugins given an array or iterabe of plugin names.
     *
-    * @param {Array<string>}  pluginNames - An array / iterable of plugin names.
-    * @param {boolean}        enabled - The new enabled state.
+    * @param {string[]} pluginNames - An array / iterable of plugin names.
+    * @param {boolean}  enabled - The new enabled state.
     *
     * @returns {boolean} - Operation success.
     */
@@ -1574,9 +1575,9 @@ export default class AbstractPluginManager
    /**
     * Removes all plugins after unloading them and clearing any event bindings automatically.
     *
-    * @returns {Promise.<*>}
+    * @returns {Promise.<Array<{plugin: string, result: boolean}>>} A list of plugin names and removal success state.
     */
-   removeAll()
+   async removeAll()
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1584,12 +1585,13 @@ export default class AbstractPluginManager
 
       for (const pluginName of this._pluginMap.keys())
       {
-         values.push(this.remove(pluginName));
+         const result = await this.remove(pluginName);
+         values.push({ plugin: pluginName, result });
       }
 
       this._pluginMap.clear();
 
-      return Promise.all(values);
+      return values;
    }
 
    /**
@@ -1612,6 +1614,7 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
+    * @returns {Promise.<Array<{plugin: string, result: boolean}>>} A list of plugin names and removal success state.
     * @private
     */
    async _removeAllEventbus()
@@ -1637,7 +1640,7 @@ export default class AbstractPluginManager
  *
  * @param {*}                          extraEventData - Optional extra data attached to all plugin events.
  *
- * @param {string|Array<string>}       nameOrList - An optional plugin name or array / iterable of plugin names to
+ * @param {string|string[]}            nameOrList - An optional plugin name or array / iterable of plugin names to
  *                                                  invoke.
  *
  * @param {Map<string, PluginEvent>}   pluginMap - Stores the plugins by name with an associated PluginEntry.
@@ -1646,7 +1649,7 @@ export default class AbstractPluginManager
  *
  * @param {boolean}                    [performErrorCheck=true] - If false optional error checking is disabled.
  *
- * @returns {Promise<PluginEvent>}
+ * @returns {Promise<PluginEvent>} A PluginEvent representing the invocation results.
  */
 const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps = {}, extraEventData, nameOrList,
  pluginMap, options, performErrorCheck = true) =>
@@ -1759,7 +1762,7 @@ const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps =
  *
  * @param {*}                          extraEventData - Optional extra data attached to all plugin events.
  *
- * @param {string|Array<string>}       nameOrList - An optional plugin name or array / iterable of plugin names to
+ * @param {string|string[]}            nameOrList - An optional plugin name or array / iterable of plugin names to
  *                                                  invoke.
  *
  * @param {Map<string, PluginEvent>}   pluginMap - Stores the plugins by name with an associated PluginEntry.
@@ -1768,7 +1771,7 @@ const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps =
  *
  * @param {boolean}                    [performErrorCheck=true] - If false optional error checking is disabled.
  *
- * @returns {PluginEvent}
+ * @returns {PluginEvent} A PluginEvent representing the invocation results.
  */
 const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, extraEventData, nameOrList, pluginMap,
  options, performErrorCheck = true) =>
@@ -1864,7 +1867,7 @@ const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, ex
  *
  * @param {object}   obj - object to walks.
  *
- * @returns {Array}
+ * @returns {string[]} A list of property names.
  * @ignore
  */
 const s_GET_ALL_PROPERTY_NAMES = (obj) =>
@@ -1883,34 +1886,43 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
 /**
  * @typedef {object} PluginConfig
  *
- * @property {string}   name - Defines the name of the plugin; if no `target` entry is present the name
- *                             doubles as the target (please see target).
+ * @property {string}      name - Defines the name of the plugin; if no `target` entry is present the name
+ *                                doubles as the target (please see target).
  *
- * @property {string}   [target] - Defines the target NPM module to load or defines a local file (full
- *                                 path or relative to current working directory to load.
+ * @property {string|URL}  [target] - Defines the target Node module to load or defines a local file (full
+ *                                    path or relative to current working directory to load. Target may also be a file
+ *                                    URL / string or in the browser a web URL.
  *
- * @property {string}   [instance] - Defines an existing object instance to use as the plugin.
+ * @property {string}      [instance] - Defines an existing object instance to use as the plugin.
  *
- * @property {object}   [options] - Defines an object of options for the plugin.
+ * @property {object}      [options] - Defines an object of options for the plugin.
  */
+
 
 /**
  * @typedef {object} PluginData
  *
- * @property {string}   name - The name of the plugin.
+ * @property {object}   manager - Data about the plugin manager
  *
- * @property {string}   scopedName - The name of the plugin with the plugin managers event prepend string.
+ * @property {string}   manager.eventPrepend - The plugin manager event prepend string.
  *
- * @property {string}   target - Defines the target NPM module to loaded or defines a local file (full
+ * @property {object}   module - Optional object hash to associate with plugin.
+ *
+ * @property {object}   plugin - Data about the plugin.
+ *
+ * @property {string}   plugin.name - The name of the plugin.
+ *
+ * @property {string}   plugin.scopedName - The name of the plugin with the plugin managers event prepend string.
+ *
+ * @property {string}   plugin.target - Defines the target NPM module to loaded or defines a local file (full
  *                               path or relative to current working directory to load.
  *
- * @property {string}   targetEscaped - Provides the target, but properly escaped for RegExp usage.
+ * @property {string}   plugin.targetEscaped - Provides the target, but properly escaped for RegExp usage.
  *
- * @property {string}   type - The type of plugin: `instance`, `require-module`, or `require-path`.
+ * @property {string}   plugin.type - The type of plugin: `instance`, `import-module`,
+ *                                    `import-path`, `require-module`, or `require-path`.
  *
- * @property {object}   options - Defines an object of options for the plugin.
- *
- * @property {string}   managerEventPrepend - The plugin manager event prepend string.
+ * @property {object}   plugin.options - Defines an object of options for the plugin.
  */
 
 /**

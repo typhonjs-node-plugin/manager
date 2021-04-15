@@ -1,13 +1,14 @@
 import { assert } from 'chai';
 
 /**
- * A plugin class
+ * A static plugin class
  */
 export default class StaticPluginTest
 {
    /**
     * Increments a result count.
-    * @param {PluginEvent} event - A plugin event.
+    *
+    * @param {object} event - PluginEvent - A plugin event.
     */
    static test(event)
    {
@@ -17,7 +18,8 @@ export default class StaticPluginTest
 
    /**
     * Register event bindings
-    * @param {PluginEvent} ev - A plugin event.
+    *
+    * @param {object} ev - PluginEvent - A plugin event.
     */
    static onPluginLoad(ev)
    {

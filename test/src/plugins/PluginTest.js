@@ -7,7 +7,8 @@ export default class PluginTest
 {
    /**
     * Increments a result count.
-    * @param {PluginEvent} event - A plugin event.
+    *
+    * @param {object} event - PluginEvent - A plugin event.
     */
    test(event)
    {
@@ -16,8 +17,9 @@ export default class PluginTest
    }
 
    /**
-    * Register event bindings
-    * @param {PluginEvent} ev - A plugin event.
+    * Register event bindings.
+    *
+    * @param {object} ev - PluginEvent - A plugin event.
     */
    onPluginLoad(ev)
    {

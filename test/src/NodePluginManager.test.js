@@ -84,7 +84,7 @@ describe('NodePluginManager:', () =>
    it('EventbusProxy shows correct proxy event count.', async () =>
    {
       const eventbus = new Eventbus();
-      pluginManager = new NodePluginManager({ eventbus })
+      pluginManager = new NodePluginManager({ eventbus });
 
       const eventCount = eventbus.eventCount;
 

@@ -10,7 +10,7 @@ export default class PluginEntry
     *
     * @param {string}      name - The plugin name.
     *
-    * @param {object}      data - Data describing the plugin, manager, and optional module data.
+    * @param {object}      data - PluginData describing the plugin, manager, and optional module data.
     *
     * @param {object}      instance - The loaded plugin instance.
     *
@@ -21,6 +21,7 @@ export default class PluginEntry
    {
       /**
        * Data describing the plugin, manager, and optional module data.
+       *
        * @type {object}
        * @private
        */
@@ -28,6 +29,7 @@ export default class PluginEntry
 
       /**
        * The plugin enabled state.
+       *
        * @type {boolean}
        * @private
        */
@@ -35,6 +37,7 @@ export default class PluginEntry
 
       /**
        * The plugin name.
+       *
        * @type {string}
        * @private
        */
@@ -42,13 +45,15 @@ export default class PluginEntry
 
       /**
        * The loaded plugin instance.
-       * @type {Object}
+       *
+       * @type {object}
        * @private
        */
       this._instance = instance;
 
       /**
        * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
+       *
        * @type {EventbusProxy}
        * @private
        */
@@ -60,7 +65,7 @@ export default class PluginEntry
     *
     * @param {string}   value - A string to escape.
     *
-    * @returns {string}
+    * @returns {string} An escaped string.
     */
    static escape(value)
    {
@@ -71,7 +76,7 @@ export default class PluginEntry
 
       // Escape any forward / reverse slashes for RegExp creation.
       escaped = escaped.replace(/[\\]/g, '\\');
-      escaped = escaped.replace(/[\/]/g, '\\/');
+      escaped = escaped.replace(/[/]/g, '\\/');
 
       return escaped;
    }
@@ -79,14 +84,14 @@ export default class PluginEntry
    /**
     * Get plugin data.
     *
-    * @returns {object}
+    * @returns {object} The associated PluginData
     */
    get data() { return this._data; }
 
    /**
     * Get enabled.
     *
-    * @returns {boolean}
+    * @returns {boolean} Current enabled state.
     */
    get enabled() { return this._enabled; }
 
@@ -99,6 +104,7 @@ export default class PluginEntry
    {
       /**
        * The plugin enabled state.
+       *
        * @type {boolean}
        * @private
        */
@@ -108,21 +114,21 @@ export default class PluginEntry
    /**
     * Get associated EventbusProxy.
     *
-    * @returns {EventbusProxy}
+    * @returns {EventbusProxy} Associated EventbusProxy.
     */
    get eventbusProxy() { return this._eventbusProxy; }
 
    /**
     * Get plugin instance.
     *
-    * @returns {Object}
+    * @returns {object} The plugin instance.
     */
    get instance() { return this._instance; }
 
    /**
     * Get plugin name.
     *
-    * @returns {string}
+    * @returns {string} Plugin name.
     */
    get name() { return this._name; }
 }

@@ -60,6 +60,14 @@ export default class NodePluginManager extends AbstractPluginManager
 
 // Module Private ----------------------------------------------------------------------------------------------------
 
+/**
+ * For `.js` files uses `getPackageType` to determine if `type` is set to `module` in associated `package.json`. If
+ * the `modulePath` provided ends in `.mjs` it is assumed to be ESM.
+ *
+ * @param {string} filepath - File path to load.
+ *
+ * @returns {boolean} If the filepath is an ES Module.
+ */
 function isPathModule(filepath)
 {
    const extension = path.extname(filepath).toLowerCase();
@@ -77,6 +85,15 @@ function isPathModule(filepath)
    }
 }
 
+/**
+ * Resolves a modulePath first by `require.resolve` to allow Node to resolve an actual module. If this fails then
+ * the `moduleOrPath` is resolved as a file path.
+ *
+ * @param {string} moduleOrPath - A module name or file path to load.
+ *
+ * @returns {{filepath: string, isPath: boolean, isESM: boolean}} An object including file path and whether the module
+ *                                                                is ESM.
+ */
 function resolvePath(moduleOrPath)
 {
    let filepath, isESM, isPath = false;
@@ -85,7 +102,8 @@ function resolvePath(moduleOrPath)
    {
       filepath = require.resolve(moduleOrPath);
       isESM = isPathModule(filepath);
-   } catch (error)
+   }
+   catch (error)
    {
       filepath = path.resolve(moduleOrPath);
       isESM = isPathModule(filepath);

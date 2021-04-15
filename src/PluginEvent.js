@@ -1,11 +1,13 @@
+import { EventbusProxy } from '@typhonjs-plugin/eventbus';
+
 /**
- * PluginEvent - Provides the data / event passed to all invoked methods in {@link PluginManager#invokeSyncEvent}. The
- * `event.data` field is returned to the caller. Before returning though additional the following additional metadata
- * is attached:
+ * PluginEvent - Provides the data / event passed to all invoked methods in
+ * {@link AbstractPluginManager#invokeSyncEvent}. The `event.data` field is returned to the caller. Before returning
+ * though additional the following additional metadata is attached:
  *
- * (number)          `$$plugin_invoke_count` - The count of plugins invoked.
+ * (number)    `$$plugin_invoke_count` - The count of plugins invoked.
  *
- * (Array<string>)   `$$plugin_invoke_names` - The names of plugins invoked.
+ * (string[])  `$$plugin_invoke_names` - The names of plugins invoked.
  */
 export default class PluginEvent
 {
@@ -25,24 +27,28 @@ export default class PluginEvent
 
       /**
        * Stores any extra event data added to all PluginEvents.
-       * @type {Object}
+       *
+       * @type {object}
        */
       this.extra = extraEventData;
 
       /**
        * Unique data available in each plugin invoked.
+       *
        * @type {EventbusProxy} - The active EventbusProxy for that particular plugin.
        */
       this.eventbus = void 0;
 
       /**
        * Unique data available in each plugin invoked.
+       *
        * @type {string} - The active plugin name.
        */
       this.pluginName = void 0;
 
       /**
        * Unique data available in each plugin invoked.
+       *
        * @type {object} - The active plugin options.
        */
       this.pluginOptions = void 0;

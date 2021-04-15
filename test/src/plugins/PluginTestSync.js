@@ -10,9 +10,11 @@ export default class PluginTestSync
 
    /**
     * Returns a number result.
+    *
     * @param {number} a - A number.
     * @param {number} b - A number.
-    * @returns {number}
+    *
+    * @returns {number} A number.
     */
    test(a, b) { return a + b + this.c; }
 }

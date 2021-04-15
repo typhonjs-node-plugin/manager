@@ -10,7 +10,8 @@ export default class PluginTestAsync
 
    /**
     * Provides a delayed promise.
-    * @returns {Promise}
+    *
+    * @returns {Promise} A Promise.
     */
    onPluginLoad()
    {
@@ -22,9 +23,11 @@ export default class PluginTestAsync
 
    /**
     * Returns a number result.
+    *
     * @param {number} a - A number.
     * @param {number} b - A number.
-    * @returns {Promise<number>}
+    *
+    * @returns {Promise<number>} A Promise / number.
     */
    test(a, b)
    {
@@ -36,8 +39,10 @@ export default class PluginTestAsync
 
    /**
     * Increments a result count after a 1 second delay.
-    * @param {PluginEvent} event - A plugin event.
-    * @returns {Promise<PluginEvent>}
+    *
+    * @param {object} event - PluginEvent - A plugin event.
+    *
+    * @returns {Promise<number>} A Promise / number.
     */
    test2(event)
    {
