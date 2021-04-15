@@ -36,8 +36,6 @@ import isValidConfig       from './isValidConfig.js';
  *
  * `plugins:get:all:plugin:data` - {@link AbstractPluginManager#getAllPluginData}
  *
- * `plugins:get:extra:event:data` - {@link AbstractPluginManager#getExtraEventData}
- *
  * `plugins:get:method:names` - {@link AbstractPluginManager#getMethodNames}
  *
  * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
@@ -69,8 +67,6 @@ import isValidConfig       from './isValidConfig.js';
  * `plugins:invoke` - {@link AbstractPluginManager#invoke}
  *
  * `plugins:is:valid:config` - {@link AbstractPluginManager#isValidConfig}
- *
- * `plugins:set:extra:event:data` - {@link AbstractPluginManager#setExtraEventData}
  *
  * `plugins:set:options` - {@link AbstractPluginManager#setOptions}
  *
@@ -169,11 +165,8 @@ export default class AbstractPluginManager
     *
     * @param {boolean}  [options.throwNoPlugin=false] - If true then when no plugin is matched to be invoked an
     *                                                   exception will be thrown.
-    *
-    *
-    * @param {object}   [extraEventData] - Provides additional optional data to attach to PluginEvent callbacks.
     */
-   constructor(options = {}, extraEventData = void 0)
+   constructor(options = {})
    {
       if (typeof options !== 'object') { throw new TypeError(`'options' is not an object.`); }
 
@@ -200,14 +193,6 @@ export default class AbstractPluginManager
        * @private
        */
       this._eventbusProxies = [];
-
-      /**
-       * Stores any extra options / data to add to PluginEvent callbacks.
-       *
-       * @type {object}
-       * @private
-       */
-      this._extraEventData = extraEventData;
 
       /**
        * Defines options for throwing exceptions. Turned off by default.
@@ -344,8 +329,7 @@ export default class AbstractPluginManager
       this._pluginMap.set(pluginConfig.name, entry);
 
       // Invoke private module method which allows skipping optional error checking.
-      await s_INVOKE_ASYNC_EVENTS('onPluginLoad', {}, {}, this._extraEventData, pluginConfig.name, this._pluginMap,
-       this._options, false);
+      await s_INVOKE_ASYNC_EVENTS('onPluginLoad', {}, {}, pluginConfig.name, this._pluginMap, this._options, false);
 
       // Invoke `typhonjs:plugin:manager:plugin:added` allowing external code to react to plugin addition.
       if (this._eventbus)
@@ -469,7 +453,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${this._eventPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
-         this._eventbus.off(`${this._eventPrepend}:get:extra:event:data`, this.getExtraEventData, this);
          this._eventbus.off(`${this._eventPrepend}:get:method:names`, this.getMethodNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugin:enabled`, this.getPluginEnabled, this);
@@ -486,7 +469,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          this._eventbus.off(`${this._eventPrepend}:invoke`, this.invoke, this);
          this._eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
-         this._eventbus.off(`${this._eventPrepend}:set:extra:event:data`, this.setExtraEventData, this);
          this._eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:set:plugin:enabled`, this.setPluginEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:set:plugins:enabled`, this.setPluginsEnabled, this);
@@ -555,16 +537,6 @@ export default class AbstractPluginManager
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       return this._eventbus;
-   }
-
-   /**
-    * Returns any extra event data associated with PluginEvents.
-    *
-    * @returns {*} Any extra associated event data.
-    */
-   getExtraEventData()
-   {
-      return this._extraEventData;
    }
 
    /**
@@ -1097,8 +1069,7 @@ export default class AbstractPluginManager
       if (!this._options.pluginsEnabled) { return Promise.resolve(); }
 
       // Invokes the private internal async events method with optional error checking enabled.
-      return s_INVOKE_ASYNC_EVENTS(methodName, copyProps, passthruProps, this._extraEventData, nameOrList,
-       this._pluginMap, this._options);
+      return s_INVOKE_ASYNC_EVENTS(methodName, copyProps, passthruProps, nameOrList, this._pluginMap, this._options);
    }
 
    /**
@@ -1218,8 +1189,7 @@ export default class AbstractPluginManager
       if (!this._options.pluginsEnabled) { return void 0; }
 
       // Invokes the private internal sync events method with optional error checking enabled.
-      return s_INVOKE_SYNC_EVENTS(methodName, copyProps, passthruProps, this._extraEventData, nameOrList,
-       this._pluginMap, this._options);
+      return s_INVOKE_SYNC_EVENTS(methodName, copyProps, passthruProps, nameOrList, this._pluginMap, this._options);
    }
 
    /**
@@ -1284,8 +1254,8 @@ export default class AbstractPluginManager
       if (this._pluginMap.size > 0)
       {
          // Invoke private module method which allows skipping optional error checking.
-         await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, this._extraEventData, this._pluginMap.keys(),
-          this._pluginMap, this._options, false);
+         await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, this._pluginMap.keys(), this._pluginMap, this._options,
+          false);
 
          for (const entry of this._pluginMap.values())
          {
@@ -1305,8 +1275,8 @@ export default class AbstractPluginManager
          }
 
          // Invoke private module method which allows skipping optional error checking.
-         await s_INVOKE_ASYNC_EVENTS('onPluginLoad', {}, {}, this._extraEventData, this._pluginMap.keys(),
-          this._pluginMap, this._options, false);
+         await s_INVOKE_ASYNC_EVENTS('onPluginLoad', {}, {}, this._pluginMap.keys(), this._pluginMap, this._options,
+          false);
 
          for (const entry of this._pluginMap.values())
          {
@@ -1337,7 +1307,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${oldPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
-         this._eventbus.off(`${oldPrepend}:get:extra:event:data`, this.getExtraEventData, this);
          this._eventbus.off(`${oldPrepend}:get:method:names`, this.getMethodNames, this);
          this._eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:enabled`, this.getPluginEnabled, this);
@@ -1354,7 +1323,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          this._eventbus.off(`${oldPrepend}:invoke`, this.invoke, this);
          this._eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
-         this._eventbus.off(`${oldPrepend}:set:extra:event:data`, this.setExtraEventData, this);
          this._eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
          this._eventbus.off(`${oldPrepend}:set:plugin:enabled`, this.setPluginEnabled, this);
          this._eventbus.off(`${oldPrepend}:set:plugins:enabled`, this.setPluginsEnabled, this);
@@ -1380,7 +1348,6 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
       eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
       eventbus.on(`${eventPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
-      eventbus.on(`${eventPrepend}:get:extra:event:data`, this.getExtraEventData, this);
       eventbus.on(`${eventPrepend}:get:method:names`, this.getMethodNames, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
       eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this);
@@ -1397,7 +1364,6 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:has:plugin:method`, this.hasPluginMethod, this);
       eventbus.on(`${eventPrepend}:invoke`, this.invoke, this);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
-      eventbus.on(`${eventPrepend}:set:extra:event:data`, this.setExtraEventData, this);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
       eventbus.on(`${eventPrepend}:set:plugin:enabled`, this.setPluginEnabled, this);
       eventbus.on(`${eventPrepend}:set:plugins:enabled`, this.setPluginsEnabled, this);
@@ -1416,18 +1382,6 @@ export default class AbstractPluginManager
       this._eventbus = eventbus;
 
       return this;
-   }
-
-   /**
-    * Sets any extra event data attached to PluginEvent `extra` field.
-    *
-    * @param {*}  extraEventData - Adds extra data to PluginEvent `extra` field.
-    */
-   setExtraEventData(extraEventData = void 0)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      this._extraEventData = extraEventData;
    }
 
    /**
@@ -1541,8 +1495,7 @@ export default class AbstractPluginManager
       if (entry instanceof PluginEntry)
       {
          // Invoke private module method which allows skipping optional error checking.
-         await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, this._extraEventData, pluginName, this._pluginMap,
-          this._options, false);
+         await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, pluginName, this._pluginMap, this._options, false);
 
          // Automatically remove any potential reference to a stored event proxy instance.
          try
@@ -1635,8 +1588,6 @@ export default class AbstractPluginManager
  *
  * @param {object}                     passthruProps - if true, event has plugin option.
  *
- * @param {*}                          extraEventData - Optional extra data attached to all plugin events.
- *
  * @param {string|string[]}            nameOrList - An optional plugin name or array / iterable of plugin names to
  *                                                  invoke.
  *
@@ -1648,8 +1599,8 @@ export default class AbstractPluginManager
  *
  * @returns {Promise<PluginEvent>} A PluginEvent representing the invocation results.
  */
-const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps = {}, extraEventData, nameOrList,
- pluginMap, options, performErrorCheck = true) =>
+const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps = {}, nameOrList, pluginMap, options,
+ performErrorCheck = true) =>
 {
    if (typeof methodName !== 'string') { throw new TypeError(`'methodName' is not a string.`); }
    if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
@@ -1670,7 +1621,7 @@ const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps =
    let hasPlugin = false;
 
    // Create plugin event.
-   const ev = new PluginEvent(copyProps, passthruProps, extraEventData);
+   const ev = new PluginEvent(copyProps, passthruProps);
 
    const results = [];
 
@@ -1757,8 +1708,6 @@ const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps =
  *
  * @param {object}                     passthruProps - if true, event has plugin option.
  *
- * @param {*}                          extraEventData - Optional extra data attached to all plugin events.
- *
  * @param {string|string[]}            nameOrList - An optional plugin name or array / iterable of plugin names to
  *                                                  invoke.
  *
@@ -1770,8 +1719,8 @@ const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps =
  *
  * @returns {PluginEvent} A PluginEvent representing the invocation results.
  */
-const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, extraEventData, nameOrList, pluginMap,
- options, performErrorCheck = true) =>
+const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, nameOrList, pluginMap, options,
+ performErrorCheck = true) =>
 {
    if (typeof methodName !== 'string') { throw new TypeError(`'methodName' is not a string.`); }
    if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
@@ -1792,7 +1741,7 @@ const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, ex
    let hasPlugin = false;
 
    // Create plugin event.
-   const ev = new PluginEvent(copyProps, passthruProps, extraEventData);
+   const ev = new PluginEvent(copyProps, passthruProps);
 
    if (typeof nameOrList === 'string')
    {
