@@ -14,11 +14,6 @@ export default class NodePluginManager extends AbstractPluginManager
    async _loadModule(moduleOrPath)
    {
       // Convert to file path if an URL or file URL string.
-      if (moduleOrPath instanceof URL || moduleOrPath.startsWith('file:'))
-      {
-         moduleOrPath = url.fileURLToPath(moduleOrPath);
-      }
-
       const { filepath, isESM, isPath } = resolvePath(moduleOrPath);
 
       const loadPath = `${isPath ? filepath : moduleOrPath}`;
@@ -27,6 +22,9 @@ export default class NodePluginManager extends AbstractPluginManager
       {
          throw new Error(`@typhonjs-plugin/manager could not load:\n${loadPath}`);
       }
+
+      let type = isESM ? 'import-' : 'require-';
+      type += isPath ? 'path' : 'module';
 
       const module = isESM ? await import(url.pathToFileURL(filepath)) : requireMod(filepath);
 
@@ -54,7 +52,7 @@ export default class NodePluginManager extends AbstractPluginManager
          instance = module;
       }
 
-      return instance;
+      return { instance, type };
    }
 }
 
@@ -105,7 +103,15 @@ function resolvePath(moduleOrPath)
    }
    catch (error)
    {
-      filepath = path.resolve(moduleOrPath);
+      if (moduleOrPath instanceof URL || moduleOrPath.startsWith('file:'))
+      {
+         filepath = url.fileURLToPath(moduleOrPath);
+      }
+      else
+      {
+         filepath = path.resolve(moduleOrPath);
+      }
+
       isESM = isPathModule(filepath);
       isPath = true;
    }

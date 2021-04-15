@@ -50,6 +50,6 @@
     "posttest": "npm run eslint",
     "prepublishOnly": "npm run bundle && npm run test",
     "serve": "http-server \"./test/fixture/public\" --port 8080",
-    "test": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/**/*.test.js\" --timeout 6000"
+    "test": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/**/*.test.js\" --timeout 8000"
   }
 }

@@ -12,6 +12,9 @@ export default class BrowserPluginManager extends AbstractPluginManager
          this._eventbus.trigger('log:debug', `@typhonjs-plugin/manager - import: ${moduleOrPath}`);
       }
 
+      const type = `import-${moduleOrPath instanceof URL || 
+       (typeof moduleOrPath === 'string' && moduleOrPath.startsWith('http')) ? 'url' : 'path'}`;
+
       let instance;
 
       // If the module has a named export for `onPluginLoad` then take the module.
@@ -30,6 +33,6 @@ export default class BrowserPluginManager extends AbstractPluginManager
          instance = module;
       }
 
-      return instance;
+      return { instance, type };
    }
 }

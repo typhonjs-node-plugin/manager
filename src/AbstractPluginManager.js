@@ -277,13 +277,7 @@ export default class AbstractPluginManager
       // If a plugin with the same name already exists post a warning and exit early.
       if (this._pluginMap.has(pluginConfig.name))
       {
-         // Please note that a plugin or other logger must be setup on the associated eventbus.
-         if (this._eventbus !== null && typeof this._eventbus !== 'undefined')
-         {
-            this._eventbus.trigger('log:warn', `A plugin already exists with name: ${pluginConfig.name}.`);
-         }
-
-         return void 0;
+         throw new Error(`A plugin already exists with name: ${pluginConfig.name}.`);
       }
 
       let instance, target, type;
@@ -303,7 +297,10 @@ export default class AbstractPluginManager
          target = pluginConfig.target || pluginConfig.name;
 
          // Defer to child class to load module in Node or the browser.
-         instance = await this._loadModule(target);
+         const result = await this._loadModule(target);
+
+         instance = result.instance;
+         type = result.type;
       }
 
       // Convert any URL target a string.
@@ -1919,8 +1916,9 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
  *
  * @property {string}   plugin.targetEscaped - Provides the target, but properly escaped for RegExp usage.
  *
- * @property {string}   plugin.type - The type of plugin: `instance`, `import-module`,
- *                                    `import-path`, `require-module`, or `require-path`.
+ * @property {string}   plugin.type - The type of plugin: `instance` +
+ *                                    In Node: `import-module`, `import-path`, `require-module`, or `require-path`.
+ *                                    In Browser: `import-path`, `import-url`.
  *
  * @property {object}   plugin.options - Defines an object of options for the plugin.
  */

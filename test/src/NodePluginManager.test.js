@@ -628,29 +628,94 @@ describe('NodePluginManager:', () =>
       assert.strictEqual(results[1].method, 'test2');
    });
 
-   it('module loader', async () =>
+   it('module loader add multiple', async () =>
    {
-      await pluginManager.add({ name: 'InstancePlugin.js', target: './test/fixture/cjs/InstancePlugin.js' });
-      await pluginManager.add({ name: 'StaticPlugin.js', target: './test/fixture/cjs/StaticPlugin.js' });
-      await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/cjs/namedExport.js' });
+      let pData;
 
-      await pluginManager.add({ name: 'InstancePlugin.js', target: './test/fixture/esm/InstancePlugin.js' });
-      await pluginManager.add({ name: 'StaticPlugin.js', target: './test/fixture/esm/StaticPlugin.js' });
-      await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/esm/namedExport.js' });
+      pData = await pluginManager.add({ name: 'CJS-InstancePlugin', target: './test/fixture/cjs/InstancePlugin.js' });
+      assert.strictEqual(pData.plugin.type, 'require-path');
+
+      pData = await pluginManager.add({ name: 'CJS-StaticPlugin', target: './test/fixture/cjs/StaticPlugin.js' });
+      assert.strictEqual(pData.plugin.type, 'require-path');
+
+      pData = await pluginManager.add({ name: 'CJS-namedExport', target: './test/fixture/cjs/namedExport.js' });
+      assert.strictEqual(pData.plugin.type, 'require-path');
+
+      pData = await pluginManager.add({ name: 'ESM-InstancePlugin', target: './test/fixture/esm/InstancePlugin.js' });
+      assert.strictEqual(pData.plugin.type, 'import-path');
+
+      pData = await pluginManager.add({ name: 'ESM-StaticPlugin', target: './test/fixture/esm/StaticPlugin.js' });
+      assert.strictEqual(pData.plugin.type, 'import-path');
+
+      pData = await pluginManager.add({ name: 'ESM-namedExport', target: './test/fixture/esm/namedExport.js' });
+      assert.strictEqual(pData.plugin.type, 'import-path');
 
       // Test loading dev dependency plugin
-      await pluginManager.add({ name: '@typhonjs-utils/package-json' });
+      pData = await pluginManager.add({ name: '@typhonjs-utils/package-json' });
+      assert.strictEqual(pData.plugin.type, 'import-module');
 
       // Test loading file URL
-      await pluginManager.add({
-         name: 'namedExport.js',
+      pData = await pluginManager.add({
+         name: 'ESM-URL-namedExport',
          target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
       });
+      assert.strictEqual(pData.plugin.type, 'import-path');
 
       // Test loading file URL string
-      await pluginManager.add({
-         name: 'namedExport.js',
+      pData = await pluginManager.add({
+         name: 'ESM-file-URL-namedExport',
          target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js')).toString()
       });
+      assert.strictEqual(pData.plugin.type, 'import-path');
+
+   });
+
+   it('module loader addAll / removeAll', async () =>
+   {
+      const pData = await pluginManager.addAll([
+         { name: 'CJS-InstancePlugin', target: './test/fixture/cjs/InstancePlugin.js' },
+         { name: 'CJS-StaticPlugin', target: './test/fixture/cjs/StaticPlugin.js' },
+         { name: 'CJS-namedExport', target: './test/fixture/cjs/namedExport.js' },
+         { name: 'ESM-InstancePlugin', target: './test/fixture/esm/InstancePlugin.js' },
+         { name: 'ESM-StaticPlugin', target: './test/fixture/esm/StaticPlugin.js' },
+         { name: 'ESM-namedExport', target: './test/fixture/esm/namedExport.js' },
+         { name: '@typhonjs-utils/package-json' },
+         {
+            name: 'ESM-URL-namedExport',
+            target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
+         },
+         {
+            name: 'ESM-file-URL-namedExport',
+            target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js')).toString()
+         }
+      ]);
+
+      assert.isArray(pData);
+      assert.strictEqual(pData.length, 9);
+
+      assert.strictEqual(pData[0].plugin.type, 'require-path');
+      assert.strictEqual(pData[1].plugin.type, 'require-path');
+      assert.strictEqual(pData[2].plugin.type, 'require-path');
+      assert.strictEqual(pData[3].plugin.type, 'import-path');
+      assert.strictEqual(pData[4].plugin.type, 'import-path');
+      assert.strictEqual(pData[5].plugin.type, 'import-path');
+      assert.strictEqual(pData[6].plugin.type, 'import-module');
+      assert.strictEqual(pData[7].plugin.type, 'import-path');
+      assert.strictEqual(pData[8].plugin.type, 'import-path');
+
+      const rData = await pluginManager.removeAll();
+
+      assert.isArray(rData);
+      assert.strictEqual(rData.length, 9);
+
+      assert.strictEqual(rData[0].result, true);
+      assert.strictEqual(rData[1].result, true);
+      assert.strictEqual(rData[2].result, true);
+      assert.strictEqual(rData[3].result, true);
+      assert.strictEqual(rData[4].result, true);
+      assert.strictEqual(rData[5].result, true);
+      assert.strictEqual(rData[6].result, true);
+      assert.strictEqual(rData[7].result, true);
+      assert.strictEqual(rData[8].result, true);
    });
 });

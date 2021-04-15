@@ -4,15 +4,27 @@ const pluginManager = new PluginManager();
 
 const eventbus = pluginManager.createEventbusProxy();
 
-await pluginManager.add({ name: '@typhonjs-util/test' });
-await pluginManager.add({ name: 'StaticPlugin', target: './plugin/StaticPlugin.js' });
-await pluginManager.add({ name: 'namedExport', target: './plugin/namedExport.js' });
-await pluginManager.add({ name: 'urlNamedExport', target: new URL('http://localhost:8080/plugin/urlNamedExport.js') });
-await pluginManager.add({ name: 'urlNamedExportBare', target: 'http://localhost:8080/plugin/urlNamedExportBare.js' });
+let pData;
 
-await eventbus.triggerAsync('plugins:async:add', {
+pData = await pluginManager.add({ name: '@typhonjs-util/test' });
+console.log(`pData.plugin.type: ${pData.plugin.type}`);
+
+pData = await pluginManager.add({ name: 'StaticPlugin', target: './plugin/StaticPlugin.js' });
+console.log(`pData.plugin.type: ${pData.plugin.type}`);
+
+pData = await pluginManager.add({ name: 'namedExport', target: './plugin/namedExport.js' });
+console.log(`pData.plugin.type: ${pData.plugin.type}`);
+
+pData = await pluginManager.add({ name: 'urlNamedExport', target: new URL('http://localhost:8080/plugin/urlNamedExport.js') });
+console.log(`pData.plugin.type: ${pData.plugin.type}`);
+
+pData = await pluginManager.add({ name: 'urlNamedExportBare', target: 'http://localhost:8080/plugin/urlNamedExportBare.js' });
+console.log(`pData.plugin.type: ${pData.plugin.type}`);
+
+pData = await eventbus.triggerAsync('plugins:async:add', {
    name: 'eventbusNamedExport',
    target: './plugin/eventbusNamedExport.js'
 });
+console.log(`pData.plugin.type: ${pData.plugin.type}`);
 
 eventbus.trigger('test:message');
