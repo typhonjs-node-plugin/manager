@@ -69,7 +69,7 @@ export default class PluginEntry
     */
    static escape(value)
    {
-      if (typeof value !== 'string') { throw new TypeError(`'value' is not a 'string'`); }
+      if (typeof value !== 'string') { throw new TypeError(`'value' is not a string.`); }
 
       // Remove any leading relative directory paths.
       let escaped = value.replace(/^(\.\.|\.)/, '');

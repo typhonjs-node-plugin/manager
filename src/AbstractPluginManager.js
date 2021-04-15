@@ -5,7 +5,7 @@ import { deepFreeze }      from '@typhonjs-utils/object';
 import PluginEntry         from './PluginEntry.js';
 import PluginEvent         from './PluginEvent.js';
 
-import isValidConfig from "./isValidConfig.js";
+import isValidConfig       from './isValidConfig.js';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -250,11 +250,11 @@ export default class AbstractPluginManager
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof pluginConfig !== 'object') { throw new TypeError(`'pluginConfig' is not an 'object'.`); }
+      if (typeof pluginConfig !== 'object') { throw new TypeError(`'pluginConfig' is not an object.`); }
 
       if (typeof pluginConfig.name !== 'string')
       {
-         throw new TypeError(`'pluginConfig.name' is not a 'string' for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(`'pluginConfig.name' is not a string for entry: ${JSON.stringify(pluginConfig)}.`);
       }
 
       if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string' &&
@@ -266,12 +266,12 @@ export default class AbstractPluginManager
 
       if (typeof pluginConfig.options !== 'undefined' && typeof pluginConfig.options !== 'object')
       {
-         throw new TypeError(`'pluginConfig.options' is not an 'object' for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(`'pluginConfig.options' is not an object for entry: ${JSON.stringify(pluginConfig)}.`);
       }
 
       if (typeof moduleData !== 'undefined' && typeof moduleData !== 'object')
       {
-         throw new TypeError(`'moduleData' is not an 'object' for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(`'moduleData' is not an object for entry: ${JSON.stringify(pluginConfig)}.`);
       }
 
       // If a plugin with the same name already exists post a warning and exit early.
@@ -514,113 +514,6 @@ export default class AbstractPluginManager
    }
 
    /**
-    * Returns the enabled state of a plugin.
-    *
-    * @param {string}   pluginName - Plugin name to set state.
-    *
-    * @returns {boolean} - Operation success.
-    */
-   getPluginEnabled(pluginName)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
-
-      const entry = this._pluginMap.get(pluginName);
-
-      return entry instanceof PluginEntry && entry.enabled;
-   }
-
-   /**
-    * Returns the event binding names registered on any associated plugin EventbusProxy.
-    *
-    * @param {string}   pluginName - Plugin name to set state.
-    *
-    * @returns {string[]} - Event binding names registered from the plugin.
-    */
-   getPluginEventNames(pluginName)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
-
-      const entry = this._pluginMap.get(pluginName);
-
-      return entry instanceof PluginEntry && entry._eventbusProxy ? entry._eventbusProxy.eventNames : [];
-   }
-
-   /**
-    * Returns the enabled state of a list of plugins.
-    *
-    * @param {string[]}  pluginNames - An array / iterable of plugin names.
-    *
-    * @returns {Array<{pluginName: string, enabled: boolean}>} A list of objects with plugin name and enabled state.
-    */
-   getPluginsEnabled(pluginNames)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      const results = [];
-
-      for (const pluginName of pluginNames)
-      {
-         results.push({ pluginName, enabled: this.getPluginEnabled(pluginName) });
-      }
-
-      return results;
-   }
-
-   /**
-    * Returns the event binding names registered from each plugin.
-    *
-    * @param {string|string[]} [nameOrList] - An array / iterable of plugin names.
-    *
-    * @returns {Array<{pluginName: string, events: string[]}>} A list of objects with plugin name and event binding
-    *                                                          names registered from the plugin.
-    */
-   getPluginsEventNames(nameOrList)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof nameOrList === 'undefined') { nameOrList = this._pluginMap.keys(); }
-      if (typeof nameOrList === 'string') { nameOrList = [nameOrList]; }
-
-      const results = [];
-
-      for (const pluginName of nameOrList)
-      {
-         results.push({ pluginName, events: this.getPluginEventNames(pluginName) });
-      }
-
-      return results;
-   }
-
-   /**
-    * Returns the plugin names that registered the given event binding name.
-    *
-    * @param {string} eventName - An event name that plugins may have registered.
-    *
-    * @returns {string[]} A list of plugin names that has registered the given event name.
-    */
-   getPluginsByEventName(eventName)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof eventName !== 'string') { throw new TypeError(`'eventName' is not a 'string'.`); }
-
-      const results = [];
-
-      const pluginEventNames = this.getPluginsEventNames();
-
-      for (const entry of pluginEventNames)
-      {
-         if (entry.events.indexOf(eventName) >= 0) { results.push(entry.pluginName); }
-      }
-
-      return results;
-   }
-
-   /**
     * Returns all plugin data or if a boolean is passed in will return plugin data by current enabled state.
     *
     * @param {boolean|undefined} enabled - If enabled is a boolean it will return plugins given their enabled state.
@@ -746,6 +639,113 @@ export default class AbstractPluginManager
       }
 
       return void 0;
+   }
+
+   /**
+    * Returns the enabled state of a plugin.
+    *
+    * @param {string}   pluginName - Plugin name to set state.
+    *
+    * @returns {boolean} - Operation success.
+    */
+   getPluginEnabled(pluginName)
+   {
+      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
+
+      const entry = this._pluginMap.get(pluginName);
+
+      return entry instanceof PluginEntry && entry.enabled;
+   }
+
+   /**
+    * Returns the event binding names registered on any associated plugin EventbusProxy.
+    *
+    * @param {string}   pluginName - Plugin name to set state.
+    *
+    * @returns {string[]} - Event binding names registered from the plugin.
+    */
+   getPluginEventNames(pluginName)
+   {
+      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
+
+      const entry = this._pluginMap.get(pluginName);
+
+      return entry instanceof PluginEntry && entry._eventbusProxy ? entry._eventbusProxy.eventNames : [];
+   }
+
+   /**
+    * Returns the enabled state of a list of plugins.
+    *
+    * @param {string[]}  pluginNames - An array / iterable of plugin names.
+    *
+    * @returns {Array<{pluginName: string, enabled: boolean}>} A list of objects with plugin name and enabled state.
+    */
+   getPluginsEnabled(pluginNames)
+   {
+      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      const results = [];
+
+      for (const pluginName of pluginNames)
+      {
+         results.push({ pluginName, enabled: this.getPluginEnabled(pluginName) });
+      }
+
+      return results;
+   }
+
+   /**
+    * Returns the event binding names registered from each plugin.
+    *
+    * @param {string|string[]} [nameOrList] - An array / iterable of plugin names.
+    *
+    * @returns {Array<{pluginName: string, events: string[]}>} A list of objects with plugin name and event binding
+    *                                                          names registered from the plugin.
+    */
+   getPluginsEventNames(nameOrList)
+   {
+      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof nameOrList === 'undefined') { nameOrList = this._pluginMap.keys(); }
+      if (typeof nameOrList === 'string') { nameOrList = [nameOrList]; }
+
+      const results = [];
+
+      for (const pluginName of nameOrList)
+      {
+         results.push({ pluginName, events: this.getPluginEventNames(pluginName) });
+      }
+
+      return results;
+   }
+
+   /**
+    * Returns the plugin names that registered the given event binding name.
+    *
+    * @param {string} eventName - An event name that plugins may have registered.
+    *
+    * @returns {string[]} A list of plugin names that has registered the given event name.
+    */
+   getPluginsByEventName(eventName)
+   {
+      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof eventName !== 'string') { throw new TypeError(`'eventName' is not a 'string'.`); }
+
+      const results = [];
+
+      const pluginEventNames = this.getPluginsEventNames();
+
+      for (const entry of pluginEventNames)
+      {
+         if (entry.events.indexOf(eventName) >= 0) { results.push(entry.pluginName); }
+      }
+
+      return results;
    }
 
    /**
