@@ -1,9 +1,9 @@
-import { deepFreeze }   from '@typhonjs-utils/object';
-import Eventbus         from '@typhonjs-plugin/eventbus';
-import EventbusProxy    from '@typhonjs-plugin/eventbus/EventbusProxy';
+import Eventbus            from '@typhonjs-plugin/eventbus';
+import { EventbusProxy }   from '@typhonjs-plugin/eventbus';
+import { deepFreeze }      from '@typhonjs-utils/object';
 
-import PluginEntry   from './PluginEntry.js';
-import PluginEvent   from './PluginEvent.js';
+import PluginEntry         from './PluginEntry.js';
+import PluginEvent         from './PluginEvent.js';
 
 import isValidConfig from "./isValidConfig.js";
 
