@@ -639,7 +639,7 @@ describe('NodePluginManager:', () =>
       await pluginManager.add({ name: 'namedExport.js', target: './test/fixture/esm/namedExport.js' });
 
       // Test loading dev dependency plugin
-      await pluginManager.add({ name: '@typhonjs-utils/package-json/plugin' });
+      await pluginManager.add({ name: '@typhonjs-utils/package-json' });
 
       // Test loading file URL
       await pluginManager.add({
