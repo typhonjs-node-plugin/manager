@@ -36,6 +36,8 @@ import PluginEntry   from './PluginEntry.js';
  * `plugins:has:plugin:method` - {@link AbstractPluginManager#hasPluginMethod}
  *
  * @example
+ *
+ * @implements {PluginSupportImpl}
  */
 export default class PluginSupport
 {
@@ -183,6 +185,32 @@ export default class PluginSupport
 
       return void 0;
    }
+
+// TODO FINISH IMPLEMENTING
+   // /**
+   //  * Returns the event binding names registered on any associated plugin EventbusProxy.
+   //  *
+   //  * @param {string}   pluginName - Plugin name to set state.
+   //  *
+   //  * @returns {string[]} - Event binding names registered from the plugin.
+   //  *
+   //  * @param {undefined|object}  [options] - Options object. If undefined all plugin enabled state is returned.
+   //  *
+   //  * @param {string|string[]}   [options.pluginNames] - Plugin name or list of names to get state.
+   //  *
+   //  * @returns {boolean|Array<{pluginName: string, enabled: boolean}>} - Event binding names registered from a
+   //  *                                                                    plugin, list of plugins, or all plugins.
+   //  */
+   // newPluginEventNames({ pluginNames = [] } = {})
+   // {
+   //    if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+   //
+   //    if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
+   //
+   //    const entry = this.pluginMap.get(pluginName);
+   //
+   //    return entry instanceof PluginEntry && entry.eventbusProxy ? entry.eventbusProxy.proxyEventNames : [];
+   // }
 
    /**
     * Returns the event binding names registered on any associated plugin EventbusProxy.
@@ -479,4 +507,26 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
  *                                    In Browser: `import-path`, `import-url`.
  *
  * @property {object}   plugin.options - Defines an object of options for the plugin.
+ */
+
+/**
+ * Interface for PluginSupport instances.
+ *
+ * @interface PluginSupportImpl
+ */
+
+/**
+ * A method to invoke when the plugin manager is destroyed.
+ *
+ * @function
+ * @async
+ * @name PluginSupportImpl#destroy
+ */
+
+/**
+ * A method to invoke when the plugin manager eventbus is set.
+ *
+ * @function
+ * @async
+ * @name PluginSupportImpl#setEventbus
  */

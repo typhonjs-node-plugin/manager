@@ -93,17 +93,17 @@ if (tests.pluginSupport)
 
          await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
-         let results = eventbus.triggerSync('plugins:get:plugins:event:names'); // pluginManager.getPluginsEventNames();
+         let results = eventbus.triggerSync('plugins:get:plugins:event:names');
 
          assert.strictEqual(JSON.stringify(results),
           '[{"pluginName":"PluginTest","events":["test:trigger","test:trigger2","test:trigger3"]},{"pluginName":"objectPluginTest","events":["test:trigger","test:trigger4","test:trigger5"]}]');
 
-         results = eventbus.triggerSync('plugins:get:plugins:event:names', 'PluginTest'); // pluginManager.getPluginsEventNames('PluginTest');
+         results = eventbus.triggerSync('plugins:get:plugins:event:names', 'PluginTest');
 
          assert.strictEqual(JSON.stringify(results),
           '[{"pluginName":"PluginTest","events":["test:trigger","test:trigger2","test:trigger3"]}]');
 
-         results = eventbus.triggerSync('plugins:get:plugins:event:names', 'objectPluginTest'); // pluginManager.getPluginsEventNames('pluginTest');
+         results = eventbus.triggerSync('plugins:get:plugins:event:names', 'objectPluginTest');
 
          assert.strictEqual(JSON.stringify(results),
           '[{"pluginName":"objectPluginTest","events":["test:trigger","test:trigger4","test:trigger5"]}]');
@@ -115,15 +115,15 @@ if (tests.pluginSupport)
 
          await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
 
-         let results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger'); // pluginManager.getPluginsByEventName('test:trigger');
+         let results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger');
 
          assert.strictEqual(JSON.stringify(results), '["PluginTest","objectPluginTest"]');
 
-         results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger2'); // pluginManager.getPluginsByEventName('test:trigger2');
+         results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger2');
 
          assert.strictEqual(JSON.stringify(results), '["PluginTest"]');
 
-         results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger4'); // pluginManager.getPluginsByEventName('test:trigger4');
+         results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger4');
 
          assert.strictEqual(JSON.stringify(results), '["objectPluginTest"]');
       });
@@ -133,7 +133,7 @@ if (tests.pluginSupport)
          await pluginManager.add({ name: 'PluginTestSync', instance: new PluginTestSync() });
          await pluginManager.add({ name: 'PluginTestNoName2', instance: new PluginTestNoName2() });
 
-         const results = eventbus.triggerSync('plugins:get:plugin:method:names'); // pluginManager.getPluginMethodNames();
+         const results = eventbus.triggerSync('plugins:get:plugin:method:names');
 
          assert.isArray(results);
          assert.lengthOf(results, 2);
@@ -148,7 +148,7 @@ if (tests.pluginSupport)
          await pluginManager.add({ name: 'PluginTestSync', instance: new PluginTestSync() });
          await pluginManager.add({ name: 'PluginTestSync2', instance: new PluginTestSync() });
 
-         const results = eventbus.triggerSync('plugins:get:plugin:names'); // pluginManager.getPluginNames();
+         const results = eventbus.triggerSync('plugins:get:plugin:names');
 
          assert.isArray(results);
          assert.lengthOf(results, 2);

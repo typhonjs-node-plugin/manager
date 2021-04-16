@@ -6,15 +6,17 @@ import { PluginSupport }   from '../../src/node/index.js';
 import tests               from '../utils/tests.js';
 
 const s_ALL_EVENTS = [
-   'plugins:get:all:plugin:data',
-   'plugins:get:method:names',
-   'plugins:get:plugin:data',
    'plugins:get:plugin:event:names',
+   'plugins:get:plugins:event:names',
+
+   'plugins:get:all:plugin:data',
+   'plugins:get:plugin:data',
+
+   'plugins:get:method:names',
    'plugins:get:plugin:method:names',
    'plugins:get:plugin:names',
    'plugins:get:plugin:options',
    'plugins:get:plugins:by:event:name',
-   'plugins:get:plugins:event:names',
    'plugins:has:method',
    'plugins:has:plugin:method'
 ];
@@ -28,16 +30,10 @@ if (tests.apiErrorsPluginSupport)
 {
    describe('API Errors (PluginSupport):', () =>
    {
-      let eventbus, pluginManager;
-
-      beforeEach(() =>
-      {
-         pluginManager = new NodePluginManager({ PluginSupport });
-         eventbus = pluginManager.getEventbus();
-      });
-
       describe('PluginManager destroyed (artificial) - all triggered events throw:', () =>
       {
+         let eventbus, pluginManager;
+
          beforeEach(() =>
          {
             pluginManager = new NodePluginManager({ PluginSupport });
@@ -59,6 +55,8 @@ if (tests.apiErrorsPluginSupport)
 
       describe('PluginSupport manager reference lost (artificial) - all triggered events throw:', () =>
       {
+         let eventbus, pluginManager;
+
          beforeEach(() =>
          {
             pluginManager = new NodePluginManager({ PluginSupport });

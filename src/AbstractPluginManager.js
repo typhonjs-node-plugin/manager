@@ -1,11 +1,11 @@
-import Eventbus            from '@typhonjs-plugin/eventbus';
-import { EventbusProxy }   from '@typhonjs-plugin/eventbus';
-import { deepFreeze }      from '@typhonjs-utils/object';
+import Eventbus                     from '@typhonjs-plugin/eventbus';
+import { EventbusProxy }            from '@typhonjs-plugin/eventbus';
+import { deepFreeze, isIterable }   from '@typhonjs-utils/object';
 
-import PluginEntry         from './PluginEntry.js';
-import PluginEvent         from './PluginEvent.js';
+import PluginEntry                  from './PluginEntry.js';
+import PluginEvent                  from './PluginEvent.js';
 
-import isValidConfig       from './isValidConfig.js';
+import isValidConfig                from './isValidConfig.js';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -140,7 +140,7 @@ export default class AbstractPluginManager
     * @param {boolean}  [options.throwNoPlugin=false] - If true then when no plugin is matched to be invoked an
     *                                                   exception will be thrown.
     *
-    * @param {Function}  [options.PluginSupport] - Optional class to pass in which extends the plugin manager. A default
+    * @param {PluginSupportImpl}  [options.PluginSupport] - Optional class to pass in which extends the plugin manager. A default
     *                                              implementation is available: {@link PluginSupport}
     */
    constructor(options = {})
@@ -177,9 +177,9 @@ export default class AbstractPluginManager
       this._eventbusProxies = [];
 
       /**
-       * Provides a class to extend the plugin manager through the eventbus API.
+       * Provides an instance of PluginSupportImpl interface to extend the plugin manager through the eventbus API.
        *
-       * @type {object}
+       * @type {PluginSupportImpl}
        * @private
        */
       this._pluginSupport = options.PluginSupport !== void 0 ? new options.PluginSupport(this) : null;
@@ -516,19 +516,20 @@ export default class AbstractPluginManager
    /**
     * Returns the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {undefined|object}  [options] - Options object.
+    * @param {undefined|object}  [options] - Options object. If undefined all plugin enabled state is returned.
     *
-    * @param {string|string[]}   [options.pluginNames] - Plugin name or list of names to get state.
+    * @param {string|Iterable<string>}   [options.pluginNames] - Plugin name or iterable list of names to get state.
     *
-    * @returns {boolean|Array<{pluginName: string, enabled: boolean}>} - Operation success.
+    * @returns {boolean|Array<{pluginName: string, enabled: boolean}>} - Enabled state for single plugin or array of
+    *                                                                    results for multiple plugins.
     */
    getPluginsEnabled({ pluginNames = [] } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof pluginNames !== 'string' && !Array.isArray(pluginNames))
+      if (typeof pluginNames !== 'string' && !isIterable(pluginNames))
       {
-         throw new TypeError(`'pluginNames' is not a string or array.`);
+         throw new TypeError(`'pluginNames' is not a string or iterable.`);
       }
 
       // Return a single boolean enabled result for a single plugin if found.
@@ -546,14 +547,16 @@ export default class AbstractPluginManager
          for (const pluginName of pluginNames)
          {
             const entry = this._pluginMap.get(pluginName);
-            results.push({ pluginName, enabled: entry instanceof PluginEntry && entry.enabled });
+            const loaded = entry instanceof PluginEntry;
+            results.push({ pluginName, enabled: loaded && entry.enabled, loaded });
          }
       }
       else // Return all plugins enabled state.
       {
          for (const [pluginName, entry] of this._pluginMap.entries())
          {
-            results.push({ pluginName, enabled: entry instanceof PluginEntry && entry.enabled });
+            const loaded = entry instanceof PluginEntry;
+            results.push({ pluginName, enabled: loaded && entry.enabled, loaded });
          }
       }
 
@@ -1570,10 +1573,25 @@ const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, na
  *                                         thrown.
  */
 
+// TODO THIS NEEDS REFINEMENT
 /**
- * @typedef {object} PluginSupport
+ * Interface for PluginSupport implementation classes.
  *
- * @property {Function} destroy - A method to invoke when the plugin manager is destroyed.
+ * @interface PluginSupportImpl
+ */
+
+/**
+ * A method to invoke when the plugin manager is destroyed.
  *
- * @property {Function} setEventbus - A method to invoke when the plugin manager eventbus is set.
+ * @function
+ * @async
+ * @name PluginSupportImpl#destroy
+ */
+
+/**
+ * A method to invoke when the plugin manager eventbus is set.
+ *
+ * @function
+ * @async
+ * @name PluginSupportImpl#setEventbus
  */
