@@ -46,12 +46,14 @@ export default class PluginSupport
 
    get isDestroyed()
    {
-      return this._pluginManager === null || this._pluginManager._pluginMap === null;
+      return this._pluginManager === null || this._pluginManager === void 0 ||
+       this._pluginManager._pluginMap === null || this._pluginManager._pluginMap === void 0;
    }
 
    get pluginMap()
    {
-      if (this._pluginManager === null || this._pluginManager._pluginMap === null)
+      /* c8 ignore next 4 */
+      if (this.isDestroyed)
       {
          throw new ReferenceError('This PluginManager instance has been destroyed.');
       }
@@ -70,7 +72,7 @@ export default class PluginSupport
     */
    async destroy({ eventbus, eventPrepend } = {})
    {
-      if (eventbus !== null)
+      if (eventbus !== null && eventbus !== void 0)
       {
          eventbus.off(`${eventPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
          eventbus.off(`${eventPrepend}:get:method:names`, this.getMethodNames, this);
@@ -109,7 +111,7 @@ export default class PluginSupport
       // Return all plugin data if enabled is not defined.
       const allPlugins = enabled === void 0;
 
-      for (const entry of this._pluginMap.values())
+      for (const entry of this.pluginMap.values())
       {
          if (allPlugins || entry.enabled === enabled)
          {
@@ -144,7 +146,7 @@ export default class PluginSupport
       const allEnabled = typeof enabled === 'undefined';
       const allNames = typeof pluginName === 'undefined';
 
-      for (const entry of this._pluginMap.values())
+      for (const entry of this.pluginMap.values())
       {
          if (entry.instance && (allEnabled || entry.enabled === enabled) && (allNames || entry.name === pluginName))
          {
@@ -172,7 +174,7 @@ export default class PluginSupport
 
       if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
 
-      const entry = this._pluginMap.get(pluginName);
+      const entry = this.pluginMap.get(pluginName);
 
       if (entry instanceof PluginEntry)
       {
@@ -195,9 +197,9 @@ export default class PluginSupport
 
       if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
 
-      const entry = this._pluginMap.get(pluginName);
+      const entry = this.pluginMap.get(pluginName);
 
-      return entry instanceof PluginEntry && entry._eventbusProxy ? entry._eventbusProxy.proxyEventNames : [];
+      return entry instanceof PluginEntry && entry.eventbusProxy ? entry.eventbusProxy.proxyEventNames : [];
    }
 
    /**
@@ -212,7 +214,7 @@ export default class PluginSupport
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof nameOrList === 'undefined') { nameOrList = this._pluginMap.keys(); }
+      if (typeof nameOrList === 'undefined') { nameOrList = this.pluginMap.keys(); }
       if (typeof nameOrList === 'string') { nameOrList = [nameOrList]; }
 
       const results = [];
@@ -269,7 +271,7 @@ export default class PluginSupport
       const results = [];
       const allPlugins = typeof enabled === 'undefined';
 
-      for (const entry of this._pluginMap.values())
+      for (const entry of this.pluginMap.values())
       {
          if (entry.instance && (allPlugins || entry.enabled === enabled))
          {
@@ -304,11 +306,11 @@ export default class PluginSupport
       }
 
       // Return all plugin names if enabled is not defined.
-      if (enabled === void 0) { return Array.from(this._pluginMap.keys()); }
+      if (enabled === void 0) { return Array.from(this.pluginMap.keys()); }
 
       const results = [];
 
-      for (const entry of this._pluginMap.values())
+      for (const entry of this.pluginMap.values())
       {
          if (entry.enabled === enabled) { results.push(entry.name); }
       }
@@ -331,7 +333,7 @@ export default class PluginSupport
 
       let result;
 
-      const entry = this._pluginMap.get(pluginName);
+      const entry = this.pluginMap.get(pluginName);
 
       if (entry instanceof PluginEntry) { result = JSON.parse(JSON.stringify(entry.data.plugin.options)); }
 
@@ -351,7 +353,7 @@ export default class PluginSupport
 
       if (typeof methodName !== 'string') { throw new TypeError(`'methodName' is not a string.`); }
 
-      for (const plugin of this._pluginMap.values())
+      for (const plugin of this.pluginMap.values())
       {
          if (typeof plugin.instance[methodName] === 'function') { return true; }
       }
@@ -375,7 +377,7 @@ export default class PluginSupport
       if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
       if (typeof methodName !== 'string') { throw new TypeError(`'methodName' is not a string.`); }
 
-      const plugin = this._pluginMap.get(pluginName);
+      const plugin = this.pluginMap.get(pluginName);
 
       return plugin instanceof PluginEntry && typeof plugin[methodName] === 'function';
    }
@@ -397,7 +399,7 @@ export default class PluginSupport
     */
    async setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend } = {})
    {
-      if (oldEventbus !== null)
+      if (oldEventbus !== null && oldEventbus !== void 0)
       {
          oldEventbus.off(`${oldPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
          oldEventbus.off(`${oldPrepend}:get:method:names`, this.getMethodNames, this);
@@ -412,19 +414,24 @@ export default class PluginSupport
          oldEventbus.off(`${oldPrepend}:has:plugin:method`, this.hasPluginMethod, this);
       }
 
-      newEventbus.on(`${newPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
-      newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this);
-      newEventbus.on(`${newPrepend}:get:plugin:data`, this.getPluginData, this);
-      newEventbus.on(`${newPrepend}:get:plugin:event:names`, this.getPluginEventNames, this);
-      newEventbus.on(`${newPrepend}:get:plugin:method:names`, this.getPluginMethodNames, this);
-      newEventbus.on(`${newPrepend}:get:plugin:names`, this.getPluginNames, this);
-      newEventbus.on(`${newPrepend}:get:plugin:options`, this.getPluginOptions, this);
-      newEventbus.on(`${newPrepend}:get:plugins:by:event:name`, this.getPluginsByEventName, this);
-      newEventbus.on(`${newPrepend}:get:plugins:event:names`, this.getPluginsEventNames, this);
-      newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this);
-      newEventbus.on(`${newPrepend}:has:plugin:method`, this.hasPluginMethod, this);
+      if (newEventbus !== null && newEventbus !== void 0)
+      {
+         newEventbus.on(`${newPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
+         newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this);
+         newEventbus.on(`${newPrepend}:get:plugin:data`, this.getPluginData, this);
+         newEventbus.on(`${newPrepend}:get:plugin:event:names`, this.getPluginEventNames, this);
+         newEventbus.on(`${newPrepend}:get:plugin:method:names`, this.getPluginMethodNames, this);
+         newEventbus.on(`${newPrepend}:get:plugin:names`, this.getPluginNames, this);
+         newEventbus.on(`${newPrepend}:get:plugin:options`, this.getPluginOptions, this);
+         newEventbus.on(`${newPrepend}:get:plugins:by:event:name`, this.getPluginsByEventName, this);
+         newEventbus.on(`${newPrepend}:get:plugins:event:names`, this.getPluginsEventNames, this);
+         newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this);
+         newEventbus.on(`${newPrepend}:has:plugin:method`, this.hasPluginMethod, this);
+      }
    }
 }
+
+// Module Private ----------------------------------------------------------------------------------------------------
 
 /**
  * Walks an objects inheritance tree collecting property names stopping before `Object` is reached.

@@ -1,18 +1,17 @@
-import path                from 'path';
-import url                 from 'url';
+import path                         from 'path';
+import url                          from 'url';
 
-import { assert, expect }  from 'chai';
+import { assert, expect }           from 'chai';
 
-import Eventbus            from '@typhonjs-plugin/eventbus';
-import { EventbusProxy }   from '@typhonjs-plugin/eventbus';
+import { Eventbus, EventbusProxy }  from '../../src/node/index.js';
 
-import NodePluginManager   from '../../src/node/index.js';
+import NodePluginManager            from '../../src/node/index.js';
 
-import PluginTest          from './plugins/PluginTest.js';
-import PluginTestAsync     from './plugins/PluginTestAsync.js';
-import PluginTestSync      from './plugins/PluginTestSync.js';
+import PluginTest                   from './plugins/PluginTest.js';
+import PluginTestAsync              from './plugins/PluginTestAsync.js';
+import PluginTestSync               from './plugins/PluginTestSync.js';
 
-import tests               from '../utils/tests.js';
+import tests                        from '../utils/tests.js';
 
 if (tests.runtimeTests)
 {

@@ -10,7 +10,7 @@ export default class PluginEntry
     *
     * @param {string}      name - The plugin name.
     *
-    * @param {object}      data - PluginData describing the plugin, manager, and optional module data.
+    * @param {PluginData}  data -  describing the plugin, manager, and optional module data.
     *
     * @param {object}      instance - The loaded plugin instance.
     *
@@ -22,7 +22,7 @@ export default class PluginEntry
       /**
        * Data describing the plugin, manager, and optional module data.
        *
-       * @type {object}
+       * @type {PluginData}
        * @private
        */
       this._data = data;
@@ -84,7 +84,7 @@ export default class PluginEntry
    /**
     * Get plugin data.
     *
-    * @returns {object} The associated PluginData
+    * @returns {PluginData} The associated PluginData.
     */
    get data() { return this._data; }
 
@@ -132,3 +132,30 @@ export default class PluginEntry
     */
    get name() { return this._name; }
 }
+
+/**
+ * @typedef {object} PluginData
+ *
+ * @property {object}   manager - Data about the plugin manager
+ *
+ * @property {string}   manager.eventPrepend - The plugin manager event prepend string.
+ *
+ * @property {object}   module - Optional object hash to associate with plugin.
+ *
+ * @property {object}   plugin - Data about the plugin.
+ *
+ * @property {string}   plugin.name - The name of the plugin.
+ *
+ * @property {string}   plugin.scopedName - The name of the plugin with the plugin managers event prepend string.
+ *
+ * @property {string}   plugin.target - Defines the target NPM module to loaded or defines a local file (full
+ *                               path or relative to current working directory to load.
+ *
+ * @property {string}   plugin.targetEscaped - Provides the target, but properly escaped for RegExp usage.
+ *
+ * @property {string}   plugin.type - The type of plugin: `instance` +
+ *                                    In Node: `import-module`, `import-path`, `require-module`, or `require-path`.
+ *                                    In Browser: `import-path`, `import-url`.
+ *
+ * @property {object}   plugin.options - Defines an object of options for the plugin.
+ */

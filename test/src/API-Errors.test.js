@@ -5,7 +5,7 @@ import PluginEntry         from '../../src/PluginEntry.js';
 
 import tests               from '../utils/tests.js';
 
-if (tests.allErrors)
+if (tests.apiErrors)
 {
    describe('API Errors:', () =>
    {
@@ -103,21 +103,6 @@ if (tests.allErrors)
              'This PluginManager instance has been destroyed.');
 
             await expect(pluginManager.destroy()).to.be.rejectedWith(ReferenceError,
-             'This PluginManager instance has been destroyed.');
-
-            expect(() => pluginManager.getPluginEventNames()).to.throw(ReferenceError,
-             'This PluginManager instance has been destroyed.');
-
-            expect(() => pluginManager.getPluginsEnabled()).to.throw(ReferenceError,
-             'This PluginManager instance has been destroyed.');
-
-            expect(() => pluginManager.getPluginsEventNames()).to.throw(ReferenceError,
-             'This PluginManager instance has been destroyed.');
-
-            expect(() => pluginManager.getPluginsByEventName()).to.throw(ReferenceError,
-             'This PluginManager instance has been destroyed.');
-
-            expect(() => pluginManager.getAllPluginData()).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
          });
       });

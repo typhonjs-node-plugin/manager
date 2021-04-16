@@ -3,7 +3,8 @@
  */
 
 export default {
-   allErrors: true,
+   apiErrors: true,
+   apiErrorsPluginSupport: true,
    isValidConfig: true,
    pluginSupport: true,
    runtimeTests: true
