@@ -3,7 +3,7 @@ import url                 from 'url';
 
 import { assert }          from 'chai';
 
-import NodePluginManager   from '../../src/node/NodePluginManager.js';
+import NodePluginManager   from '../../src/node/index.js';
 
 import tests               from '../utils/tests.js';
 

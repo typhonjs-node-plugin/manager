@@ -36,13 +36,13 @@ import isValidConfig       from './isValidConfig.js';
  *
  * `plugins:get:all:plugin:data` - {@link AbstractPluginManager#getAllPluginData}
  *
+ * `plugins:get:enabled` - {@link AbstractPluginManager#getPluginsEnabled}
+ *
  * `plugins:get:method:names` - {@link AbstractPluginManager#getMethodNames}
  *
  * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
  *
  * `plugins:get:plugin:data` - {@link AbstractPluginManager#getPluginData}
- *
- * `plugins:get:plugin:enabled` - {@link AbstractPluginManager#getPluginEnabled}
  *
  * `plugins:get:plugin:event:names` - {@link AbstractPluginManager#getPluginEventNames}
  *
@@ -51,8 +51,6 @@ import isValidConfig       from './isValidConfig.js';
  * `plugins:get:plugin:names` - {@link AbstractPluginManager#getPluginNames}
  *
  * `plugins:get:plugin:options` - {@link AbstractPluginManager#getPluginOptions}
- *
- * `plugins:get:plugins:enabled` - {@link AbstractPluginManager#getPluginsEnabled}
  *
  * `plugins:get:plugins:by:event:name` - {@link AbstractPluginManager#getPluginsByEventName}
  *
@@ -68,11 +66,9 @@ import isValidConfig       from './isValidConfig.js';
  *
  * `plugins:is:valid:config` - {@link AbstractPluginManager#isValidConfig}
  *
+ * `plugins:set:enabled` - {@link AbstractPluginManager#setPluginsEnabled}
+ *
  * `plugins:set:options` - {@link AbstractPluginManager#setOptions}
- *
- * `plugins:set:plugin:enabled` - {@link AbstractPluginManager#setPluginEnabled}
- *
- * `plugins:set:plugins:enabled` - {@link AbstractPluginManager#setPluginsEnabled}
  *
  * `plugins:sync:invoke` - {@link AbstractPluginManager#invokeSync}
  *
@@ -453,15 +449,14 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${this._eventPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
+         this._eventbus.off(`${this._eventPrepend}:get:enabled`, this.getPluginsEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:get:method:names`, this.getMethodNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
-         this._eventbus.off(`${this._eventPrepend}:get:plugin:enabled`, this.getPluginEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugin:data`, this.getPluginData, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugin:event:names`, this.getPluginEventNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugin:method:names`, this.getPluginMethodNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugin:names`, this.getPluginNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugin:options`, this.getPluginOptions, this);
-         this._eventbus.off(`${this._eventPrepend}:get:plugins:enabled`, this.getPluginsEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugins:by:event:name`, this.getPluginsByEventName, this);
          this._eventbus.off(`${this._eventPrepend}:get:plugins:event:names`, this.getPluginsEventNames, this);
          this._eventbus.off(`${this._eventPrepend}:has:method`, this.hasMethod, this);
@@ -469,9 +464,8 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          this._eventbus.off(`${this._eventPrepend}:invoke`, this.invoke, this);
          this._eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
+         this._eventbus.off(`${this._eventPrepend}:set:enabled`, this.setPluginsEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:set:plugin:enabled`, this.setPluginEnabled, this);
-         this._eventbus.off(`${this._eventPrepend}:set:plugins:enabled`, this.setPluginsEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:sync:invoke`, this.invokeSync, this);
          this._eventbus.off(`${this._eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
       }
@@ -614,21 +608,50 @@ export default class AbstractPluginManager
    }
 
    /**
-    * Returns the enabled state of a plugin.
+    * Returns the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {string}   pluginName - Plugin name to set state.
+    * @param {undefined|object}  [options] - Options object.
     *
-    * @returns {boolean} - Operation success.
+    * @param {string|string[]}   [options.pluginNames] - Plugin name or list of names to get state.
+    *
+    * @returns {boolean|Array<{pluginName: string, enabled: boolean}>} - Operation success.
     */
-   getPluginEnabled(pluginName)
+   getPluginsEnabled({ pluginNames = [] } = {})
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
+      if (typeof pluginNames !== 'string' && !Array.isArray(pluginNames))
+      {
+         throw new TypeError(`'pluginNames' is not a string or array.`);
+      }
 
-      const entry = this._pluginMap.get(pluginName);
+      // Return a single boolean enabled result for a single plugin if found.
+      if (typeof pluginNames === 'string')
+      {
+         const entry = this._pluginMap.get(pluginNames);
+         return entry instanceof PluginEntry && entry.enabled;
+      }
 
-      return entry instanceof PluginEntry && entry.enabled;
+      const results = [];
+
+      // If there are plugin names specified then limit returned results to just them.
+      if (pluginNames.length)
+      {
+         for (const pluginName of pluginNames)
+         {
+            const entry = this._pluginMap.get(pluginName);
+            results.push({ pluginName, enabled: entry instanceof PluginEntry && entry.enabled });
+         }
+      }
+      else // Return all plugins enabled state.
+      {
+         for (const [pluginName, entry] of this._pluginMap.entries())
+         {
+            results.push({ pluginName, enabled: entry instanceof PluginEntry && entry.enabled });
+         }
+      }
+
+      return results;
    }
 
    /**
@@ -646,28 +669,7 @@ export default class AbstractPluginManager
 
       const entry = this._pluginMap.get(pluginName);
 
-      return entry instanceof PluginEntry && entry._eventbusProxy ? entry._eventbusProxy.eventNames : [];
-   }
-
-   /**
-    * Returns the enabled state of a list of plugins.
-    *
-    * @param {string[]}  pluginNames - An array / iterable of plugin names.
-    *
-    * @returns {Array<{pluginName: string, enabled: boolean}>} A list of objects with plugin name and enabled state.
-    */
-   getPluginsEnabled(pluginNames)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      const results = [];
-
-      for (const pluginName of pluginNames)
-      {
-         results.push({ pluginName, enabled: this.getPluginEnabled(pluginName) });
-      }
-
-      return results;
+      return entry instanceof PluginEntry && entry._eventbusProxy ? entry._eventbusProxy.proxyEventNames : [];
    }
 
    /**
@@ -1307,15 +1309,14 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${oldPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
+         this._eventbus.off(`${oldPrepend}:get:enabled`, this.getPluginsEnabled, this);
          this._eventbus.off(`${oldPrepend}:get:method:names`, this.getMethodNames, this);
          this._eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
-         this._eventbus.off(`${oldPrepend}:get:plugin:enabled`, this.getPluginEnabled, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:data`, this.getPluginData, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:event:names`, this.getPluginEventNames, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:method:names`, this.getPluginMethodNames, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:names`, this.getPluginNames, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:options`, this.getPluginOptions, this);
-         this._eventbus.off(`${oldPrepend}:get:plugins:enabled`, this.getPluginsEnabled, this);
          this._eventbus.off(`${oldPrepend}:get:plugins:by:event:name`, this.getPluginsByEventName, this);
          this._eventbus.off(`${oldPrepend}:get:plugins:event:names`, this.getPluginsEventNames, this);
          this._eventbus.off(`${oldPrepend}:has:method`, this.hasMethod, this);
@@ -1323,9 +1324,8 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          this._eventbus.off(`${oldPrepend}:invoke`, this.invoke, this);
          this._eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
+         this._eventbus.off(`${oldPrepend}:set:enabled`, this.setPluginsEnabled, this);
          this._eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
-         this._eventbus.off(`${oldPrepend}:set:plugin:enabled`, this.setPluginEnabled, this);
-         this._eventbus.off(`${oldPrepend}:set:plugins:enabled`, this.setPluginsEnabled, this);
          this._eventbus.off(`${oldPrepend}:sync:invoke`, this.invokeSync, this);
          this._eventbus.off(`${oldPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
 
@@ -1348,15 +1348,14 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
       eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
       eventbus.on(`${eventPrepend}:get:all:plugin:data`, this.getAllPluginData, this);
+      eventbus.on(`${eventPrepend}:get:enabled`, this.getPluginsEnabled, this);
       eventbus.on(`${eventPrepend}:get:method:names`, this.getMethodNames, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
       eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this);
-      eventbus.on(`${eventPrepend}:get:plugin:enabled`, this.getPluginEnabled, this);
       eventbus.on(`${eventPrepend}:get:plugin:event:names`, this.getPluginEventNames, this);
       eventbus.on(`${eventPrepend}:get:plugin:method:names`, this.getPluginMethodNames, this);
       eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this);
       eventbus.on(`${eventPrepend}:get:plugin:options`, this.getPluginOptions, this);
-      eventbus.on(`${eventPrepend}:get:plugins:enabled`, this.getPluginsEnabled, this);
       eventbus.on(`${eventPrepend}:get:plugins:by:event:name`, this.getPluginsByEventName, this);
       eventbus.on(`${eventPrepend}:get:plugins:event:names`, this.getPluginsEventNames, this);
       eventbus.on(`${eventPrepend}:has:method`, this.hasMethod, this);
@@ -1364,9 +1363,8 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:has:plugin:method`, this.hasPluginMethod, this);
       eventbus.on(`${eventPrepend}:invoke`, this.invoke, this);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
+      eventbus.on(`${eventPrepend}:set:enabled`, this.setPluginsEnabled, this);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
-      eventbus.on(`${eventPrepend}:set:plugin:enabled`, this.setPluginEnabled, this);
-      eventbus.on(`${eventPrepend}:set:plugins:enabled`, this.setPluginsEnabled, this);
       eventbus.on(`${eventPrepend}:sync:invoke`, this.invokeSync, this);
       eventbus.on(`${eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
 
@@ -1421,62 +1419,62 @@ export default class AbstractPluginManager
    }
 
    /**
-    * Enables or disables a single plugin.
+    * Sets the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {string}   pluginName - Plugin name to set state.
-    * @param {boolean}  enabled - The new enabled state.
+    * @param {object}            options - Options object.
     *
-    * @returns {boolean} - Operation success.
+    * @param {boolean}           options.enabled - The enabled state.
+    *
+    * @param {string|string[]}   [options.pluginNames] - Plugin name or list of names to set state.
     */
-   setPluginEnabled(pluginName, enabled)
+   setPluginsEnabled({ enabled, pluginNames = [] } = {})
    {
       if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
+      if (typeof pluginNames !== 'string' && !Array.isArray(pluginNames))
+      {
+         throw new TypeError(`'pluginNames' is not a string or array.`);
+      }
+
       if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
 
-      const entry = this._pluginMap.get(pluginName);
-
-      if (entry instanceof PluginEntry)
+      const setEntryEnabled = (entry) =>
       {
-         entry.enabled = enabled;
-
-         // Invoke `typhonjs:plugin:manager:plugin:enabled` allowing external code to react to plugin enabled state.
-         if (this._eventbus)
+         if (entry instanceof PluginEntry)
          {
-            this._eventbus.trigger(`typhonjs:plugin:manager:plugin:enabled`, Object.assign({
-               enabled
-            }, JSON.parse(JSON.stringify(entry.data))));
+            entry.enabled = enabled;
+
+            // Invoke `typhonjs:plugin:manager:plugin:enabled` allowing external code to react to plugin enabled state.
+            if (this._eventbus)
+            {
+               this._eventbus.trigger(`typhonjs:plugin:manager:plugin:enabled`, Object.assign({
+                  enabled
+               }, JSON.parse(JSON.stringify(entry.data))));
+            }
          }
+      };
 
-         return true;
-      }
-
-      return false;
-   }
-
-   /**
-    * Enables or disables a set of plugins given an array or iterabe of plugin names.
-    *
-    * @param {string[]} pluginNames - An array / iterable of plugin names.
-    * @param {boolean}  enabled - The new enabled state.
-    *
-    * @returns {boolean} - Operation success.
-    */
-   setPluginsEnabled(pluginNames, enabled)
-   {
-      if (this._pluginMap === null) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
-
-      let success = true;
-
-      for (const pluginName of pluginNames)
+      // Set enabled state for a single plugin if found.
+      if (typeof pluginNames === 'string')
       {
-         if (!this.setPluginEnabled(pluginName, enabled)) { success = false; }
+         setEntryEnabled(this._pluginMap.get(pluginNames));
       }
 
-      return success;
+      // If there are plugin names specified then limit setting enabled state just them.
+      if (pluginNames.length)
+      {
+         for (const pluginName of pluginNames)
+         {
+            setEntryEnabled(this._pluginMap.get(pluginName));
+         }
+      }
+      else // Set all plugins enabled state.
+      {
+         for (const pluginEntry of this._pluginMap.values())
+         {
+            setEntryEnabled(pluginEntry);
+         }
+      }
    }
 
    /**

@@ -1,6 +1,6 @@
 import { expect }          from 'chai';
 
-import NodePluginManager   from '../../src/node/NodePluginManager.js';
+import NodePluginManager   from '../../src/node/index.js';
 import PluginEntry         from '../../src/PluginEntry.js';
 
 import tests               from '../utils/tests.js';
