@@ -1,13 +1,13 @@
 import { assert }                   from 'chai';
 
-import NodePluginManager            from '../../src/node/index.js';
-import { Eventbus, PluginSupport }  from '../../src/node/index.js';
+import NodePluginManager            from '../../../src/node/index.js';
+import { Eventbus, PluginSupport }  from '../../../src/node/index.js';
 
-import PluginTest                   from './plugins/PluginTest.js';
-import PluginTestNoName2            from './plugins/PluginTestNoName2.js';
-import PluginTestSync               from './plugins/PluginTestSync.js';
+import PluginTest                   from '../../fixture/plugins/PluginTest.js';
+import PluginTestNoName2            from '../../fixture/plugins/PluginTestNoName2.js';
+import PluginTestSync               from '../../fixture/plugins/PluginTestSync.js';
 
-import tests                        from '../utils/tests.js';
+import tests from '../../utils/tests.js';
 
 // const s_ALL_EVENTS = [
 //    'plugins:get:all:plugin:data',
@@ -91,7 +91,7 @@ if (tests.pluginSupport)
       {
          await pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
-         await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+         await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
          let results = eventbus.triggerSync('plugins:get:plugins:event:names');
 
@@ -113,7 +113,7 @@ if (tests.pluginSupport)
       {
          await pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
-         await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+         await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
          let results = eventbus.triggerSync('plugins:get:plugins:by:event:name', 'test:trigger');
 

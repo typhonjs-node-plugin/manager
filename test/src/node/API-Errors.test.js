@@ -1,9 +1,9 @@
 import { expect }          from 'chai';
 
-import NodePluginManager   from '../../src/node/index.js';
-import PluginEntry         from '../../src/PluginEntry.js';
+import NodePluginManager   from '../../../src/node/index.js';
+import PluginEntry         from '../../../src/PluginEntry.js';
 
-import tests               from '../utils/tests.js';
+import tests               from '../../utils/tests.js';
 
 if (tests.apiErrors)
 {
@@ -84,7 +84,8 @@ if (tests.apiErrors)
 
          it('invokeAsyncEvent - throws when called with empty parameters', async () =>
          {
-            await expect(pluginManager.invokeAsyncEvent()).to.be.rejectedWith(TypeError, `'methodName' is not a string.`);
+            await expect(pluginManager.invokeAsyncEvent()).to.be.rejectedWith(TypeError,
+             `'methodName' is not a string.`);
          });
 
          it('invokeSyncEvent - throws when called with empty parameters', () =>

@@ -3,15 +3,14 @@ import url                          from 'url';
 
 import { assert, expect }           from 'chai';
 
-import { Eventbus, EventbusProxy }  from '../../src/node/index.js';
+import NodePluginManager            from '../../../src/node/index.js';
+import { Eventbus, EventbusProxy }  from '../../../src/node/index.js';
 
-import NodePluginManager            from '../../src/node/index.js';
+import PluginTest                   from '../../fixture/plugins/PluginTest.js';
+import PluginTestAsync              from '../../fixture/plugins/PluginTestAsync.js';
+import PluginTestSync               from '../../fixture/plugins/PluginTestSync.js';
 
-import PluginTest                   from './plugins/PluginTest.js';
-import PluginTestAsync              from './plugins/PluginTestAsync.js';
-import PluginTestSync               from './plugins/PluginTestSync.js';
-
-import tests                        from '../utils/tests.js';
+import tests                        from '../../utils/tests.js';
 
 if (tests.runtimeTests)
 {
@@ -162,7 +161,7 @@ if (tests.runtimeTests)
 
          it('w/ static plugin and missing method has empty event result', async () =>
          {
-            await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+            await pluginManager.add({ name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('nop');
 
@@ -173,7 +172,7 @@ if (tests.runtimeTests)
 
          it('w/ module plugin and missing method has empty event result', async () =>
          {
-            await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
+            await pluginManager.add({ name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('nop');
 
@@ -197,7 +196,7 @@ if (tests.runtimeTests)
 
          it('static plugin has valid test / class result (pass through)', async () =>
          {
-            await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+            await pluginManager.add({ name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
 
@@ -209,7 +208,7 @@ if (tests.runtimeTests)
 
          it('module plugin has valid test / class result (pass through)', async () =>
          {
-            await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
+            await pluginManager.add({ name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
 
@@ -221,7 +220,7 @@ if (tests.runtimeTests)
 
          it('has valid test / object result (pass through)', async () =>
          {
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
 
@@ -235,7 +234,7 @@ if (tests.runtimeTests)
             // No await necessary as instance used.
             pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
 
@@ -260,7 +259,7 @@ if (tests.runtimeTests)
 
          it('has valid test / object result (copy)', async () =>
          {
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('test', testData);
 
@@ -274,7 +273,7 @@ if (tests.runtimeTests)
             // No await necessary as instance used.
             pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = await pluginManager.invokeAsyncEvent('test', testData);
 
@@ -361,7 +360,7 @@ if (tests.runtimeTests)
 
          it('w/ static plugin and missing method has empty event result', async () =>
          {
-            await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+            await pluginManager.add({ name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('nop');
 
@@ -372,7 +371,7 @@ if (tests.runtimeTests)
 
          it('w/ module plugin and missing method has empty event result', async () =>
          {
-            await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
+            await pluginManager.add({ name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('nop');
 
@@ -396,7 +395,7 @@ if (tests.runtimeTests)
 
          it('static plugin has valid test / class result (pass through)', async () =>
          {
-            await pluginManager.add({ name: 'StaticPluginTest', target: './test/src/plugins/StaticPluginTest.js' });
+            await pluginManager.add({ name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -408,7 +407,7 @@ if (tests.runtimeTests)
 
          it('module plugin has valid test / class result (pass through)', async () =>
          {
-            await pluginManager.add({ name: 'modulePluginTest', target: './test/src/plugins/modulePluginTest.js' });
+            await pluginManager.add({ name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -420,7 +419,7 @@ if (tests.runtimeTests)
 
          it('has valid test / object result (pass through)', async () =>
          {
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -434,7 +433,7 @@ if (tests.runtimeTests)
             // No await necessary as instance used.
             pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('test', void 0, testData);
 
@@ -459,7 +458,7 @@ if (tests.runtimeTests)
 
          it('has valid test / object result (copy)', async () =>
          {
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('test', testData);
 
@@ -473,7 +472,7 @@ if (tests.runtimeTests)
             // No await necessary as instance used.
             pluginManager.add({ name: 'PluginTest', instance: new PluginTest() });
 
-            await pluginManager.add({ name: 'objectPluginTest', target: './test/src/plugins/objectPluginTest.js' });
+            await pluginManager.add({ name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
             const event = pluginManager.invokeSyncEvent('test', testData);
 
@@ -531,23 +530,27 @@ if (tests.runtimeTests)
             let pData;
 
             pData = await pluginManager.add(
-             { name: 'CJS-InstancePlugin', target: './test/fixture/cjs/InstancePlugin.js' });
-            assert.strictEqual(pData.plugin.type, 'require-path');
-
-            pData = await pluginManager.add({ name: 'CJS-StaticPlugin', target: './test/fixture/cjs/StaticPlugin.js' });
-            assert.strictEqual(pData.plugin.type, 'require-path');
-
-            pData = await pluginManager.add({ name: 'CJS-namedExport', target: './test/fixture/cjs/namedExport.js' });
+             { name: 'CJS-InstancePlugin', target: './test/fixture/formats/cjs/InstancePlugin.js' });
             assert.strictEqual(pData.plugin.type, 'require-path');
 
             pData = await pluginManager.add(
-             { name: 'ESM-InstancePlugin', target: './test/fixture/esm/InstancePlugin.js' });
+             { name: 'CJS-StaticPlugin', target: './test/fixture/formats/cjs/StaticPlugin.js' });
+            assert.strictEqual(pData.plugin.type, 'require-path');
+
+            pData = await pluginManager.add(
+             { name: 'CJS-namedExport', target: './test/fixture/formats/cjs/namedExport.js' });
+            assert.strictEqual(pData.plugin.type, 'require-path');
+
+            pData = await pluginManager.add(
+             { name: 'ESM-InstancePlugin', target: './test/fixture/formats/esm/InstancePlugin.js' });
             assert.strictEqual(pData.plugin.type, 'import-path');
 
-            pData = await pluginManager.add({ name: 'ESM-StaticPlugin', target: './test/fixture/esm/StaticPlugin.js' });
+            pData = await pluginManager.add(
+             { name: 'ESM-StaticPlugin', target: './test/fixture/formats/esm/StaticPlugin.js' });
             assert.strictEqual(pData.plugin.type, 'import-path');
 
-            pData = await pluginManager.add({ name: 'ESM-namedExport', target: './test/fixture/esm/namedExport.js' });
+            pData = await pluginManager.add(
+             { name: 'ESM-namedExport', target: './test/fixture/formats/esm/namedExport.js' });
             assert.strictEqual(pData.plugin.type, 'import-path');
 
             // Test loading dev dependency plugin
@@ -557,14 +560,14 @@ if (tests.runtimeTests)
             // Test loading file URL
             pData = await pluginManager.add({
                name: 'ESM-URL-namedExport',
-               target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
+               target: url.pathToFileURL(path.resolve('./test/fixture/formats/esm/namedExport.js'))
             });
             assert.strictEqual(pData.plugin.type, 'import-path');
 
             // Test loading file URL string
             pData = await pluginManager.add({
                name: 'ESM-file-URL-namedExport',
-               target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js')).toString()
+               target: url.pathToFileURL(path.resolve('./test/fixture/formats/esm/namedExport.js')).toString()
             });
             assert.strictEqual(pData.plugin.type, 'import-path');
 
@@ -573,20 +576,20 @@ if (tests.runtimeTests)
          it('module loader addAll / removeAll', async () =>
          {
             const pData = await pluginManager.addAll([
-               { name: 'CJS-InstancePlugin', target: './test/fixture/cjs/InstancePlugin.js' },
-               { name: 'CJS-StaticPlugin', target: './test/fixture/cjs/StaticPlugin.js' },
-               { name: 'CJS-namedExport', target: './test/fixture/cjs/namedExport.js' },
-               { name: 'ESM-InstancePlugin', target: './test/fixture/esm/InstancePlugin.js' },
-               { name: 'ESM-StaticPlugin', target: './test/fixture/esm/StaticPlugin.js' },
-               { name: 'ESM-namedExport', target: './test/fixture/esm/namedExport.js' },
+               { name: 'CJS-InstancePlugin', target: './test/fixture/formats/cjs/InstancePlugin.js' },
+               { name: 'CJS-StaticPlugin', target: './test/fixture/formats/cjs/StaticPlugin.js' },
+               { name: 'CJS-namedExport', target: './test/fixture/formats/cjs/namedExport.js' },
+               { name: 'ESM-InstancePlugin', target: './test/fixture/formats/esm/InstancePlugin.js' },
+               { name: 'ESM-StaticPlugin', target: './test/fixture/formats/esm/StaticPlugin.js' },
+               { name: 'ESM-namedExport', target: './test/fixture/formats/esm/namedExport.js' },
                { name: '@typhonjs-utils/package-json' },
                {
                   name: 'ESM-URL-namedExport',
-                  target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js'))
+                  target: url.pathToFileURL(path.resolve('./test/fixture/formats/esm/namedExport.js'))
                },
                {
                   name: 'ESM-file-URL-namedExport',
-                  target: url.pathToFileURL(path.resolve('./test/fixture/esm/namedExport.js')).toString()
+                  target: url.pathToFileURL(path.resolve('./test/fixture/formats/esm/namedExport.js')).toString()
                }
             ]);
 

@@ -23,8 +23,11 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^11",
     "@typhonjs-utils/build-test": "^0.1.0",
-    "http-server": "^0.12.0",
+    "dotenv": "^8.2.0",
+    "five-server": "^0.0.20",
+    "puppeteer-core": "^8.0.0",
     "rollup": "^2",
+    "rollup-plugin-istanbul": "^3.0.0",
     "rollup-plugin-terser": "^7"
   },
   "engines": {
@@ -47,9 +50,12 @@
   "scripts": {
     "bundle": "rollup --config",
     "eslint": "eslint .",
-    "posttest": "npm run eslint",
-    "prepublishOnly": "npm run bundle && npm run test",
+    "posttest-browser": "npx --yes nyc report --reporter=lcov --verbose",
+    "pretest-browser": "npm run eslint && npm run bundle",
+    "pretest-node": "npm run eslint",
+    "prepublishOnly": "npm run bundle && npm run test-node",
     "serve": "http-server \"./test/fixture/public\" --port 8080",
-    "test": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/**/*.test.js\" --timeout 8000"
+    "test-browser": "mocha -colors \"test/src/browser/**/*.test.js\" --timeout 20000",
+    "test-node": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 8000"
   }
 }

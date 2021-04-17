@@ -1,10 +1,11 @@
-import path    from 'path';
+import path          from 'path';
 
-import resolve from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
-import { terser }       from 'rollup-plugin-terser';        // Terser is used for minification / mangling
+import istanbul      from 'rollup-plugin-istanbul';
+import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
 // Import config files for Terser and Postcss; refer to respective documentation for more information.
-import terserConfig     from './terser.config';
+import terserConfig  from './terser.config';
 
 // Basic directories paths. The `foundry.js` client code is bundled to `./public` in order to serve it via `http-server`
 const s_TEST_PATH = './test/fixture/public';
@@ -16,7 +17,7 @@ const s_DEPLOY_PATH = './dist';
 const s_SOURCEMAP = true;
 
 // Adds Terser to the output plugins for server bundle if true.
-const s_MINIFY = true;
+const s_MINIFY = false;
 
 export default () =>
 {
@@ -45,23 +46,25 @@ export default () =>
          sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeClientPath, `.`)
       }],
       plugins: [
-         resolve({ browser: true })
+         resolve({ browser: true }),
+         // istanbul()
+         istanbul({ include: ['src/browser/BrowserPluginManager.js'] })
       ]
    },
 
-   // This bundle is for the server.
-   {
-      input: ['src/browser/index.js'],
-      output: [{
-         file: `${s_DEPLOY_PATH}${path.sep}BrowserPluginManager.js`,
-         format: 'es',
-         plugins: outputPlugins,
-         preferConst: true,
-         sourcemap: s_SOURCEMAP,
-         sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeServerPath, `.`)
-      }],
-      plugins: [
-         resolve({ browser: true })
-      ]
-   }];
+      // This bundle is for the distribution.
+      {
+         input: ['src/browser/index.js'],
+         output: [{
+            file: `${s_DEPLOY_PATH}${path.sep}BrowserPluginManager.js`,
+            format: 'es',
+            plugins: outputPlugins,
+            preferConst: true,
+            sourcemap: s_SOURCEMAP,
+            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeServerPath, `.`)
+         }],
+         plugins: [
+            resolve({ browser: true })
+         ]
+      }];
 };

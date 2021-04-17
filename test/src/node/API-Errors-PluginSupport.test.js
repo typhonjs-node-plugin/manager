@@ -1,9 +1,9 @@
 import { expect }          from 'chai';
 
-import NodePluginManager   from '../../src/node/index.js';
-import { PluginSupport }   from '../../src/node/index.js';
+import NodePluginManager   from '../../../src/node/index.js';
+import { PluginSupport }   from '../../../src/node/index.js';
 
-import tests               from '../utils/tests.js';
+import tests               from '../../utils/tests.js';
 
 const s_ALL_EVENTS = [
    'plugins:get:plugin:event:names',
