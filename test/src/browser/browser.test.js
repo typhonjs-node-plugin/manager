@@ -7,8 +7,6 @@ import puppeteer  from 'puppeteer-core';
 
 const liveServer = new LiveServer.default();
 
-const s_CHROME_BIN = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-
 describe('Browser:', () =>
 {
    it('sanity check', async () =>
@@ -20,8 +18,8 @@ describe('Browser:', () =>
       });
 
       const browser = await puppeteer.launch({
-         headless: true,
-         executablePath: s_CHROME_BIN,
+         executablePath: process.env.PUPPETEER_BIN,
+         headless: process.env.PUPPETEER_HEADLESS,
       });
 
       // const browser = await puppeteer.launch({ headless: false });

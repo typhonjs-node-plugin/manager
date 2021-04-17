@@ -52,19 +52,19 @@ export default () =>
       ]
    },
 
-      // This bundle is for the distribution.
-      {
-         input: ['src/browser/index.js'],
-         output: [{
-            file: `${s_DEPLOY_PATH}${path.sep}BrowserPluginManager.js`,
-            format: 'es',
-            plugins: outputPlugins,
-            preferConst: true,
-            sourcemap: s_SOURCEMAP,
-            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeServerPath, `.`)
-         }],
-         plugins: [
-            resolve({ browser: true })
-         ]
-      }];
+   // This bundle is for the distribution.
+   {
+      input: ['src/browser/index.js'],
+      output: [{
+         file: `${s_DEPLOY_PATH}${path.sep}BrowserPluginManager.js`,
+         format: 'es',
+         plugins: outputPlugins,
+         preferConst: true,
+         sourcemap: s_SOURCEMAP,
+         sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeServerPath, `.`)
+      }],
+      plugins: [
+         resolve({ browser: true })
+      ]
+   }];
 };
