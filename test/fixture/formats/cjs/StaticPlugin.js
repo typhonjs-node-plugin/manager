@@ -1,4 +1,4 @@
 module.exports = class InstancePlugin
 {
-   static onPluginLoad(ev) {}
-}
+   static onPluginLoad() {}
+};

@@ -2,7 +2,7 @@ import { expect }    from 'chai';
 
 import PluginManager from '../../../dist/node/PluginManager.js';
 
-import tests         from '../../utils/tests.js';
+import tests from '../../utils/tests.js';
 
 if (tests.apiErrors)
 {

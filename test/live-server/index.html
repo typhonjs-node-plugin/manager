@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Mocha Tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="lib/mocha.css" />
+
+    <script type="importmap">
+    {
+      "imports": {
+        "@typhonjs-plugin/manager": "./PluginManager.js",
+        "@typhonjs-util/test": "./plugin/TestInputMap.js"
+      }
+    }
+    </script>
+</head>
+<body>
+<div id="mocha"></div>
+
+<script src="lib/mocha.js"></script>
+
+<script type="module">
+   import chai              from './lib/chai.js';
+   import chaiAsPromised    from './lib/chai-as-promised.js';
+
+   import * as Module       from './PluginManager.js';
+   import TestSuiteRunner   from './TestSuiteRunner.js';
+
+   import mochaConsoleLog   from './lib/mochaConsoleLog.js';
+
+   chai.use(chaiAsPromised);
+
+   const data = {
+      suitePrefix: 'browser/PluginManager',
+
+      moduleURL: new URL('http://localhost:8080/test/fixture/esm/namedExport.js')
+   };
+
+   mocha.setup({
+      timeout: '6000',
+      ui: 'bdd'
+   });
+
+   mocha.checkLeaks();
+
+   TestSuiteRunner.run(Module, data, chai);
+
+   mochaConsoleLog(mocha.run());
+</script>
+</body>
+</html>

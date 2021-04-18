@@ -1,11 +1,11 @@
 import { assert }                   from 'chai';
 
-import PluginManager                from '../../../dist/node/PluginManager.js';
-import { Eventbus, PluginSupport }  from '../../../dist/node/PluginManager.js';
+import PluginManager               from '../../../dist/node/PluginManager.js';
+import { Eventbus, PluginSupport } from '../../../dist/node/PluginManager.js';
 
-import PluginTest                   from '../../fixture/plugins/PluginTest.js';
-import PluginTestNoName2            from '../../fixture/plugins/PluginTestNoName2.js';
-import PluginTestSync               from '../../fixture/plugins/PluginTestSync.js';
+import PluginTest        from '../../fixture/plugins/PluginTest.js';
+import PluginTestNoName2 from '../../fixture/plugins/PluginTestNoName2.js';
+import PluginTestSync    from '../../fixture/plugins/PluginTestSync.js';
 
 import tests from '../../utils/tests.js';
 

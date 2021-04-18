@@ -3,14 +3,14 @@ import url                          from 'url';
 
 import { assert, expect }           from 'chai';
 
-import PluginManager                from '../../../dist/node/PluginManager.js';
-import { Eventbus, EventbusProxy }  from '../../../dist/node/PluginManager.js';
+import PluginManager               from '../../../dist/node/PluginManager.js';
+import { Eventbus, EventbusProxy } from '../../../dist/node/PluginManager.js';
 
-import PluginTest                   from '../../fixture/plugins/PluginTest.js';
-import PluginTestAsync              from '../../fixture/plugins/PluginTestAsync.js';
-import PluginTestSync               from '../../fixture/plugins/PluginTestSync.js';
+import PluginTest      from '../../fixture/plugins/PluginTest.js';
+import PluginTestAsync from '../../fixture/plugins/PluginTestAsync.js';
+import PluginTestSync  from '../../fixture/plugins/PluginTestSync.js';
 
-import tests                        from '../../utils/tests.js';
+import tests from '../../utils/tests.js';
 
 if (tests.runtimeTests)
 {

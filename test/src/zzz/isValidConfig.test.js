@@ -3,10 +3,10 @@ import url                 from 'url';
 
 import { assert }          from 'chai';
 
-import { isValidConfig }   from '../../../dist/node/PluginManager.js';
-import PluginManager       from '../../../dist/node/PluginManager.js';
+import { isValidConfig } from '../../../dist/node/PluginManager.js';
+import PluginManager     from '../../../dist/node/PluginManager.js';
 
-import tests               from '../../utils/tests.js';
+import tests from '../../utils/tests.js';
 
 if (tests.isValidConfig)
 {

@@ -1,4 +1,6 @@
-export function onPluginLoad(ev)
+/**
+ */
+export function onPluginLoad()
 {
 
 }

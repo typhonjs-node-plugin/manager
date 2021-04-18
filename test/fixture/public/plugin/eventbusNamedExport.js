@@ -1,3 +1,6 @@
+/**
+ * @param {object} ev -
+ */
 export function onPluginLoad(ev)
 {
    console.log('onPluginLoad: Loaded eventbusNamedExport.');

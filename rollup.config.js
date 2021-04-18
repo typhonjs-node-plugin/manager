@@ -11,8 +11,8 @@ import terserConfig  from './terser.config';
 const s_DIST_PATH_BROWSER = './dist/browser';
 const s_DIST_PATH_NODE = './dist/node';
 
-// The test browser distribution is bundled to `./test/fixture/public`.
-const s_TEST_BROWSER_PATH = './test/fixture/public';
+// The test browser distribution is bundled to `./test/live-server`.
+const s_TEST_BROWSER_PATH = './test/live-server';
 
 // Produce sourcemaps or not.
 const s_SOURCEMAP = true;
@@ -82,6 +82,16 @@ export default () =>
             resolve({ browser: true }),
             istanbul()
          ]
+      },
+
+      // This bundle is the test suite
+      {
+         input: ['test/src/runner/TestSuiteRunner.js'],
+         output: [{
+            file: `.${path.sep}test${path.sep}live-server${path.sep}TestSuiteRunner.js`,
+            format: 'es',
+            preferConst: true
+         }]
       }
    ];
 };
