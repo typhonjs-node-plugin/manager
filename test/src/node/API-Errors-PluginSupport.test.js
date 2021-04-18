@@ -1,7 +1,7 @@
 import { expect }          from 'chai';
 
-import NodePluginManager   from '../../../src/node/index.js';
-import { PluginSupport }   from '../../../src/node/index.js';
+import PluginManager       from '../../../dist/node/PluginManager.js';
+import { PluginSupport }   from '../../../dist/node/PluginManager.js';
 
 import tests               from '../../utils/tests.js';
 
@@ -36,7 +36,7 @@ if (tests.apiErrorsPluginSupport)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager({ PluginSupport });
+            pluginManager = new PluginManager({ PluginSupport });
             eventbus = pluginManager.getEventbus();
 
             // Artificially destroy the pluginManager -> _pluginMap
@@ -59,7 +59,7 @@ if (tests.apiErrorsPluginSupport)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager({ PluginSupport });
+            pluginManager = new PluginManager({ PluginSupport });
             eventbus = pluginManager.getEventbus();
 
             // Artificially destroy the pluginManager

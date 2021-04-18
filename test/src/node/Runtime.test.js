@@ -3,8 +3,8 @@ import url                          from 'url';
 
 import { assert, expect }           from 'chai';
 
-import NodePluginManager            from '../../../src/node/index.js';
-import { Eventbus, EventbusProxy }  from '../../../src/node/index.js';
+import PluginManager                from '../../../dist/node/PluginManager.js';
+import { Eventbus, EventbusProxy }  from '../../../dist/node/PluginManager.js';
 
 import PluginTest                   from '../../fixture/plugins/PluginTest.js';
 import PluginTestAsync              from '../../fixture/plugins/PluginTestAsync.js';
@@ -22,12 +22,12 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('constructor function is exported', () =>
          {
-            assert.isFunction(NodePluginManager);
+            assert.isFunction(PluginManager);
          });
 
          it('instance is object', () =>
@@ -47,7 +47,7 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('invoke - has invoked with no results', () =>
@@ -68,7 +68,7 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('promise - has invoked one result (async)', (done) =>
@@ -134,7 +134,7 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
             testData = { result: { count: 0 } };
          });
 
@@ -301,7 +301,7 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('has invoked one result', () =>
@@ -333,7 +333,7 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
             testData = { result: { count: 0 } };
          });
 
@@ -488,7 +488,7 @@ if (tests.runtimeTests)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('EventbusProxy is destroyed when plugin manager destroyed.', async () =>
@@ -504,7 +504,7 @@ if (tests.runtimeTests)
          it('EventbusProxy shows correct proxy event count.', async () =>
          {
             const eventbus = new Eventbus();
-            pluginManager = new NodePluginManager({ eventbus });
+            pluginManager = new PluginManager({ eventbus });
 
             const eventCount = eventbus.eventCount;
 

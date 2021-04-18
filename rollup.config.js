@@ -1,17 +1,18 @@
 import path          from 'path';
 
-import istanbul      from 'rollup-plugin-istanbul';
+import istanbul      from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
 import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
 // Import config files for Terser and Postcss; refer to respective documentation for more information.
 import terserConfig  from './terser.config';
 
-// Basic directories paths. The `foundry.js` client code is bundled to `./public` in order to serve it via `http-server`
-const s_TEST_PATH = './test/fixture/public';
+// The deploy path for the distribution for browser & Node.
+const s_DIST_PATH_BROWSER = './dist/browser';
+const s_DIST_PATH_NODE = './dist/node';
 
-// The deploy path for the server bundle which includes the common code.
-const s_DEPLOY_PATH = './dist';
+// The test browser distribution is bundled to `./test/fixture/public`.
+const s_TEST_BROWSER_PATH = './test/fixture/public';
 
 // Produce sourcemaps or not.
 const s_SOURCEMAP = true;
@@ -31,40 +32,56 @@ export default () =>
 
    // Reverse relative path from the deploy path to local directory; used to replace source maps path, so that it
    // shows up correctly in Chrome dev tools.
-   const relativeClientPath = path.relative(`${s_TEST_PATH}`, '.');
-   const relativeServerPath = path.relative(`${s_DEPLOY_PATH}`, '.');
+   const relativeDistBrowserPath = path.relative(`${s_DIST_PATH_BROWSER}`, '.');
+   // const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
+   const relativeTestBrowserPath = path.relative(`${s_TEST_BROWSER_PATH}`, '.');
 
-   // This bundle is for the test client.
-   return [{
-      input: ['src/browser/index.js'],
-      output: [{
-         file: `${s_TEST_PATH}${path.sep}BrowserPluginManager.js`,
-         format: 'es',
-         plugins: outputPlugins,
-         preferConst: true,
-         sourcemap: s_SOURCEMAP,
-         sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeClientPath, `.`)
-      }],
-      plugins: [
-         resolve({ browser: true }),
-         // istanbul()
-         istanbul({ include: ['src/browser/BrowserPluginManager.js'] })
-      ]
-   },
+   return [{   // This bundle is for the Node distribution.
+         input: ['src/node/index.js'],
+         output: [{
+            file: `${s_DIST_PATH_NODE}${path.sep}PluginManager.js`,
+            format: 'es',
+            plugins: outputPlugins,
+            preferConst: true,
+            sourcemap: s_SOURCEMAP,
+//            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistNodePath, `.`)
+         }],
+         plugins: [
+            resolve(),
+         ]
+      },
 
-   // This bundle is for the distribution.
-   {
-      input: ['src/browser/index.js'],
-      output: [{
-         file: `${s_DEPLOY_PATH}${path.sep}BrowserPluginManager.js`,
-         format: 'es',
-         plugins: outputPlugins,
-         preferConst: true,
-         sourcemap: s_SOURCEMAP,
-         sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeServerPath, `.`)
-      }],
-      plugins: [
-         resolve({ browser: true })
-      ]
-   }];
+      // This bundle is for the browser distribution.
+      {
+         input: ['src/browser/index.js'],
+         output: [{
+            file: `${s_DIST_PATH_BROWSER}${path.sep}PluginManager.js`,
+            format: 'es',
+            plugins: outputPlugins,
+            preferConst: true,
+            sourcemap: s_SOURCEMAP,
+            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistBrowserPath, `.`)
+         }],
+         plugins: [
+            resolve({ browser: true })
+         ]
+      },
+
+      // This bundle is for the Istanbul instrumented browser test.
+      {
+         input: ['src/browser/index.js'],
+         output: [{
+            file: `${s_TEST_BROWSER_PATH}${path.sep}PluginManager.js`,
+            format: 'es',
+            plugins: outputPlugins,
+            preferConst: true,
+            sourcemap: s_SOURCEMAP,
+            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeTestBrowserPath, `.`)
+         }],
+         plugins: [
+            resolve({ browser: true }),
+            istanbul()
+         ]
+      }
+   ];
 };

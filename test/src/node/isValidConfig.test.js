@@ -3,8 +3,8 @@ import url                 from 'url';
 
 import { assert }          from 'chai';
 
-import { isValidConfig }   from '../../../src/node/index.js';
-import NodePluginManager   from '../../../src/node/index.js';
+import { isValidConfig }   from '../../../dist/node/PluginManager.js';
+import PluginManager       from '../../../dist/node/PluginManager.js';
 
 import tests               from '../../utils/tests.js';
 
@@ -45,7 +45,7 @@ if (tests.isValidConfig)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('PluginConfig is valid', () =>

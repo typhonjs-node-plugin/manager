@@ -1,9 +1,8 @@
-import { expect }          from 'chai';
+import { expect }    from 'chai';
 
-import NodePluginManager   from '../../../src/node/index.js';
-import PluginEntry         from '../../../src/PluginEntry.js';
+import PluginManager from '../../../dist/node/PluginManager.js';
 
-import tests               from '../../utils/tests.js';
+import tests         from '../../utils/tests.js';
 
 if (tests.apiErrors)
 {
@@ -15,12 +14,12 @@ if (tests.apiErrors)
 
          beforeEach(() =>
          {
-            pluginManager = new NodePluginManager();
+            pluginManager = new PluginManager();
          });
 
          it('constructor - throws w/ options not an object', async () =>
          {
-            expect(() => new NodePluginManager(false)).to.throw(TypeError, `'options' is not an object.`);
+            expect(() => new PluginManager(false)).to.throw(TypeError, `'options' is not an object.`);
          });
 
          it('add - throws w/ no pluginConfig', async () =>
@@ -105,14 +104,6 @@ if (tests.apiErrors)
 
             await expect(pluginManager.destroy()).to.be.rejectedWith(ReferenceError,
              'This PluginManager instance has been destroyed.');
-         });
-      });
-
-      describe('PluginEntry:', () =>
-      {
-         it('escape - throws on value not string', () =>
-         {
-            expect(() => PluginEntry.escape(false)).to.throw(TypeError, `'value' is not a string.`);
          });
       });
    });

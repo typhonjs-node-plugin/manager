@@ -9,7 +9,7 @@ import AbstractPluginManager  from '../AbstractPluginManager.js';
 
 const requireMod = module.createRequire(import.meta.url);
 
-export default class NodePluginManager extends AbstractPluginManager
+export default class PluginManager extends AbstractPluginManager
 {
    async _loadModule(moduleOrPath)
    {

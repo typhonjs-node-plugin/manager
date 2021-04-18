@@ -1,7 +1,7 @@
 import { assert }                   from 'chai';
 
-import NodePluginManager            from '../../../src/node/index.js';
-import { Eventbus, PluginSupport }  from '../../../src/node/index.js';
+import PluginManager                from '../../../dist/node/PluginManager.js';
+import { Eventbus, PluginSupport }  from '../../../dist/node/PluginManager.js';
 
 import PluginTest                   from '../../fixture/plugins/PluginTest.js';
 import PluginTestNoName2            from '../../fixture/plugins/PluginTestNoName2.js';
@@ -31,7 +31,7 @@ if (tests.pluginSupport)
 
       beforeEach(() =>
       {
-         pluginManager = new NodePluginManager({ PluginSupport });
+         pluginManager = new PluginManager({ PluginSupport });
          eventbus = pluginManager.getEventbus();
       });
 

@@ -1,4 +1,4 @@
-import fs         from 'fs';
+import fs         from 'fs-extra';
 import path       from 'path';
 
 import LiveServer from 'five-server';
@@ -9,17 +9,25 @@ const liveServer = new LiveServer.default();
 
 describe('Browser:', () =>
 {
-   it('sanity check', async () =>
+   after('Shutdown:', async () =>
+   {
+      await liveServer.shutdown();
+   });
+
+   before('Start live server:', async () =>
    {
       await liveServer.start({
          root: path.resolve('./test/fixture/public'),
          port: 8080,
          open: false,
       });
+   });
 
+   it('sanity check', async () =>
+   {
       const browser = await puppeteer.launch({
          executablePath: process.env.PUPPETEER_BIN,
-         headless: process.env.PUPPETEER_HEADLESS,
+         headless: process.env.PUPPETEER_HEADLESS === 'true',
       });
 
       // const browser = await puppeteer.launch({ headless: false });
@@ -32,11 +40,8 @@ describe('Browser:', () =>
 
       const coverage = await page.evaluate(() => window.__coverage__);  // eslint-disable-line no-undef
 
-      if (!fs.existsSync('.nyc_output')) { fs.mkdirSync('.nyc_output'); }
-
-      fs.writeFileSync(`./.nyc_output/out.json`, JSON.stringify(coverage, null, 3));
+      fs.writeJsonSync(`./.nyc_output/out.json`, coverage);
 
       await browser.close();
-      await liveServer.shutdown();
    });
 });

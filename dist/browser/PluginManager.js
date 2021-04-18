@@ -3117,7 +3117,7 @@ const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, na
  * @name PluginSupportImpl#setEventbus
  */
 
-class BrowserPluginManager extends AbstractPluginManager
+class PluginManager extends AbstractPluginManager
 {
    async _loadModule(moduleOrPath)
    {
@@ -3683,6 +3683,6 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
  * @name PluginSupportImpl#setEventbus
  */
 
-export default BrowserPluginManager;
+export default PluginManager;
 export { Eventbus, EventbusProxy, PluginSupport, isValidConfig };
-//# sourceMappingURL=BrowserPluginManager.js.map
+//# sourceMappingURL=PluginManager.js.map

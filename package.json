@@ -4,28 +4,24 @@
   "version": "0.0.0",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
-  "main": "src/node/index.js",
-  "module": "src/node/index.js",
+  "main": "dist/node/PluginManager.js",
+  "module": "dist/node/PluginManager.js",
   "exports": {
     ".": {
-      "node": "./src/node/index.js",
-      "browser": "./dist/BrowerPluginManager.js"
+      "browser": "./dist/browser/PluginManager.js",
+      "node": "./dist/node/PluginManager.js"
     }
   },
   "contributors": [
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
-  "dependencies": {
-    "@typhonjs-plugin/eventbus": "typhonjs-plugin/eventbus",
-    "@typhonjs-utils/object": "typhonjs-node-utils/object",
-    "@typhonjs-utils/package-json": "typhonjs-node-utils/package-json"
-  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^11",
+    "@typhonjs-plugin/eventbus": "typhonjs-plugin/eventbus",
     "@typhonjs-utils/build-test": "^0.1.0",
-    "dotenv": "^8.2.0",
-    "five-server": "^0.0.20",
-    "puppeteer-core": "^8.0.0",
+    "@typhonjs-utils/build-test-browser": "^0.0.0",
+    "@typhonjs-utils/object": "typhonjs-node-utils/object",
+    "@typhonjs-utils/package-json": "typhonjs-node-utils/package-json",
     "rollup": "^2",
     "rollup-plugin-istanbul": "^3.0.0",
     "rollup-plugin-terser": "^7"
@@ -50,12 +46,12 @@
   "scripts": {
     "bundle": "rollup --config",
     "eslint": "eslint .",
-    "posttest-browser": "npx --yes nyc report --reporter=lcov --verbose",
+    "posttest-browser": "nyc report --reporter=lcov --verbose",
     "pretest-browser": "npm run eslint && npm run bundle",
-    "pretest-node": "npm run eslint",
-    "prepublishOnly": "npm run bundle && npm run test-node",
+    "pretest-node": "npm run eslint && npm run bundle",
+    "prepublishOnly": "npm run test-node",
     "serve": "http-server \"./test/fixture/public\" --port 8080",
     "test-browser": "mocha -colors \"test/src/browser/**/*.test.js\" --timeout 20000",
-    "test-node": "c8 --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 8000"
+    "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 8000"
   }
 }
