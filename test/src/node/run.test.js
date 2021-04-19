@@ -6,6 +6,7 @@ import chai                from 'chai';
 import chaiAsPromised      from 'chai-as-promised';
 
 import * as Module         from '../../../dist/node/PluginManager.js';
+import PluginManager       from '../../../dist/node/PluginManager.js';
 
 import TestSuiteRunner     from '../runner/TestSuiteRunner.js';
 
@@ -13,6 +14,8 @@ import PluginTest          from '../../fixture/plugins/PluginTest.js';
 import PluginTestNoName2   from '../../fixture/plugins/PluginTestNoName2.js';
 import PluginTestAsync     from '../../fixture/plugins/PluginTestAsync.js';
 import PluginTestSync      from '../../fixture/plugins/PluginTestSync.js';
+
+Module.default = PluginManager;  // esm on Node 12.2 doesn't correctly import `* as Module`;
 
 chai.use(chaiAsPromised);
 
