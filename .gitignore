@@ -3,9 +3,12 @@
 npm-debug.log
 *-debug.log
 *-error.log
+/node_modules
 /env
 /.nyc_output
 /coverage
 /coverage-browser
 /test/live-server/test
-node_modules
+/test/live-server/PluginManager.js
+/test/live-server/PluginManager.js.map
+/test/live-server/TestSuiteRunner.js
