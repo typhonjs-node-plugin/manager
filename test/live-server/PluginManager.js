@@ -46,7 +46,7 @@ cov_2pu10kubcy=function(){return actualCoverage;};}return actualCoverage;}cov_2p
     *
     * @returns {number} Returns the current proxied event count.
     */get eventCount(){cov_2pu10kubcy().f[3]++;cov_2pu10kubcy().s[13]++;if(this._eventbus===null){cov_2pu10kubcy().b[4][0]++;cov_2pu10kubcy().s[14]++;throw new ReferenceError('This EventbusProxy instance has been destroyed.');}else {cov_2pu10kubcy().b[4][1]++;}cov_2pu10kubcy().s[15]++;return this._eventbus.eventCount;}/**
-    * Returns the event names of proxied eventbys event listeners.
+    * Returns the event names of proxied eventbus event listeners.
     *
     * @returns {string[]} Returns the event names of proxied event listeners.
     */get eventNames(){cov_2pu10kubcy().f[4]++;cov_2pu10kubcy().s[16]++;if(this._eventbus===null){cov_2pu10kubcy().b[5][0]++;cov_2pu10kubcy().s[17]++;throw new ReferenceError('This EventbusProxy instance has been destroyed.');}else {cov_2pu10kubcy().b[5][1]++;}cov_2pu10kubcy().s[18]++;return this._eventbus.eventNames;}/**

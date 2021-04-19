@@ -1,6 +1,5 @@
 import path          from 'path';
 
-import istanbul      from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
 import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
@@ -11,14 +10,11 @@ import terserConfig  from './terser.config';
 const s_DIST_PATH_BROWSER = './dist/browser';
 const s_DIST_PATH_NODE = './dist/node';
 
-// The test browser distribution is bundled to `./test/live-server`.
-const s_TEST_BROWSER_PATH = './test/live-server';
-
 // Produce sourcemaps or not.
 const s_SOURCEMAP = true;
 
 // Adds Terser to the output plugins for server bundle if true.
-const s_MINIFY = false;
+const s_MINIFY = true;
 
 export default () =>
 {
@@ -33,8 +29,14 @@ export default () =>
    // Reverse relative path from the deploy path to local directory; used to replace source maps path, so that it
    // shows up correctly in Chrome dev tools.
    const relativeDistBrowserPath = path.relative(`${s_DIST_PATH_BROWSER}`, '.');
-   // const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
-   const relativeTestBrowserPath = path.relative(`${s_TEST_BROWSER_PATH}`, '.');
+   const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
+
+   // Ignore circular dependency from @typhonjs-plugin/eventbus as it is valid.
+   const onwarn = (warning) =>
+   {
+      if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.match(/@typhonjs-plugin\/eventbus/)) { return; }
+      console.error(`(!) ${warning.message}`);
+   };
 
    return [{   // This bundle is for the Node distribution.
          input: ['src/node/index.js'],
@@ -44,11 +46,12 @@ export default () =>
             plugins: outputPlugins,
             preferConst: true,
             sourcemap: s_SOURCEMAP,
-//            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistNodePath, `.`)
+            // sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistNodePath, `.`)
          }],
          plugins: [
             resolve(),
-         ]
+         ],
+         onwarn
       },
 
       // This bundle is for the browser distribution.
@@ -60,38 +63,12 @@ export default () =>
             plugins: outputPlugins,
             preferConst: true,
             sourcemap: s_SOURCEMAP,
-            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistBrowserPath, `.`)
+            // sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistBrowserPath, `.`)
          }],
          plugins: [
             resolve({ browser: true })
-         ]
-      },
-
-      // This bundle is for the Istanbul instrumented browser test.
-      {
-         input: ['src/browser/index.js'],
-         output: [{
-            file: `${s_TEST_BROWSER_PATH}${path.sep}PluginManager.js`,
-            format: 'es',
-            plugins: outputPlugins,
-            preferConst: true,
-            sourcemap: s_SOURCEMAP,
-            sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeTestBrowserPath, `.`)
-         }],
-         plugins: [
-            resolve({ browser: true }),
-            istanbul()
-         ]
-      },
-
-      // This bundle is the test suite
-      {
-         input: ['test/src/runner/TestSuiteRunner.js'],
-         output: [{
-            file: `.${path.sep}test${path.sep}live-server${path.sep}TestSuiteRunner.js`,
-            format: 'es',
-            preferConst: true
-         }]
+         ],
+         onwarn
       }
    ];
 };

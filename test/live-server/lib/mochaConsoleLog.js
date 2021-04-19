@@ -1,8 +1,8 @@
-const EVENT_RUN_END = 'end';
-const EVENT_TEST_FAIL = 'fail';
+const s_EVENT_RUN_END = 'end';
+const s_EVENT_TEST_FAIL = 'fail';
 
 /**
- * Instruments a Mocha runner with the Spec reporter with a potential modification to force color usage in the browser.
+ * Instruments a Mocha runner with the Spec reporter with a modification to force color usage in the browser.
  *
  * When the Mocha runner finishes all tests a message [MOCHA_PASSED] or [MOCHA_FAILED] is output to the console.
  *
@@ -17,12 +17,12 @@ export default function mochaConsoleLog(runner, useColors = true)
 
    let failed = false;
 
-   runner.once(EVENT_TEST_FAIL, () =>
+   runner.once(s_EVENT_TEST_FAIL, () =>
    {
       failed = true;
    });
 
-   runner.once(EVENT_RUN_END, () =>
+   runner.once(s_EVENT_RUN_END, () =>
    {
       console.log(`[MOCHA_${failed ? 'FAILED' : 'PASSED'}]`);
    });
