@@ -15,7 +15,8 @@ import PluginTestNoName2   from '../../fixture/plugins/PluginTestNoName2.js';
 import PluginTestAsync     from '../../fixture/plugins/PluginTestAsync.js';
 import PluginTestSync      from '../../fixture/plugins/PluginTestSync.js';
 
-Module.default = PluginManager;  // esm on Node 12.2 doesn't correctly import `* as Module`;
+// eslint-disable-next-line  no-import-assign
+Module.default = PluginManager;  // `esm` on Node 12.2 doesn't correctly import `* as Module`;
 
 chai.use(chaiAsPromised);
 
