@@ -28,8 +28,8 @@ export default () =>
 
    // Reverse relative path from the deploy path to local directory; used to replace source maps path, so that it
    // shows up correctly in Chrome dev tools.
-   const relativeDistBrowserPath = path.relative(`${s_DIST_PATH_BROWSER}`, '.');
-   const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
+   // const relativeDistBrowserPath = path.relative(`${s_DIST_PATH_BROWSER}`, '.');
+   // const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
 
    // Ignore circular dependency from @typhonjs-plugin/eventbus as it is valid.
    const onwarn = (warning) =>

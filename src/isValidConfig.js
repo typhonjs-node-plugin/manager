@@ -27,7 +27,7 @@ export default function isValidConfig(pluginConfig)
    if (typeof pluginConfig.name !== 'string') { return false; }
 
    if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string' &&
-      !(pluginConfig.target instanceof URL))
+    !(pluginConfig.target instanceof URL))
    {
       return false;
    }
