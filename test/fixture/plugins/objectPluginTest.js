@@ -1,5 +1,3 @@
-import { assert } from 'chai';
-
 /**
  * A plugin object
  */
@@ -8,7 +6,8 @@ const objectPluginTest =
    test: (event) =>
    {
       event.data.result.count++;
-      assert.strictEqual(event.pluginName, 'objectPluginTest');
+
+      if (event.pluginName !== 'objectPluginTest') { throw new Error(`event.pluginName !== objectPluginTest`); }
    },
 
    onPluginLoad: (ev) =>

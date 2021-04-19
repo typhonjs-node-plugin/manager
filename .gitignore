@@ -6,4 +6,5 @@ npm-debug.log
 /env
 /.nyc_output
 /coverage
+/test/live-server/test
 node_modules

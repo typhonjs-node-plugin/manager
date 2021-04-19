@@ -14,17 +14,12 @@ export default class PluginManager extends AbstractPluginManager
    async _loadModule(moduleOrPath)
    {
       // Convert to file path if an URL or file URL string.
-      const { filepath, isESM, isPath } = resolvePath(moduleOrPath);
-
-      const loadPath = `${isPath ? filepath : moduleOrPath}`;
+      const { filepath, isESM, type, loadPath } = resolvePath(moduleOrPath);
 
       if (!fs.existsSync(filepath))
       {
          throw new Error(`@typhonjs-plugin/manager could not load:\n${loadPath}`);
       }
-
-      let type = isESM ? 'import-' : 'require-';
-      type += isPath ? 'path' : 'module';
 
       const module = isESM ? await import(url.pathToFileURL(filepath)) : requireMod(filepath);
 
@@ -89,12 +84,14 @@ function isPathModule(filepath)
  *
  * @param {string} moduleOrPath - A module name or file path to load.
  *
- * @returns {{filepath: string, isPath: boolean, isESM: boolean}} An object including file path and whether the module
- *                                                                is ESM.
+ * @returns {{filepath: string, isESM: boolean, type: string, loadPath: string}} An object including file path and
+ *                                                                               whether the module is ESM.
  */
 function resolvePath(moduleOrPath)
 {
-   let filepath, isESM, isPath = false;
+   let filepath, isESM, type = 'module';
+
+   let loadPath = moduleOrPath;
 
    try
    {
@@ -106,15 +103,22 @@ function resolvePath(moduleOrPath)
       if (moduleOrPath instanceof URL || moduleOrPath.startsWith('file:'))
       {
          filepath = url.fileURLToPath(moduleOrPath);
+         type = 'url';
+
+         loadPath = moduleOrPath instanceof URL ? moduleOrPath.toString() : moduleOrPath;
       }
       else
       {
          filepath = path.resolve(moduleOrPath);
+         type = 'path';
+
+         loadPath = filepath;
       }
 
       isESM = isPathModule(filepath);
-      isPath = true;
    }
 
-   return { filepath, isESM, isPath };
+   type = `${isESM ? 'import' : 'require'}-${type}`;
+
+   return { filepath, isESM, type, loadPath };
 }

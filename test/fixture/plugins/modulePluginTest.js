@@ -1,5 +1,3 @@
-import { assert } from 'chai';
-
 /**
  * A ES Module as plugin
  */
@@ -12,7 +10,8 @@ import { assert } from 'chai';
 export function test(event)
 {
    event.data.result.count++;
-   assert.strictEqual(event.pluginName, 'modulePluginTest');
+
+   if (event.pluginName !== 'modulePluginTest') { throw new Error(`event.pluginName !== modulePluginTest`); }
 }
 
 /**

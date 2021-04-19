@@ -29,12 +29,35 @@
 
    import mochaConsoleLog   from './lib/mochaConsoleLog.js';
 
+   import PluginTest          from './test/fixture/plugins/PluginTest.js';
+   import PluginTestNoName2   from './test/fixture/plugins/PluginTestNoName2.js';
+   import PluginTestAsync     from './test/fixture/plugins/PluginTestAsync.js';
+   import PluginTestSync      from './test/fixture/plugins/PluginTestSync.js';
+
    chai.use(chaiAsPromised);
+
+   const moduleURL = new URL('http://localhost:8080/test/fixture/formats/esm/namedExport.js');
+   const moduleURLString = moduleURL.toString();
 
    const data = {
       suitePrefix: 'browser/PluginManager',
+      moduleURL: new URL('http://localhost:8080/test/fixture/esm/namedExport.js'),
+      isBrowser: true,
 
-      moduleURL: new URL('http://localhost:8080/test/fixture/esm/namedExport.js')
+      plugins: {
+         PluginTest,
+         PluginTestNoName2,
+         PluginTestAsync,
+         PluginTestSync
+      },
+
+      pluginFormats: [
+         { name: 'ESM-InstancePlugin', target: './test/fixture/formats/esm/InstancePlugin.js', type: 'import-path' },
+         { name: 'ESM-StaticPlugin', target: './test/fixture/formats/esm/StaticPlugin.js', type: 'import-path' },
+         { name: 'ESM-namedExport', target: './test/fixture/formats/esm/namedExport.js', type: 'import-path' },
+         { name: 'ESM-URL-namedExport', target: moduleURL, type: 'import-url' },
+         { name: 'ESM-file-URL-namedExport', target: moduleURLString, type: 'import-url' }
+      ]
    };
 
    mocha.setup({

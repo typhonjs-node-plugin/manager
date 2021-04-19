@@ -1,5 +1,3 @@
-import { assert } from 'chai';
-
 /**
  * A plugin class
  */
@@ -13,7 +11,8 @@ export default class PluginTest
    test(event)
    {
       event.data.result.count++;
-      assert.strictEqual(event.pluginName, 'PluginTest');
+
+      if (event.pluginName !== 'PluginTest') { throw new Error(`event.pluginName !== PluginTest`); }
    }
 
    /**
