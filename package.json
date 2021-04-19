@@ -19,7 +19,7 @@
     "@rollup/plugin-node-resolve": "^11",
     "@typhonjs-plugin/eventbus": "typhonjs-plugin/eventbus",
     "@typhonjs-utils/build-test": "^0.1.0",
-    "@typhonjs-utils/build-test-browser": "^0.0.2",
+    "@typhonjs-utils/build-test-browser": "^0.0.3",
     "@typhonjs-utils/object": "typhonjs-node-utils/object",
     "@typhonjs-utils/package-json": "typhonjs-node-utils/package-json",
     "rollup": "^2",
@@ -46,7 +46,7 @@
   "scripts": {
     "bundle": "rollup --config",
     "eslint": "eslint .",
-    "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary",
+    "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "npm run eslint && rollup --config rollup.config.browser.js",
     "pretest-node": "npm run eslint && npm run bundle",
     "prepublishOnly": "npm run test-node",
