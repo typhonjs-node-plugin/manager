@@ -24,7 +24,9 @@
    import chai              from './lib/chai.js';
    import chaiAsPromised    from './lib/chai-as-promised.js';
 
+   import PluginManager     from './PluginManager.js';
    import * as Module       from './PluginManager.js';
+
    import TestSuiteRunner   from './TestSuiteRunner.js';
 
    import mochaConsoleLog   from './lib/mochaConsoleLog.js';
@@ -70,7 +72,7 @@
 
    mocha.checkLeaks();
 
-   TestSuiteRunner.run(Module, data, chai);
+   TestSuiteRunner.run(PluginManager, Module, data, chai);
 
    mochaConsoleLog(mocha.run());
 </script>

@@ -20,11 +20,11 @@ if (s_RUNTIME) { s_TESTS.push(Runtime); }
 
 export default class TestSuiteRunner
 {
-   static run(PluginManager, config, chai)
+   static run(PluginManager, Module, data, chai)
    {
       for (const Test of s_TESTS)
       {
-         Test.run(PluginManager, config, chai);
+         Test.run(PluginManager, Module, data, chai);
       }
    }
 }

@@ -1,10 +1,10 @@
 export default class Runtime
 {
-   static run(Module, data, chai)
+   static run(PluginManager, Module, data, chai)
    {
       const { assert, expect } = chai;
 
-      const PluginManager = Module.default;
+      // const PluginManager = Module.default;
       const { Eventbus, EventbusProxy } = Module;
 
       describe(`Runtime (${data.suitePrefix}):`, () =>

@@ -14,11 +14,11 @@
 
 export default class APIErrorsPluginSupport
 {
-   static run(Module, data, chai)
+   static run(PluginManager, Module, data, chai)
    {
       const { assert } = chai;
 
-      const PluginManager = Module.default;
+      // const PluginManager = Module.default;
       const { Eventbus, PluginSupport } = Module;
 
       describe('PluginSupport:', () =>

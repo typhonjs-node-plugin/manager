@@ -1,11 +1,11 @@
 export default class IsValidConfig
 {
-   static run(Module, data, chai)
+   static run(PluginManager, Module, data, chai)
    {
       const { assert } = chai;
 
       const { isValidConfig } = Module;
-      const PluginManager = Module.default;
+      // const PluginManager = Module.default;
 
       describe('PluginConfig checks:', () =>
       {

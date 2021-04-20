@@ -5,6 +5,7 @@ import url                 from 'url';
 import chai                from 'chai';
 import chaiAsPromised      from 'chai-as-promised';
 
+import PluginManager       from '../../../dist/node/PluginManager.js';
 import * as Module         from '../../../dist/node/PluginManager.js';
 
 import TestSuiteRunner     from '../runner/TestSuiteRunner.js';
@@ -51,4 +52,4 @@ const data = {
    ]
 };
 
-TestSuiteRunner.run(Module, data, chai);
+TestSuiteRunner.run(PluginManager, Module, data, chai);

@@ -21,11 +21,11 @@ TODO: Implement
 
 export default class APIErrorsPluginSupport
 {
-   static run(Module, data, chai)
+   static run(PluginManager, Module, data, chai)
    {
       const { expect } = chai;
 
-      const PluginManager = Module.default;
+      // const PluginManager = Module.default;
       const { PluginSupport } = Module;
 
       describe('API Errors (PluginSupport):', () =>
