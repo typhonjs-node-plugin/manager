@@ -36,7 +36,9 @@
 
    chai.use(chaiAsPromised);
 
-   const moduleURL = new URL('http://localhost:8080/test/fixture/formats/esm/namedExport.js');
+   const port = window.location.port;
+
+   const moduleURL = new URL(`http://localhost:${port}/test/fixture/formats/esm/namedExport.js`);
    const moduleURLString = moduleURL.toString();
 
    const data = {

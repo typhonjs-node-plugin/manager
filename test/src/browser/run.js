@@ -9,7 +9,7 @@ fs.copySync('./test/fixture', './test/live-server/test/fixture');
 
 (async () =>
 {
-   await TestRunner.runServerAndTestSuite({ options: { reportDir: './coverage-browser' } });
+   await TestRunner.runServerAndTestSuite({ reportDir: './coverage-browser' });
 })().catch((err) =>
 {
    console.log(err);
