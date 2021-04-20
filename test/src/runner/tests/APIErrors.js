@@ -1,10 +1,10 @@
 export default class APIErrors
 {
-   static run(PluginManager, Module, data, chai)
+   static run(Module, data, chai)
    {
       const { expect } = chai;
 
-      // const PluginManager = Module.default;
+      const PluginManager = Module.default;
 
       describe('API Errors:', () =>
       {
