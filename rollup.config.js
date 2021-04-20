@@ -14,7 +14,9 @@ const s_DIST_PATH_NODE = './dist/node';
 const s_SOURCEMAP = true;
 
 // Adds Terser to the output plugins for server bundle if true.
-const s_MINIFY = false;
+const s_MINIFY = typeof process.env.ROLLUP_MINIFY === 'string' ? process.env.ROLLUP_MINIFY === 'true' : true;
+
+console.log(`!!!!!! rollup.config - process.env.ROLLUP_MINIFY: ${process.env.ROLLUP_MINIFY}\ns_MINIFY: ${s_MINIFY}`);
 
 export default () =>
 {
