@@ -425,7 +425,7 @@ export default class PluginSupport
     *
     * @param {string}     options.newPrepend - The new event prepend.
     */
-   async setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend } = {})
+   setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend } = {})
    {
       if (oldEventbus !== null && oldEventbus !== void 0)
       {

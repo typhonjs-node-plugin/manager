@@ -39,7 +39,7 @@ export default class APIErrorsPluginSupport
 
             assert.strictEqual(eventbus.eventCount, 0);
 
-            assert.isNull(pluginManager._pluginSupport);
+            assert.strictEqual(pluginManager._pluginSupport.length, 0);
          });
 
          it('get all plugin data', async () =>

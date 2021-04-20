@@ -63,7 +63,7 @@ export default class APIErrorsPluginSupport
                eventbus = pluginManager.getEventbus();
 
                // Artificially destroy the pluginManager
-               pluginManager._pluginSupport._pluginManager = null;
+               pluginManager._pluginSupport[0]._pluginManager = null;
             });
 
             for (const event of s_ALL_EVENTS)

@@ -140,16 +140,19 @@ export default class AbstractPluginManager
     * @param {boolean}  [options.throwNoPlugin=false] - If true then when no plugin is matched to be invoked an
     *                                                   exception will be thrown.
     *
-    * @param {PluginSupportImpl}  [options.PluginSupport] - Optional class to pass in which extends the plugin manager. A default
-    *                                              implementation is available: {@link PluginSupport}
+    * @param {PluginSupportImpl|PluginSupportImpl[]}  [options.PluginSupport] - Optional classes to pass in which
+    *                                                 extends the plugin manager. A default implementation is available:
+    *                                                 {@link PluginSupport}
     */
    constructor(options = {})
    {
       if (typeof options !== 'object') { throw new TypeError(`'options' is not an object.`); }
 
-      if (options.PluginSupport !== void 0 && typeof options.PluginSupport !== 'function')
+      if (options.PluginSupport !== void 0 && typeof options.PluginSupport !== 'function' &&
+       !Array.isArray(options.PluginSupport))
       {
-         throw new TypeError(`'options.pluginSupport' is not a constructor function.`);
+         throw new TypeError(
+          `'options.PluginSupport' must be a constructor function or array of such matching PluginSupportImpl.`);
       }
 
       /**
@@ -177,12 +180,24 @@ export default class AbstractPluginManager
       this._eventbusProxies = [];
 
       /**
-       * Provides an instance of PluginSupportImpl interface to extend the plugin manager through the eventbus API.
+       * Provides an array of PluginSupportImpl interfaces to extend the plugin manager through the eventbus API.
        *
-       * @type {PluginSupportImpl}
+       * @type {PluginSupportImpl[]}
        * @private
        */
-      this._pluginSupport = options.PluginSupport !== void 0 ? new options.PluginSupport(this) : null;
+      this._pluginSupport = [];
+
+      if (Array.isArray(options.PluginSupport))
+      {
+         for (const PluginSupport of options.PluginSupport)
+         {
+            this._pluginSupport.push(new PluginSupport(this));
+         }
+      }
+      else if (options.PluginSupport !== void 0)
+      {
+         this._pluginSupport.push(new options.PluginSupport(this));
+      }
 
       /**
        * Defines options for throwing exceptions. Turned off by default.
@@ -453,13 +468,12 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
       }
 
-      if (this._pluginSupport !== null && this._pluginSupport !== void 0)
+      for (const pluginSupport of this._pluginSupport)
       {
-         await this._pluginSupport.destroy({ eventbus: this._eventbus, eventPrepend: this._eventPrepend });
-
-         this._pluginSupport = null;
+         await pluginSupport.destroy({ eventbus: this._eventbus, eventPrepend: this._eventPrepend });
       }
 
+      this._pluginSupport = [];
       this._pluginMap = null;
       this._eventbus = null;
    }
@@ -1160,9 +1174,9 @@ export default class AbstractPluginManager
          newEventPrepend: eventPrepend
       });
 
-      if (this._pluginSupport !== null && this._pluginSupport !== void 0)
+      for (const pluginSupport of this._pluginSupport)
       {
-         this._pluginSupport.setEventbus({
+         pluginSupport.setEventbus({
             oldEventbus: this._eventbus,
             newEventbus: eventbus,
             oldPrepend,
@@ -1592,6 +1606,5 @@ const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, na
  * A method to invoke when the plugin manager eventbus is set.
  *
  * @function
- * @async
  * @name PluginSupportImpl#setEventbus
  */
