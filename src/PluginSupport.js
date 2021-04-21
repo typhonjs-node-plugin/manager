@@ -13,27 +13,27 @@ import PluginEntry   from './PluginEntry.js';
  * A default eventbus will be created, but you may also pass in an eventbus from `@typhonjs-plugin/eventbus` and the
  * plugin manager will register by default under these event categories:
  *
- * `plugins:get:all:plugin:data` - {@link AbstractPluginManager#getAllPluginData}
+ * `plugins:get:all:plugin:data` - {@link PluginSupport#getAllPluginData}
  *
- * `plugins:get:method:names` - {@link AbstractPluginManager#getMethodNames}
+ * `plugins:get:method:names` - {@link PluginSupport#getMethodNames}
  *
- * `plugins:get:plugin:data` - {@link AbstractPluginManager#getPluginData}
+ * `plugins:get:plugin:data` - {@link PluginSupport#getPluginData}
  *
- * `plugins:get:plugin:event:names` - {@link AbstractPluginManager#getPluginEventNames}
+ * `plugins:get:plugin:event:names` - {@link PluginSupport#getPluginEventNames}
  *
- * `plugins:get:plugin:method:names` - {@link AbstractPluginManager#getPluginMethodNames}
+ * `plugins:get:plugin:method:names` - {@link PluginSupport#getPluginMethodNames}
  *
- * `plugins:get:plugin:names` - {@link AbstractPluginManager#getPluginNames}
+ * `plugins:get:plugin:names` - {@link PluginSupport#getPluginNames}
  *
- * `plugins:get:plugin:options` - {@link AbstractPluginManager#getPluginOptions}
+ * `plugins:get:plugin:options` - {@link PluginSupport#getPluginOptions}
  *
- * `plugins:get:plugins:by:event:name` - {@link AbstractPluginManager#getPluginsByEventName}
+ * `plugins:get:plugins:by:event:name` - {@link PluginSupport#getPluginsByEventName}
  *
- * `plugins:get:plugins:event:names` - {@link AbstractPluginManager#getPluginsEventNames}
+ * `plugins:get:plugins:event:names` - {@link PluginSupport#getPluginsEventNames}
  *
- * `plugins:has:method` - {@link AbstractPluginManager#hasMethod}
+ * `plugins:has:method` - {@link PluginSupport#hasMethod}
  *
- * `plugins:has:plugin:method` - {@link AbstractPluginManager#hasPluginMethod}
+ * `plugins:has:plugin:method` - {@link PluginSupport#hasPluginMethod}
  *
  * @example
  *
@@ -227,7 +227,7 @@ export default class PluginSupport
 
       const entry = this.pluginMap.get(pluginName);
 
-      return entry instanceof PluginEntry && entry.eventbusProxy ? entry.eventbusProxy.proxyEventNames : [];
+      return entry instanceof PluginEntry && entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()) : [];
    }
 
    /**
