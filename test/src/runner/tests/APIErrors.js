@@ -84,12 +84,12 @@ export default class APIErrors
             it('invokeAsyncEvent - throws when called with empty parameters', async () =>
             {
                await expect(pluginManager.invokeAsyncEvent()).to.be.rejectedWith(TypeError,
-                `'methodName' is not a string.`);
+                `'method' is not a string.`);
             });
 
             it('invokeSyncEvent - throws when called with empty parameters', () =>
             {
-               expect(() => pluginManager.invokeSyncEvent()).to.throw(TypeError, `'methodName' is not a string.`);
+               expect(() => pluginManager.invokeSyncEvent()).to.throw(TypeError, `'method' is not a string.`);
             });
 
             it('pluginManager destroyed - all methods throw', async () =>

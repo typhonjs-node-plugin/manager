@@ -49,7 +49,7 @@ export default class Runtime
 
                pluginManager.add({ name: 'PluginTestSync', instance: { test: () => { invoked = true; } } });
 
-               pluginManager.invoke('test', void 0, 'PluginTestSync');
+               pluginManager.invoke({ method: 'test', plugins: 'PluginTestSync' });
 
                assert.strictEqual(invoked, true);
             });
@@ -68,7 +68,8 @@ export default class Runtime
             {
                pluginManager.add({ name: 'PluginTestAsync', instance: new data.plugins.PluginTestAsync() }).then(() =>
                {
-                  pluginManager.invokeAsync('test', [1, 2], 'PluginTestAsync').then((results) =>
+                  pluginManager.invokeAsync({ method: 'test', args: [1, 2], plugins: 'PluginTestAsync' }).then(
+                   (results) =>
                   {
                      assert.isNumber(results);
                      assert.strictEqual(results, 6);
@@ -84,7 +85,7 @@ export default class Runtime
                   { name: 'PluginTestAsync2', instance: new data.plugins.PluginTestAsync() }
                ]).then(() =>
                {
-                  pluginManager.invokeAsync('test', [1, 2]).then((results) =>
+                  pluginManager.invokeAsync({ method: 'test', args: [1, 2] }).then((results) =>
                   {
                      assert.isArray(results);
                      assert.isNumber(results[0]);
@@ -100,7 +101,8 @@ export default class Runtime
             {
                await pluginManager.add({ name: 'PluginTestAsync', instance: new data.plugins.PluginTestAsync() });
 
-               const results = await pluginManager.invokeAsync('test', [1, 2], 'PluginTestAsync');
+               const results = await pluginManager.invokeAsync(
+                { method: 'test', args: [1, 2], plugins: 'PluginTestAsync' });
 
                assert.isNumber(results);
                assert.strictEqual(results, 6);
@@ -111,7 +113,7 @@ export default class Runtime
                await pluginManager.add({ name: 'PluginTestAsync', instance: new data.plugins.PluginTestAsync() });
                await pluginManager.add({ name: 'PluginTestAsync2', instance: new data.plugins.PluginTestAsync() });
 
-               const results = await pluginManager.invokeAsync('test', [1, 2]);
+               const results = await pluginManager.invokeAsync({ method: 'test', args: [1, 2] });
 
                assert.isArray(results);
                assert.isNumber(results[0]);
@@ -133,7 +135,7 @@ export default class Runtime
 
             it('has empty result', async () =>
             {
-               const event = await pluginManager.invokeAsyncEvent('test');
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -145,7 +147,7 @@ export default class Runtime
                // No await necessary as instance used.
                pluginManager.add({ name: 'PluginTest', instance: new data.plugins.PluginTest() });
 
-               const event = await pluginManager.invokeAsyncEvent('nop');
+               const event = await pluginManager.invokeAsyncEvent({ method: 'nop' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -157,7 +159,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('nop');
+               const event = await pluginManager.invokeAsyncEvent({ method: 'nop' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -169,7 +171,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('nop');
+               const event = await pluginManager.invokeAsyncEvent({ method: 'nop' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -181,7 +183,7 @@ export default class Runtime
                // No await necessary as instance used.
                pluginManager.add({ name: 'PluginTest', instance: new data.plugins.PluginTest() });
 
-               const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -194,7 +196,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -207,7 +209,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -220,7 +222,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -235,7 +237,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('test', void 0, testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 2);
@@ -247,7 +249,7 @@ export default class Runtime
                // No await necessary as instance used.
                pluginManager.add({ name: 'PluginTest', instance: new data.plugins.PluginTest() });
 
-               const event = await pluginManager.invokeAsyncEvent('test', testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -261,7 +263,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('test', testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -276,7 +278,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = await pluginManager.invokeAsyncEvent('test', testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 2);
@@ -288,7 +290,7 @@ export default class Runtime
                await pluginManager.add({ name: 'PluginTestAsync', instance: new data.plugins.PluginTestAsync() });
                await pluginManager.add({ name: 'PluginTestAsync2', instance: new data.plugins.PluginTestAsync() });
 
-               const event = await pluginManager.invokeAsyncEvent('test2', testData);
+               const event = await pluginManager.invokeAsyncEvent({ method: 'test2', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 2);
@@ -309,7 +311,7 @@ export default class Runtime
             {
                pluginManager.add({ name: 'PluginTestSync', instance: new data.plugins.PluginTestSync() });
 
-               const result = pluginManager.invokeSync('test', [1, 2], 'PluginTestSync');
+               const result = pluginManager.invokeSync({ method: 'test', args: [1, 2], plugins: 'PluginTestSync' });
 
                assert.isNumber(result);
                assert.strictEqual(result, 6);
@@ -320,7 +322,7 @@ export default class Runtime
                pluginManager.add({ name: 'PluginTestSync', instance: new data.plugins.PluginTestSync() });
                pluginManager.add({ name: 'PluginTestSync2', instance: new data.plugins.PluginTestSync() });
 
-               const result = pluginManager.invokeSync('test', [1, 2]);
+               const result = pluginManager.invokeSync({ method: 'test', args: [1, 2] });
 
                assert.isArray(result);
                assert.strictEqual(result[0], 6);
@@ -340,7 +342,7 @@ export default class Runtime
 
             it('has empty result', () =>
             {
-               const event = pluginManager.invokeSyncEvent('test');
+               const event = pluginManager.invokeSyncEvent({ method: 'test' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -352,7 +354,7 @@ export default class Runtime
                // No await necessary as instance used.
                pluginManager.add({ name: 'PluginTest', instance: new data.plugins.PluginTest() });
 
-               const event = pluginManager.invokeSyncEvent('nop');
+               const event = pluginManager.invokeSyncEvent({ method: 'nop' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -364,7 +366,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('nop');
+               const event = pluginManager.invokeSyncEvent({ method: 'nop' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -376,7 +378,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('nop');
+               const event = pluginManager.invokeSyncEvent({ method: 'nop' });
 
                assert.isObject(event);
                assert.lengthOf(Object.keys(event), 2);
@@ -388,7 +390,7 @@ export default class Runtime
                // No await necessary as instance used.
                pluginManager.add({ name: 'PluginTest', instance: new data.plugins.PluginTest() });
 
-               const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -401,7 +403,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'StaticPluginTest', target: './test/fixture/plugins/StaticPluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -414,7 +416,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'modulePluginTest', target: './test/fixture/plugins/modulePluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -427,7 +429,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -442,7 +444,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('test', void 0, testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', passthruProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 2);
@@ -454,7 +456,7 @@ export default class Runtime
                // No await necessary as instance used.
                pluginManager.add({ name: 'PluginTest', instance: new data.plugins.PluginTest() });
 
-               const event = pluginManager.invokeSyncEvent('test', testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -468,7 +470,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('test', testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 1);
@@ -483,7 +485,7 @@ export default class Runtime
                await pluginManager.add(
                 { name: 'objectPluginTest', target: './test/fixture/plugins/objectPluginTest.js' });
 
-               const event = pluginManager.invokeSyncEvent('test', testData);
+               const event = pluginManager.invokeSyncEvent({ method: 'test', copyProps: testData });
 
                assert.isObject(event);
                assert.strictEqual(event.result.count, 2);
