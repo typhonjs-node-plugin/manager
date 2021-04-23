@@ -1,5 +1,3 @@
-import { EventbusProxy } from '@typhonjs-plugin/eventbus';
-
 /**
  * PluginEvent - Provides the data / event passed to all invoked methods in
  * {@link AbstractPluginManager#invokeSyncEvent}. The `event.data` field is returned to the caller. Before returning

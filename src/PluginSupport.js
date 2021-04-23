@@ -1,5 +1,3 @@
-import Eventbus      from '@typhonjs-plugin/eventbus';
-
 import PluginEntry   from './PluginEntry.js';
 
 /**
