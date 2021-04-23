@@ -67,10 +67,10 @@ export default class APIErrors
                 `A plugin already exists with name: NAME.`);
             });
 
-            it('addAll - pluginConfigs not array', async () =>
+            it('addAll - pluginConfigs not iterable', async () =>
             {
                await expect(pluginManager.addAll(false)).to.be.rejectedWith(TypeError,
-                `'pluginConfigs' is not an array.`);
+                `'pluginConfigs' is not iterable.`);
             });
 
             it('createEventbusProxy - throws when _eventbus is not set (artificial)', () =>
