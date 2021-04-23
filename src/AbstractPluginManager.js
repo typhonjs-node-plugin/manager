@@ -1534,7 +1534,6 @@ const s_INVOKE_SYNC_EVENTS = (methodName, copyProps = {}, passthruProps = {}, pl
  * @property {object}      [options] Defines an object of options for the plugin.
  */
 
-
 /**
  * @typedef {object} PluginData
  *

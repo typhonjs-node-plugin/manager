@@ -1,4 +1,4 @@
-import PluginEntry   from './PluginEntry.js';
+import PluginEntry      from './PluginEntry.js';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -479,52 +479,3 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
 
    return props;
 };
-
-/**
- * @typedef {object} PluginData
- *
- * @property {object}   manager - Data about the plugin manager
- *
- * @property {string}   manager.eventPrepend - The plugin manager event prepend string.
- *
- * @property {object}   module - Optional object hash to associate with plugin.
- *
- * @property {object}   plugin - Data about the plugin.
- *
- * @property {string}   plugin.name - The name of the plugin.
- *
- * @property {string}   plugin.scopedName - The name of the plugin with the plugin managers event prepend string.
- *
- * @property {string}   plugin.target - Defines the target NPM module to loaded or defines a local file (full
- *                               path or relative to current working directory to load.
- *
- * @property {string}   plugin.targetEscaped - Provides the target, but properly escaped for RegExp usage.
- *
- * @property {string}   plugin.type - The type of plugin: `instance` +
- *                                    In Node: `import-module`, `import-path`, `require-module`, or `require-path`.
- *                                    In Browser: `import-path`, `import-url`.
- *
- * @property {object}   plugin.options - Defines an object of options for the plugin.
- */
-
-/**
- * Interface for PluginSupport instances.
- *
- * @interface PluginSupportImpl
- */
-
-/**
- * A method to invoke when the plugin manager is destroyed.
- *
- * @function
- * @async
- * @name PluginSupportImpl#destroy
- */
-
-/**
- * A method to invoke when the plugin manager eventbus is set.
- *
- * @function
- * @async
- * @name PluginSupportImpl#setEventbus
- */
