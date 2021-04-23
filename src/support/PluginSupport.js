@@ -1,4 +1,4 @@
-import PluginEntry      from './PluginEntry.js';
+import PluginEntry from '../PluginEntry.js';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe

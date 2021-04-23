@@ -59,27 +59,6 @@ export default class PluginEntry
    }
 
    /**
-    * Provides a convenience method to escape file paths.
-    *
-    * @param {string}   value - A string to escape.
-    *
-    * @returns {string} An escaped string.
-    */
-   static escape(value)
-   {
-      if (typeof value !== 'string') { throw new TypeError(`'value' is not a string.`); }
-
-      // Remove any leading relative directory paths.
-      let escaped = value.replace(/^(\.\.|\.)/, '');
-
-      // Escape any forward / reverse slashes for RegExp creation.
-      escaped = escaped.replace(/[\\]/g, '\\');
-      escaped = escaped.replace(/[/]/g, '\\/');
-
-      return escaped;
-   }
-
-   /**
     * Get plugin data.
     *
     * @returns {PluginData} The associated PluginData.

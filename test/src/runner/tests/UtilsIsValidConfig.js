@@ -1,4 +1,4 @@
-export default class IsValidConfig
+export default class UtilsIsValidConfig
 {
    static run(Module, data, chai)
    {
@@ -7,7 +7,7 @@ export default class IsValidConfig
       const { isValidConfig } = Module;
       const PluginManager = Module.default;
 
-      describe('PluginConfig checks:', () =>
+      describe('Utility (PluginConfig):', () =>
       {
          describe('isValidConfig:', () =>
          {
@@ -20,6 +20,10 @@ export default class IsValidConfig
                assert.isTrue(isValidConfig({
                   name: 'test',
                   target: data.moduleURL
+               }));
+               assert.isTrue(isValidConfig({
+                  name: 'test',
+                  target: data.moduleURLString
                }));
             });
 
@@ -54,6 +58,10 @@ export default class IsValidConfig
                assert.isTrue(pluginManager.isValidConfig({
                   name: 'test',
                   target: data.moduleURL
+               }));
+               assert.isTrue(pluginManager.isValidConfig({
+                  name: 'test',
+                  target: data.moduleURLString
                }));
             });
 

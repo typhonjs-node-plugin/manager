@@ -5,7 +5,8 @@ import { deepFreeze, isIterable }   from '@typhonjs-utils/object';
 import PluginEntry                  from './PluginEntry.js';
 import PluginEvent                  from './PluginEvent.js';
 
-import isValidConfig                from './isValidConfig.js';
+import escapeTarget                 from './utils/escapeTarget.js';
+import isValidConfig                from './utils/isValidConfig.js';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -319,7 +320,7 @@ export default class AbstractPluginManager
             name: pluginConfig.name,
             scopedName: `${this._eventPrepend}:${pluginConfig.name}`,
             target,
-            targetEscaped: PluginEntry.escape(target),
+            targetEscaped: escapeTarget(target),
             type,
             options: pluginConfig.options || {}
          }
