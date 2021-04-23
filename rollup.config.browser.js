@@ -13,13 +13,6 @@ const relativeTestBrowserPath = path.relative(`${s_TEST_BROWSER_PATH}`, '.');
 
 export default () =>
 {
-   // Ignore circular dependency from @typhonjs-plugin/eventbus as it is valid.
-   const onwarn = (warning) =>
-   {
-      if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.match(/@typhonjs-plugin\/eventbus/)) { return; }
-      console.error(`(!) ${warning.message}`);
-   };
-
    return [{ // This bundle is for the Istanbul instrumented browser test.
          input: ['src/browser/index.js'],
          output: [{
@@ -32,8 +25,7 @@ export default () =>
          plugins: [
             resolve({ browser: true }),
             istanbul()
-         ],
-         onwarn
+         ]
       },
 
       // This bundle is the test suite

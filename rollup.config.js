@@ -31,13 +31,6 @@ export default () =>
    // const relativeDistBrowserPath = path.relative(`${s_DIST_PATH_BROWSER}`, '.');
    // const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
 
-   // Ignore circular dependency from @typhonjs-plugin/eventbus as it is valid.
-   const onwarn = (warning) =>
-   {
-      if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.match(/@typhonjs-plugin\/eventbus/)) { return; }
-      console.error(`(!) ${warning.message}`);
-   };
-
    return [{   // This bundle is for the Node distribution.
          input: ['src/node/index.js'],
          output: [{
@@ -50,8 +43,7 @@ export default () =>
          }],
          plugins: [
             resolve(),
-         ],
-         onwarn
+         ]
       },
 
       // This bundle is for the browser distribution.
@@ -67,8 +59,7 @@ export default () =>
          }],
          plugins: [
             resolve({ browser: true })
-         ],
-         onwarn
+         ]
       }
    ];
 };
