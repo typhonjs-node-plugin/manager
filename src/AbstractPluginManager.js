@@ -34,7 +34,7 @@ import isValidConfig                from './isValidConfig.js';
  *
  * `plugins:create:eventbus:proxy` - {@link AbstractPluginManager#createEventbusProxy}
  *
- * `plugins:get:enabled` - {@link AbstractPluginManager#getPluginsEnabled}
+ * `plugins:get:enabled` - {@link AbstractPluginManager#getEnabled}
  *
  * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
  *
@@ -44,7 +44,7 @@ import isValidConfig                from './isValidConfig.js';
  *
  * `plugins:is:valid:config` - {@link AbstractPluginManager#isValidConfig}
  *
- * `plugins:set:enabled` - {@link AbstractPluginManager#setPluginsEnabled}
+ * `plugins:set:enabled` - {@link AbstractPluginManager#setEnabled}
  *
  * `plugins:set:options` - {@link AbstractPluginManager#setOptions}
  *
@@ -432,13 +432,15 @@ export default class AbstractPluginManager
 
    /**
     * Destroys all managed plugins after unloading them.
+    *
+    * @returns {Promise<Array<PluginRemoveData>>} A list of plugin names and removal success state.
     */
    async destroy()
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       // Remove all plugins; this will invoke onPluginUnload.
-      await this.removeAll();
+      const results = await this.removeAll();
 
       // Destroy any EventbusProxy instances created.
       for (const eventbusProxy of this._eventbusProxies)
@@ -448,7 +450,7 @@ export default class AbstractPluginManager
 
       this._eventbusProxies = [];
 
-      if (this._eventbus !== null && typeof this._eventbus !== 'undefined')
+      if (this._eventbus !== null && this._eventbus !== void 0)
       {
          this._eventbus.off(`${this._eventPrepend}:async:add`, this._addEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:add:all`, this._addAllEventbus, this);
@@ -458,12 +460,12 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:async:remove`, this._removeEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
-         this._eventbus.off(`${this._eventPrepend}:get:enabled`, this.getPluginsEnabled, this);
+         this._eventbus.off(`${this._eventPrepend}:get:enabled`, this.getEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugin, this);
          this._eventbus.off(`${this._eventPrepend}:invoke`, this.invoke, this);
          this._eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
-         this._eventbus.off(`${this._eventPrepend}:set:enabled`, this.setPluginsEnabled, this);
+         this._eventbus.off(`${this._eventPrepend}:set:enabled`, this.setEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:sync:invoke`, this.invokeSync, this);
          this._eventbus.off(`${this._eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
@@ -477,6 +479,8 @@ export default class AbstractPluginManager
       this._pluginSupport = [];
       this._pluginMap = null;
       this._eventbus = null;
+
+      return results;
    }
 
    /**
@@ -531,26 +535,26 @@ export default class AbstractPluginManager
    /**
     * Returns the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {undefined|object}        [options] Options object. If undefined all plugin enabled state is returned.
+    * @param {object}                  [opts] Options object. If undefined all plugin enabled state is returned.
     *
-    * @param {string|Iterable<string>} [options.pluginNames] Plugin name or iterable list of names to get state.
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to get state.
     *
-    * @returns {boolean|Array<{pluginName: string, enabled: boolean}>} Enabled state for single plugin or array of
-    *                                                                  results for multiple plugins.
+    * @returns {boolean|Array<{name: string, enabled: boolean, loaded: boolean}>} Enabled state for single plugin or
+    *                                                                             array of results for multiple plugins.
     */
-   getPluginsEnabled({ pluginNames = [] } = {})
+   getEnabled({ plugins = [] } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof pluginNames !== 'string' && !isIterable(pluginNames))
+      if (typeof plugins !== 'string' && !isIterable(plugins))
       {
-         throw new TypeError(`'pluginNames' is not a string or iterable.`);
+         throw new TypeError(`'plugins' is not a string or iterable.`);
       }
 
       // Return a single boolean enabled result for a single plugin if found.
-      if (typeof pluginNames === 'string')
+      if (typeof plugins === 'string')
       {
-         const entry = this._pluginMap.get(pluginNames);
+         const entry = this._pluginMap.get(plugins);
          return entry instanceof PluginEntry && entry.enabled;
       }
 
@@ -558,21 +562,21 @@ export default class AbstractPluginManager
 
       let count = 0;
 
-      for (const pluginName of pluginNames)
+      for (const name of plugins)
       {
-         const entry = this._pluginMap.get(pluginName);
+         const entry = this._pluginMap.get(name);
          const loaded = entry instanceof PluginEntry;
-         results.push({ pluginName, enabled: loaded && entry.enabled, loaded });
+         results.push({ name, enabled: loaded && entry.enabled, loaded });
          count++;
       }
 
-      // Iterable pluginNames had no entries so return all plugin data.
+      // Iterable plugins had no entries so return all plugin data.
       if (count === 0)
       {
-         for (const [pluginName, entry] of this._pluginMap.entries())
+         for (const [name, entry] of this._pluginMap.entries())
          {
             const loaded = entry instanceof PluginEntry;
-            results.push({ pluginName, enabled: loaded && entry.enabled, loaded });
+            results.push({ name, enabled: loaded && entry.enabled, loaded });
          }
       }
 
@@ -582,17 +586,19 @@ export default class AbstractPluginManager
    /**
     * Returns true if there is a plugin loaded with the given plugin name.
     *
-    * @param {string}   pluginName Plugin name to test.
+    * @param {object}                  [opts] Options object. If undefined all plugin enabled state is returned.
+    *
+    * @param {string|Iterable<string>} [opts.plugin] Plugin name or iterable list of names to get state.
     *
     * @returns {boolean} True if a plugin exists.
     */
-   hasPlugin(pluginName)
+   hasPlugin({ plugin = void 0 } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
+      if (typeof plugin !== 'string') { throw new TypeError(`'plugin' is not a string.`); }
 
-      return this._pluginMap.has(pluginName);
+      return this._pluginMap.has(plugin);
    }
 
    /**
@@ -959,90 +965,132 @@ export default class AbstractPluginManager
    }
 
    /**
-    * Removes a plugin by name after unloading it and clearing any event bindings automatically.
+    * Removes a plugin by name or all names in an iterable list unloading them and clearing any event bindings
+    * automatically.
     *
-    * @param {string}   pluginName The plugin name to remove.
+    * @param {object}                  opts Options object
     *
-    * @returns {Promise<boolean>} Operation success.
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to remove.
+    *
+    * @returns {Promise<Array<PluginRemoveData>>} A list of plugin names and removal success state.
     */
-   async remove(pluginName)
+   async remove({ plugins = [] } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      const entry = this._pluginMap.get(pluginName);
-
-      if (entry instanceof PluginEntry)
+      if (typeof plugins !== 'string' && !isIterable(plugins))
       {
-         // Invoke private module method which allows skipping optional error checking.
-         await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, pluginName, this._pluginMap, this._options, false);
+         throw new TypeError(`'plugins' is not a string or iterable.`);
+      }
 
-         // Automatically remove any potential reference to a stored event proxy instance.
+      const removeEntry = async (entry) =>
+      {
+         const errors = [];
+
+         const pluginName = entry.name;
+
          try
          {
+            // Invoke private module method which allows skipping optional error checking.
+            await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, pluginName, this._pluginMap, this._options, false);
+         }
+         catch (err)
+         {
+            errors.push(err);
+         }
+
+         try
+         {
+            // Automatically remove any potential reference to a stored event proxy instance.
             entry.instance._eventbus = void 0;
          }
-         catch (err) { /* nop */ }
+         catch (err) { /* noop */ }
 
-         if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.destroy(); }
+         if (entry.eventbusProxy instanceof EventbusProxy)
+         { entry.eventbusProxy.destroy(); }
 
          this._pluginMap.delete(pluginName);
 
          // Invoke `typhonjs:plugin:manager:plugin:removed` allowing external code to react to plugin removed.
-         if (this._eventbus)
+         try
          {
-            await this._eventbus.triggerAsync(`typhonjs:plugin:manager:plugin:removed`,
-             JSON.parse(JSON.stringify(entry.data)));
+            if (this._eventbus)
+            {
+               await this._eventbus.triggerAsync(`typhonjs:plugin:manager:plugin:removed`,
+                JSON.parse(JSON.stringify(entry.data)));
+            }
+         }
+         catch (err)
+         {
+            errors.push(err);
          }
 
-         return true;
+         return { name: pluginName, success: errors.length === 0, errors };
+      };
+
+      const results = [];
+
+      // Return a single boolean enabled result for a single plugin if found.
+      if (typeof plugins === 'string')
+      {
+         const entry = this._pluginMap.get(plugins);
+
+         if (entry instanceof PluginEntry)
+         {
+            results.push(await removeEntry(entry));
+         }
+      }
+      else
+      {
+         for (const name of plugins)
+         {
+            const entry = this._pluginMap.get(name);
+
+            if (entry instanceof PluginEntry)
+            {
+               results.push(await removeEntry(entry));
+            }
+         }
       }
 
-      return false;
+      return results;
    }
 
    /**
     * Removes all plugins after unloading them and clearing any event bindings automatically.
     *
-    * @returns {Promise.<Array<{plugin: string, result: boolean}>>} A list of plugin names and removal success state.
+    * @returns {Promise.<Array<PluginRemoveData>>} A list of plugin names and removal success state.
     */
    async removeAll()
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      const values = [];
-
-      for (const pluginName of this._pluginMap.keys())
-      {
-         const result = await this.remove(pluginName);
-         values.push({ plugin: pluginName, result });
-      }
-
-      this._pluginMap.clear();
-
-      return values;
+      return this.remove({ plugins: Array.from(this._pluginMap.keys()) });
    }
 
    /**
     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
-    * @param {string}   pluginName The plugin name to remove.
+    * @param {object}                  opts Options object
     *
-    * @returns {Promise<boolean>} Operation success.
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to remove.
+    *
+    * @returns {Promise<PluginRemoveData>} A list of plugin names and removal success state.
     * @private
     */
-   async _removeEventbus(pluginName)
+   async _removeEventbus(opts)
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      return !this._options.noEventRemoval ? this.remove(pluginName) : false;
+      return !this._options.noEventRemoval ? this.remove(opts) : [];
    }
 
    /**
     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
-    * @returns {Promise.<Array<{plugin: string, result: boolean}>>} A list of plugin names and removal success state.
+    * @returns {Promise.<Array<PluginRemoveData>>} A list of plugin names and removal success state.
     * @private
     */
    async _removeAllEventbus()
@@ -1142,12 +1190,12 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:async:remove`, this._removeEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
-         this._eventbus.off(`${oldPrepend}:get:enabled`, this.getPluginsEnabled, this);
+         this._eventbus.off(`${oldPrepend}:get:enabled`, this.getEnabled, this);
          this._eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugin, this);
          this._eventbus.off(`${oldPrepend}:invoke`, this.invoke, this);
          this._eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
-         this._eventbus.off(`${oldPrepend}:set:enabled`, this.setPluginsEnabled, this);
+         this._eventbus.off(`${oldPrepend}:set:enabled`, this.setEnabled, this);
          this._eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
          this._eventbus.off(`${oldPrepend}:sync:invoke`, this.invokeSync, this);
          this._eventbus.off(`${oldPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
@@ -1161,12 +1209,12 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
       eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
-      eventbus.on(`${eventPrepend}:get:enabled`, this.getPluginsEnabled, this);
+      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
       eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this);
       eventbus.on(`${eventPrepend}:invoke`, this.invoke, this);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
-      eventbus.on(`${eventPrepend}:set:enabled`, this.setPluginsEnabled, this);
+      eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
       eventbus.on(`${eventPrepend}:sync:invoke`, this.invokeSync, this);
       eventbus.on(`${eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
@@ -1231,7 +1279,7 @@ export default class AbstractPluginManager
     *
     * @param {string|Iterable<string>} [options.plugins] Plugin name or iterable list of names to set state.
     */
-   setPluginsEnabled({ enabled, plugins = [] } = {})
+   setEnabled({ enabled, plugins = [] } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1580,6 +1628,16 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  *
  * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
  *                                       thrown.
+ */
+
+/**
+ * @typedef {object} PluginRemoveData
+ *
+ * @property {string}   plugin The plugin name
+ *
+ * @property {boolean}  success The success state for removal.
+ *
+ * @property {Error[]}  errors: A list of errors that may have been thrown during removal.
  */
 
 // TODO THIS NEEDS REFINEMENT
