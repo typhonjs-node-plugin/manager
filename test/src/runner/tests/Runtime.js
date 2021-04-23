@@ -556,7 +556,7 @@ export default class Runtime
 
                for (let cntr = 0; cntr < pData.length; cntr++)
                {
-                  assert.strictEqual(pData[cntr].plugin.name, data.pluginFormats[cntr].type);
+                  assert.strictEqual(pData[cntr].plugin.name, data.pluginFormats[cntr].name);
                   assert.strictEqual(pData[cntr].plugin.type, data.pluginFormats[cntr].type);
                }
 

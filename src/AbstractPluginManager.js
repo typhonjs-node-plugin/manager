@@ -152,7 +152,7 @@ export default class AbstractPluginManager
        !isIterable(options.PluginSupport))
       {
          throw new TypeError(
-          `'options.PluginSupport' must be a constructor function or array of such matching PluginSupportImpl.`);
+          `'PluginSupport' must be a constructor function or iterable of such matching PluginSupportImpl.`);
       }
 
       /**
@@ -1105,11 +1105,11 @@ export default class AbstractPluginManager
     * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
     * events will be removed from the old eventbus and then `onPluginLoad` will be called with the new eventbus.
     *
-    * @param {object}     options An options object.
+    * @param {object}     opts An options object.
     *
-    * @param {Eventbus}   options.eventbus The new eventbus to associate.
+    * @param {Eventbus}   opts.eventbus The new eventbus to associate.
     *
-    * @param {string}     [options.eventPrepend='plugins'] An optional string to prepend to all of the event
+    * @param {string}     [opts.eventPrepend='plugins'] An optional string to prepend to all of the event
     *                                                      binding targets.
     *
     * @returns {Promise<AbstractPluginManager>} This plugin manager.
@@ -1273,11 +1273,11 @@ export default class AbstractPluginManager
    /**
     * Sets the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {object}            options Options object.
+    * @param {object}            opts Options object.
     *
-    * @param {boolean}           options.enabled The enabled state.
+    * @param {boolean}           opts.enabled The enabled state.
     *
-    * @param {string|Iterable<string>} [options.plugins] Plugin name or iterable list of names to set state.
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to set state.
     */
    setEnabled({ enabled, plugins = [] } = {})
    {
@@ -1637,7 +1637,7 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  *
  * @property {boolean}  success The success state for removal.
  *
- * @property {Error[]}  errors: A list of errors that may have been thrown during removal.
+ * @property {Error[]}  errors A list of errors that may have been thrown during removal.
  */
 
 // TODO THIS NEEDS REFINEMENT
