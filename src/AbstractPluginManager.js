@@ -634,6 +634,8 @@ export default class AbstractPluginManager
       // Early out if plugins are not enabled.
       if (!this._options.pluginsEnabled) { return; }
 
+      const isArgsArray = Array.isArray(args);
+
       if (typeof plugins === 'string')
       {
          const plugin = this._pluginMap.get(plugins);
@@ -644,7 +646,7 @@ export default class AbstractPluginManager
 
             if (typeof plugin.instance[method] === 'function')
             {
-               Array.isArray(args) ? plugin.instance[method](...args) : plugin.instance[method](args);
+               isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
 
                hasMethod = true;
             }
@@ -662,7 +664,7 @@ export default class AbstractPluginManager
 
                if (typeof plugin.instance[method] === 'function')
                {
-                  Array.isArray(args) ? plugin.instance[method](...args) : plugin.instance[method](args);
+                  isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
 
                   hasMethod = true;
                }
@@ -721,11 +723,32 @@ export default class AbstractPluginManager
       // Early out if plugins are not enabled.
       if (!this._options.pluginsEnabled) { return result; }
 
-      try
+      const isArgsArray = Array.isArray(args);
+
+      if (typeof plugins === 'string')
       {
-         if (typeof plugins === 'string')
+         const plugin = this._pluginMap.get(plugins);
+
+         if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
          {
-            const plugin = this._pluginMap.get(plugins);
+            hasPlugin = true;
+
+            if (typeof plugin.instance[method] === 'function')
+            {
+               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+
+               // If we received a valid result push it to the results.
+               if (result !== void 0) { results.push(result); }
+
+               hasMethod = true;
+            }
+         }
+      }
+      else
+      {
+         for (const name of plugins)
+         {
+            const plugin = this._pluginMap.get(name);
 
             if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
             {
@@ -733,58 +756,38 @@ export default class AbstractPluginManager
 
                if (typeof plugin.instance[method] === 'function')
                {
-                  result = Array.isArray(args) ? plugin.instance[method](...args) :
-                   plugin.instance[method](args);
+                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
 
-                  // If we received a valid result return immediately.
-                  if (result !== null || typeof result !== 'undefined') { results.push(result); }
+                  // If we received a valid result push it to the results.
+                  if (result !== void 0) { results.push(result); }
 
                   hasMethod = true;
                }
             }
          }
-         else
-         {
-            for (const name of plugins)
-            {
-               const plugin = this._pluginMap.get(name);
-
-               if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-               {
-                  hasPlugin = true;
-
-                  if (typeof plugin.instance[method] === 'function')
-                  {
-                     result = Array.isArray(args) ? plugin.instance[method](...args) :
-                      plugin.instance[method](args);
-
-                     // If we received a valid result return immediately.
-                     if (result !== null || typeof result !== 'undefined') { results.push(result); }
-
-                     hasMethod = true;
-                  }
-               }
-            }
-         }
-
-         if (this._options.throwNoPlugin && !hasPlugin)
-         {
-            return Promise.reject(new Error(`PluginManager failed to find any target plugins.`));
-         }
-
-         if (this._options.throwNoMethod && !hasMethod)
-         {
-            return Promise.reject(new Error(`PluginManager failed to invoke '${method}'.`));
-         }
       }
-      catch (error)
+
+      if (this._options.throwNoPlugin && !hasPlugin)
       {
-         return Promise.reject(error);
+         throw new Error(`PluginManager failed to find any target plugins.`);
+      }
+
+      if (this._options.throwNoMethod && !hasMethod)
+      {
+          throw new Error(`PluginManager failed to invoke '${method}'.`);
       }
 
       // If there are multiple results then use Promise.all otherwise Promise.resolve.
-      // TODO Filter results for undefined values
-      return results.length > 1 ? Promise.all(results) : result;
+      return results.length > 1 ? Promise.all(results).then((values) =>
+      {
+         const filtered = values.filter((entry) => entry !== void 0);
+         switch (filtered.length)
+         {
+            case 0: return void 0;
+            case 1: return filtered[0];
+            default: return filtered;
+         }
+      }) : result;
    }
 
    /**
@@ -855,6 +858,8 @@ export default class AbstractPluginManager
       // Early out if plugins are not enabled.
       if (!this._options.pluginsEnabled) { return result; }
 
+      const isArgsArray = Array.isArray(args);
+
       if (typeof plugins === 'string')
       {
          const plugin = this._pluginMap.get(plugins);
@@ -865,10 +870,10 @@ export default class AbstractPluginManager
 
             if (typeof plugin.instance[method] === 'function')
             {
-               result = Array.isArray(args) ? plugin.instance[method](...args) : plugin.instance[method](args);
+               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
 
-               // If we received a valid result return immediately.
-               if (result !== null || typeof result !== 'undefined') { results.push(result); }
+               // If we received a valid result push it to the results.
+               if (result !== void 0) { results.push(result); }
 
                hasMethod = true;
             }
@@ -886,11 +891,10 @@ export default class AbstractPluginManager
 
                if (typeof plugin.instance[method] === 'function')
                {
-                  result = Array.isArray(args) ? plugin.instance[method](...args) :
-                   plugin.instance[method](args);
+                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
 
-                  // If we received a valid result return immediately.
-                  if (result !== null || typeof result !== 'undefined') { results.push(result); }
+                  // If we received a valid result push it to the results.
+                  if (result !== void 0) { results.push(result); }
 
                   hasMethod = true;
                }
