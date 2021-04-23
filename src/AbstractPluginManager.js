@@ -1136,15 +1136,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
          this._eventbus.off(`${oldPrepend}:sync:invoke`, this.invokeSync, this);
          this._eventbus.off(`${oldPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
-
-         // Invoke `typhonjs:plugin:manager:eventbus:removed` allowing external code to react to eventbus removal.
-         this._eventbus.trigger(`typhonjs:plugin:manager:eventbus:removed`,
-         {
-            oldEventbus: this._eventbus,
-            oldEventPrepend: oldPrepend,
-            newEventbus: eventbus,
-            newEventPrepend: eventPrepend
-         });
       }
 
       eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this);
@@ -1164,16 +1155,6 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
       eventbus.on(`${eventPrepend}:sync:invoke`, this.invokeSync, this);
       eventbus.on(`${eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
-
-      // TODO REMOVE
-      // // Invoke `typhonjs:plugin:manager:eventbus:set` allowing external code to react to eventbus set.
-      // eventbus.trigger('typhonjs:plugin:manager:eventbus:set',
-      // {
-      //    oldEventbus: this._eventbus,
-      //    oldEventPrepend: oldPrepend,
-      //    newEventbus: eventbus,
-      //    newEventPrepend: eventPrepend
-      // });
 
       for (const pluginSupport of this._pluginSupport)
       {
@@ -1322,7 +1303,7 @@ const s_INVOKE_ASYNC_EVENTS = async (methodName, copyProps = {}, passthruProps =
 
    if (typeof pluginNames !== 'string' && !isIterable(pluginNames))
    {
-      throw new TypeError(`'pluginNames' is not a string, array, or iterator.`);
+      throw new TypeError(`'pluginNames' is not a string or iterable.`);
    }
 
    // Track how many plugins were invoked.
