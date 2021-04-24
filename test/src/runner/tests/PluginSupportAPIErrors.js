@@ -1,15 +1,5 @@
 const s_ALL_EVENTS = [
-   'plugins:get:plugin:event:names',
-   'plugins:get:plugins:event:names',
-
-   'plugins:get:all:plugin:data',
-   'plugins:get:plugin:data',
-
    'plugins:get:method:names',
-   'plugins:get:plugin:method:names',
-   'plugins:get:plugin:names',
-   'plugins:get:plugin:options',
-   'plugins:get:plugins:by:event:name',
    'plugins:has:method',
    'plugins:has:plugin:method'
 ];
@@ -19,7 +9,7 @@ TODO: Implement
          assert.throws(() => pluginManager.getPluginsByEventName());
  */
 
-export default class APIErrorsPluginSupport
+export default class PluginSupportAPIErrors
 {
    static run(Module, data, chai)
    {

@@ -37,6 +37,14 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  *
  * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
  *
+ * `plugins:get:plugin:by:event` - {@link PluginSupport#getPluginByEvent}
+ *
+ * `plugins:get:plugin:data` - {@link PluginSupport#getPluginData}
+ *
+ * `plugins:get:plugin:events` - {@link PluginSupport#getPluginEvents}
+ *
+ * `plugins:get:plugin:names` - {@link PluginSupport#getPluginNames}
+ *
  * `plugins:has:plugin` - {@link AbstractPluginManager#hasPlugin}
  *
  * `plugins:invoke` - {@link AbstractPluginManager#invoke}
@@ -479,6 +487,10 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${this._eventPrepend}:get:enabled`, this.getEnabled, this);
+         this._eventbus.off(`${this._eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
+         this._eventbus.off(`${this._eventPrepend}:get:plugin:data`, this.getPluginData, this);
+         this._eventbus.off(`${this._eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
+         this._eventbus.off(`${this._eventPrepend}:get:plugin:names`, this.getPluginNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugin, this);
          this._eventbus.off(`${this._eventPrepend}:invoke`, this._invokeEventbus, this);
@@ -599,6 +611,196 @@ export default class AbstractPluginManager
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       return JSON.parse(JSON.stringify(this._options));
+   }
+
+   /**
+    * Returns the event binding names registered on any associated plugin EventbusProxy.
+    *
+    * @param {string}   pluginName - Plugin name to set state.
+    *
+    * @returns {string[]|DataOutPluginEvents[]} - Event binding names registered from the plugin.
+    */
+   getPluginByEvent({ event = void 0 } = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof event !== 'string' && !(event instanceof RegExp))
+      {
+         throw new TypeError(`'event' is not a string or RegExp.`);
+      }
+
+      const pluginEvents = this.getPluginEvents();
+
+      const results = [];
+
+      if (typeof event === 'string')
+      {
+         for (const entry of pluginEvents)
+         {
+            if (entry.events.includes(event)) { results.push(entry.plugin); }
+         }
+      }
+      else
+      {
+         for (const entry of pluginEvents)
+         {
+            for (const eventEntry of entry.events)
+            {
+               if (event.test(eventEntry))
+               {
+                  results.push(entry.plugin);
+                  break;
+               }
+            }
+         }
+      }
+
+      return results;
+   }
+
+   /**
+    * Gets the plugin data for a plugin, list of plugins, or all plugins.
+    *
+    * @param {object}                  [opts] Options object. If undefined all plugin data is returned.
+    *
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to get plugin data.
+    *
+    * @returns {PluginData|PluginData[]|undefined} The plugin data for a plugin or list of plugins.
+    */
+   getPluginData({ plugins = [] } = {})
+   {
+      if (this.isDestroyed)
+      { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof plugins !== 'string' && !isIterable(plugins))
+      {
+         throw new TypeError(`'plugins' is not a string or iterable.`);
+      }
+
+      // Return a PluginData result for a single plugin if found.
+      if (typeof plugins === 'string')
+      {
+         const entry = this._pluginMap.get(plugins);
+         return entry instanceof PluginEntry ? JSON.parse(JSON.stringify(entry.data)) : void 0;
+      }
+
+      const results = [];
+
+      let count = 0;
+
+      for (const name of plugins)
+      {
+         const entry = this._pluginMap.get(name);
+
+         if (entry instanceof PluginEntry)
+         {
+            results.push(JSON.parse(JSON.stringify(entry.data)));
+         }
+         count++;
+      }
+
+      // Iterable plugins had no entries so return all plugin data.
+      if (count === 0)
+      {
+         for (const entry of this._pluginMap.values())
+         {
+            if (entry instanceof PluginEntry)
+            {
+               results.push(JSON.parse(JSON.stringify(entry.data)));
+            }
+         }
+      }
+
+      return results;
+   }
+
+   /**
+    * Returns the event binding names registered on any associated plugin EventbusProxy.
+    *
+    * @param {string}   pluginName - Plugin name to set state.
+    *
+    * @returns {string[]|DataOutPluginEvents[]} - Event binding names registered from the plugin.
+    */
+   getPluginEvents({ plugins = [] } = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof plugins !== 'string' && !isIterable(plugins))
+      {
+         throw new TypeError(`'plugins' is not a string or iterable.`);
+      }
+
+      // Return a PluginData result for a single plugin if found.
+      if (typeof plugins === 'string')
+      {
+         const entry = this._pluginMap.get(plugins);
+         return entry instanceof PluginEntry && entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()) : [];
+      }
+
+      const results = [];
+
+      let count = 0;
+
+      for (const plugin of plugins)
+      {
+         const entry = this._pluginMap.get(plugin);
+
+         if (entry instanceof PluginEntry)
+         {
+            results.push({
+               plugin,
+               events: entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()).sort() : []
+            });
+         }
+         count++;
+      }
+
+      // Iterable plugins had no entries so return all plugin data.
+      if (count === 0)
+      {
+         for (const entry of this._pluginMap.values())
+         {
+            if (entry instanceof PluginEntry)
+            {
+               results.push({
+                  plugin: entry.name,
+                  events: entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()).sort() : []
+               });
+            }
+         }
+      }
+
+      return results;
+   }
+
+   /**
+    * Returns all plugin names or if enabled is set then return plugins matching the enabled state.
+    *
+    * @param {object}  [opts] Options object.
+    *
+    * @param {boolean} [opts.enabled] - If enabled is a boolean it will return plugins given their enabled state.
+    *
+    * @returns {string[]} A list of plugin names optionally by enabled state.
+    */
+   getPluginNames({ enabled = void 0 } = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (enabled !== void 0 && typeof enabled !== 'boolean')
+      {
+         throw new TypeError(`'enabled' is not a boolean.`);
+      }
+
+      const anyEnabledState = enabled === void 0;
+
+      const results = [];
+
+      for (const entry of this._pluginMap.values())
+      {
+         if (anyEnabledState || entry.enabled === enabled) { results.push(entry.name); }
+      }
+
+      return results.sort();
    }
 
    /**
@@ -1344,6 +1546,10 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${oldPrepend}:get:enabled`, this.getEnabled, this);
          this._eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
+         this._eventbus.off(`${oldPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
+         this._eventbus.off(`${oldPrepend}:get:plugin:data`, this.getPluginData, this);
+         this._eventbus.off(`${oldPrepend}:get:plugin:events`, this.getPluginEvents, this);
+         this._eventbus.off(`${oldPrepend}:get:plugin:names`, this.getPluginNames, this);
          this._eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugin, this);
          this._eventbus.off(`${oldPrepend}:invoke`, this._invokeEventbus, this);
          this._eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
@@ -1363,6 +1569,10 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
       eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
+      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
+      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this);
+      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
+      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this);
       eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this);
       eventbus.on(`${eventPrepend}:invoke`, this._invokeEventbus, this);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
@@ -1658,7 +1868,7 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
 /**
  * @typedef {object} DataOutPluginEnabled
  *
- * @property {string}   plugin The plugin name
+ * @property {string}   plugin The plugin name.
  *
  * @property {boolean}  enabled The enabled state of the plugin.
  *
@@ -1668,7 +1878,7 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
 /**
  * @typedef {object} DataOutPluginRemoved
  *
- * @property {string}   plugin The plugin name
+ * @property {string}   plugin The plugin name.
  *
  * @property {boolean}  success The success state for removal.
  *
@@ -1693,7 +1903,7 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
 /**
  * @typedef {object} PluginData
  *
- * @property {object}   manager Data about the plugin manager
+ * @property {object}   manager Data about the plugin manager.
  *
  * @property {string}   manager.eventPrepend The plugin manager event prepend string.
  *
