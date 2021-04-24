@@ -56,6 +56,14 @@ export default class PluginEntry
        * @private
        */
       this._eventbusProxy = eventbusProxy;
+
+      /**
+       * Stores the proxied event names, callback functions, and context when this plugin is disabled.
+       *
+       * @type {Array<Array<string, Function, object>>}
+       * @private
+       */
+      this._events = void 0;
    }
 
    /**
@@ -86,6 +94,28 @@ export default class PluginEntry
        * @private
        */
       this._enabled = enabled;
+
+      // If enabled and there are stored events then turn them on with the eventbus proxy.
+      if (enabled)
+      {
+         if (this._eventbusProxy !== void 0 && Array.isArray(this._events))
+         {
+            for (const event of this._events)
+            {
+               this._eventbusProxy.on(...event);
+            }
+
+            this._events = void 0;
+         }
+      }
+      else // Store any proxied events and unregister the proxied events.
+      {
+         if (this._eventbusProxy !== void 0)
+         {
+            this._events = Array.from(this._eventbusProxy.proxyEntries());
+            this._eventbusProxy.off();
+         }
+      }
    }
 
    /**

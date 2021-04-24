@@ -124,7 +124,7 @@ export default class PluginInvokeSupport
       {
          const entry = this.pluginMap.get(name);
 
-         if (entry.instance && (anyEnabledState || entry.enabled === enabled))
+         if (entry !== void 0 && entry.instance && (anyEnabledState || entry.enabled === enabled))
          {
             for (const name of s_GET_ALL_PROPERTY_NAMES(entry.instance))
             {
@@ -187,7 +187,7 @@ export default class PluginInvokeSupport
       if (typeof plugins === 'string')
       {
          const entry = this.pluginMap.get(plugins);
-         return typeof entry.instance[method] === 'function';
+         return entry !== void 0 && typeof entry.instance[method] === 'function';
       }
 
       let count = 0;
@@ -196,7 +196,7 @@ export default class PluginInvokeSupport
       {
          const entry = this.pluginMap.get(name);
 
-         if (typeof entry.instance[method] === 'function') { return false; }
+         if (entry !== void 0 && typeof entry.instance[method] === 'function') { return false; }
 
          count++;
       }
@@ -252,7 +252,7 @@ export default class PluginInvokeSupport
       {
          const plugin = this.pluginMap.get(plugins);
 
-         if (plugin.enabled && plugin.instance)
+         if (plugin !== void 0 && plugin.enabled && plugin.instance)
          {
             hasPlugin = true;
 
@@ -270,7 +270,7 @@ export default class PluginInvokeSupport
          {
             const plugin = this.pluginMap.get(name);
 
-            if (plugin.enabled && plugin.instance)
+            if (plugin !== void 0 && plugin.enabled && plugin.instance)
             {
                hasPlugin = true;
 
@@ -341,7 +341,7 @@ export default class PluginInvokeSupport
       {
          const plugin = this.pluginMap.get(plugins);
 
-         if (plugin.enabled && plugin.instance)
+         if (plugin !== void 0 && plugin.enabled && plugin.instance)
          {
             hasPlugin = true;
 
@@ -362,7 +362,7 @@ export default class PluginInvokeSupport
          {
             const plugin = this.pluginMap.get(name);
 
-            if (plugin.enabled && plugin.instance)
+            if (plugin !== void 0 && plugin.enabled && plugin.instance)
             {
                hasPlugin = true;
 
@@ -476,7 +476,7 @@ export default class PluginInvokeSupport
       {
          const plugin = this.pluginMap.get(plugins);
 
-         if (plugin.enabled && plugin.instance)
+         if (plugin !== void 0 && plugin.enabled && plugin.instance)
          {
             hasPlugin = true;
 
@@ -497,7 +497,7 @@ export default class PluginInvokeSupport
          {
             const plugin = this.pluginMap.get(name);
 
-            if (plugin.enabled && plugin.instance)
+            if (plugin !== void 0 && plugin.enabled && plugin.instance)
             {
                hasPlugin = true;
 

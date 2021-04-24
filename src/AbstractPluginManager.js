@@ -547,7 +547,7 @@ export default class AbstractPluginManager
       if (typeof plugins === 'string')
       {
          const entry = this._pluginMap.get(plugins);
-         return entry instanceof PluginEntry && entry.enabled;
+         return entry !== void 0 && entry.enabled;
       }
 
       const results = [];
@@ -557,7 +557,7 @@ export default class AbstractPluginManager
       for (const name of plugins)
       {
          const entry = this._pluginMap.get(name);
-         const loaded = entry instanceof PluginEntry;
+         const loaded = entry !== void 0;
          results.push({ name, enabled: loaded && entry.enabled, loaded });
          count++;
       }
@@ -567,7 +567,7 @@ export default class AbstractPluginManager
       {
          for (const [name, entry] of this._pluginMap.entries())
          {
-            const loaded = entry instanceof PluginEntry;
+            const loaded = entry !== void 0;
             results.push({ name, enabled: loaded && entry.enabled, loaded });
          }
       }
@@ -667,7 +667,7 @@ export default class AbstractPluginManager
       if (typeof plugins === 'string')
       {
          const entry = this._pluginMap.get(plugins);
-         return entry instanceof PluginEntry ? JSON.parse(JSON.stringify(entry.data)) : void 0;
+         return entry !== void 0 ? JSON.parse(JSON.stringify(entry.data)) : void 0;
       }
 
       const results = [];
@@ -678,7 +678,7 @@ export default class AbstractPluginManager
       {
          const entry = this._pluginMap.get(name);
 
-         if (entry instanceof PluginEntry)
+         if (entry !== void 0)
          {
             results.push(JSON.parse(JSON.stringify(entry.data)));
          }
@@ -690,7 +690,7 @@ export default class AbstractPluginManager
       {
          for (const entry of this._pluginMap.values())
          {
-            if (entry instanceof PluginEntry)
+            if (entry !== void 0)
             {
                results.push(JSON.parse(JSON.stringify(entry.data)));
             }
@@ -720,7 +720,7 @@ export default class AbstractPluginManager
       if (typeof plugins === 'string')
       {
          const entry = this._pluginMap.get(plugins);
-         return entry instanceof PluginEntry && entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()) : [];
+         return entry !== void 0 && entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()) : [];
       }
 
       const results = [];
@@ -731,7 +731,7 @@ export default class AbstractPluginManager
       {
          const entry = this._pluginMap.get(plugin);
 
-         if (entry instanceof PluginEntry)
+         if (entry !== void 0)
          {
             results.push({
                plugin,
@@ -746,7 +746,7 @@ export default class AbstractPluginManager
       {
          for (const entry of this._pluginMap.values())
          {
-            if (entry instanceof PluginEntry)
+            if (entry !== void 0)
             {
                results.push({
                   plugin: entry.name,
@@ -902,7 +902,7 @@ export default class AbstractPluginManager
       {
          const entry = this._pluginMap.get(plugins);
 
-         if (entry instanceof PluginEntry)
+         if (entry !== void 0)
          {
             results.push(await removeEntry(entry));
          }
@@ -913,7 +913,7 @@ export default class AbstractPluginManager
          {
             const entry = this._pluginMap.get(name);
 
-            if (entry instanceof PluginEntry)
+            if (entry !== void 0)
             {
                results.push(await removeEntry(entry));
             }
@@ -989,7 +989,7 @@ export default class AbstractPluginManager
 
       const setEntryEnabled = (entry) =>
       {
-         if (entry instanceof PluginEntry)
+         if (entry !== void 0)
          {
             entry.enabled = enabled;
 
