@@ -18,7 +18,10 @@ export default class PluginEvent
    constructor(copyProps = {}, passthruProps = {})
    {
       /**
-       * Provides the unified event data assigning any pass through data to the copied data supplied.
+       * Provides the unified event data assigning any pass through data to the copied data supplied. Invoked functions
+       * may add to or modify this data.
+       *
+       * @type {PluginEventData}
        */
       this.data = Object.assign(JSON.parse(JSON.stringify(copyProps)), passthruProps);
 

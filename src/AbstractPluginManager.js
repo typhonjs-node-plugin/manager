@@ -13,9 +13,6 @@ import isValidConfig                from './utils/isValidConfig.js';
  * and protected manner across NPM modules, local files, and preloaded object instances. This pattern facilitates
  * message passing between modules versus direct dependencies / method invocation.
  *
- * It isn't necessary to use an eventbus associated with the plugin manager though invocation then relies on invoking
- * methods directly with the plugin manager instance.
- *
  * A default eventbus will be created, but you may also pass in an eventbus from `@typhonjs-plugin/eventbus` and the
  * plugin manager will register by default under these event categories:
  *
@@ -53,17 +50,16 @@ import isValidConfig                from './utils/isValidConfig.js';
  *
  * `plugins:sync:invoke:event` - {@link AbstractPluginManager#invokeSyncEvent}
  *
- * Automatically when a plugin is loaded and unloaded respective callbacks `onPluginLoad` and `onPluginUnload` will
+ * Automatically when a plugin is loaded and unloaded respective functions `onPluginLoad` and `onPluginUnload` will
  * be attempted to be invoked on the plugin. This is an opportunity for the plugin to receive any associated eventbus
  * and wire itself into it. It should be noted that a protected proxy around the eventbus is passed to the plugins
  * such that when the plugin is removed automatically all events registered on the eventbus are cleaned up without
  * a plugin author needing to do this manually in the `onPluginUnload` callback. This solves any dangling event binding
  * issues.
  *
- * By supporting ES Modules in Node and the browser and CJS on Node the plugin manager is by nature asynchronous for
- * the
- * core methods of adding / removing plugins and destroying the manager. The lifecycle methods `onPluginLoad` and
- * `onPluginUnload` will be awaited on such that if a plugin returns a Promise or is an async method
+ * By supporting ES Modules / CommonJS in Node and ES Modules in the browser the plugin manager is by nature
+ * asynchronous for the core methods of adding / removing plugins and destroying the manager. The lifecycle methods
+ * `onPluginLoad` and `onPluginUnload` will be awaited on such that if a plugin returns a Promise or is an async method
  * then it will complete before execution continues.
  *
  * It is recommended to interact with the plugin manager eventbus through an eventbus proxy. The
@@ -80,8 +76,8 @@ import isValidConfig                from './utils/isValidConfig.js';
  *
  * const pluginManager = new PluginManager();
  *
- * pluginManager.add({ name: 'an-npm-plugin-enabled-module' });
- * pluginManager.add({ name: 'my-local-module', target: './myModule.js' });
+ * await pluginManager.add({ name: 'an-npm-plugin-enabled-module' });
+ * await pluginManager.add({ name: 'my-local-module', target: './myModule.js' });
  *
  * const eventbus = pluginManager.createEventbusProxy();
  *
@@ -94,10 +90,15 @@ import isValidConfig                from './utils/isValidConfig.js';
  * assert(eventbus.triggerSync('cool:event') === true);
  * assert(eventbus.triggerSync('hot:event') === false);
  *
- * // One can also indirectly invoke any method of the plugin via:
- * eventbus.triggerSync('plugins:invoke:sync:event', 'aCoolMethod'); // Any plugin with a method named `aCoolMethod` is
- *    invoked. eventbus.triggerSync('plugins:invoke:sync:event', 'aCoolMethod', {}, {},
- *    'an-npm-plugin-enabled-module'); // specific invocation.
+ * // One can also indirectly invoke any method of the plugin.
+ * // Any plugin with a method named `aCoolMethod` is invoked.
+ * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
+ *
+ * // A specific invocation just for the 'an-npm-plugin-enabled-module'
+ * eventbus.triggerSync('plugins:invoke:sync:event', {
+ *    method: 'aCoolMethod',
+ *    plugins: 'an-npm-plugin-enabled-module'
+ * });
  *
  * // The 3rd parameter will make a copy of the hash and the 4th defines a pass through object hash sending a single
  * // event / object hash to the invoked method.
@@ -105,22 +106,22 @@ import isValidConfig                from './utils/isValidConfig.js';
  * // -----------------------
  *
  * // Given that `@typhonjs-plugin/eventbus/instances` defines a global / process level eventbus you can import it in
- *    an
- * entirely different file or even NPM module and invoke methods of loaded plugins like this:
+ * // an entirely different file or even NPM module and invoke methods of loaded plugins like this:
  *
  * import eventbus from '@typhonjs-plugin/eventbus/instances';
  *
- * eventbus.triggerSync('plugins:invoke', 'aCoolMethod'); // Any plugin with a method named `aCoolMethod` is invoked.
+ * // Any plugin with a method named `aCoolMethod` is invoked.
+ * eventbus.triggerSync('plugins:invoke', 'aCoolMethod');
  *
  * assert(eventbus.triggerSync('cool:event') === true);
  *
- * eventbus.trigger('plugins:remove', 'an-npm-plugin-enabled-module'); // Removes the plugin and unregisters events.
+ * // Removes the plugin and unregisters events.
+ * await eventbus.triggerAsync('plugins:remove', 'an-npm-plugin-enabled-module');
  *
  * assert(eventbus.triggerSync('cool:event') === true); // Will now fail!
  *
  * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the
- *    main
- * // thread of execution scope to remove all plugins and the plugin manager event bindings!
+ * // main thread of execution scope to remove all plugins and the plugin manager event bindings!
  */
 export default class AbstractPluginManager
 {
@@ -236,7 +237,7 @@ export default class AbstractPluginManager
     *
     * @param {object}         [moduleData] Optional object hash to associate with plugin.
     *
-    * @returns {Promise<PluginData|undefined>} The PluginData that represents the plugin added.
+    * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
     */
    async add(pluginConfig, moduleData)
    {
@@ -354,7 +355,7 @@ export default class AbstractPluginManager
     *
     * @param {object}                  [moduleData] Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<PluginData[]>} An array of PluginData objects of all loaded plugins.
+    * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
     */
    async addAll(pluginConfigs = [], moduleData)
    {
@@ -382,7 +383,7 @@ export default class AbstractPluginManager
     *
     * @param {object}         [moduleData] Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<PluginData|undefined>} - Operation success.
+    * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
     * @private
     */
    async _addEventbus(pluginConfig, moduleData)
@@ -400,7 +401,7 @@ export default class AbstractPluginManager
     *
     * @param {object}                  [moduleData] Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<PluginData[]>} An array of PluginData objects of all loaded plugins.
+    * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
     * @private
     */
    async _addAllEventbus(pluginConfigs, moduleData)
@@ -434,7 +435,7 @@ export default class AbstractPluginManager
    /**
     * Destroys all managed plugins after unloading them.
     *
-    * @returns {Promise<Array<PluginRemoveData>>} A list of plugin names and removal success state.
+    * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async destroy()
    {
@@ -490,7 +491,7 @@ export default class AbstractPluginManager
     * code removing plugins in this manner.
     *
     * @private
-    * @returns {Promise} The promise returned from `destroy` or immediate resolution.
+    * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async _destroyEventbus()
    {
@@ -512,7 +513,7 @@ export default class AbstractPluginManager
    /**
     * Returns any associated eventbus.
     *
-    * @returns {Eventbus|null} The associated eventbus.
+    * @returns {Eventbus} The associated eventbus.
     */
    getEventbus()
    {
@@ -540,8 +541,8 @@ export default class AbstractPluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to get state.
     *
-    * @returns {boolean|Array<{name: string, enabled: boolean, loaded: boolean}>} Enabled state for single plugin or
-    *                                                                             array of results for multiple plugins.
+    * @returns {boolean|DataOutPluginEnabled[]} Enabled state for single plugin or array of results for multiple
+    *                                           plugins.
     */
    getEnabled({ plugins = [] } = {})
    {
@@ -605,11 +606,11 @@ export default class AbstractPluginManager
    /**
     * This dispatch method simply invokes any plugin targets for the given method name.
     *
-    * @param {object}            opts Options object.
+    * @param {object}   opts Options object.
     *
-    * @param {string}            opts.method Method name to invoke.
+    * @param {string}   opts.method Method name to invoke.
     *
-    * @param {Array<*>}          [opts.args] Method arguments. This array will be spread as multiple arguments.
+    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
     *
     * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
     */
@@ -688,15 +689,15 @@ export default class AbstractPluginManager
     * This dispatch method is asynchronous and adds any returned results to an array which is resolved via Promise.all
     * Any target invoked may return a Promise or any result.
     *
-    * @param {object}            opts Options object.
+    * @param {object}   opts Options object.
     *
-    * @param {string}            opts.method Method name to invoke.
+    * @param {string}   opts.method Method name to invoke.
     *
-    * @param {Array<*>}          [opts.args] Method arguments. This array will be spread as multiple arguments.
+    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
     *
     * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {Promise<*|Array<*>>} A Promise with any returned results.
+    * @returns {Promise<*|*[]>} A single result or array of results.
     */
    async invokeAsync({ method, args = void 0, plugins = void 0 } = {})
    {
@@ -794,17 +795,17 @@ export default class AbstractPluginManager
    /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
-    * @param {object}            opts Options object.
+    * @param {object}   opts Options object.
     *
-    * @param {string}            opts.method Method name to invoke.
+    * @param {string}   opts.method Method name to invoke.
     *
-    * @param {object}            [opts.copyProps] Properties that are copied.
+    * @param {object}   [opts.copyProps] Properties that are copied.
     *
-    * @param {object}            [opts.passthruProps] Properties that are passed through.
+    * @param {object}   [opts.passthruProps] Properties that are passed through.
     *
     * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {Promise<PluginEvent>} A PluginEvent representing the invocation results.
+    * @returns {PluginEventData} The PluginEvent data.
     */
    async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -823,15 +824,15 @@ export default class AbstractPluginManager
     * This dispatch method synchronously passes back a single value or an array with all results returned by any
     * invoked targets.
     *
-    * @param {object}            opts Options object.
+    * @param {object}   opts Options object.
     *
-    * @param {string}            opts.method Method name to invoke.
+    * @param {string}   opts.method Method name to invoke.
     *
-    * @param {Array<*>}          [opts.args] Method arguments. This array will be spread as multiple arguments.
+    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
     *
     * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {*|Array<*>} An array of results.
+    * @returns {*|*[]} A single result or array of results.
     */
    invokeSync({ method, args = void 0, plugins = void 0 } = {})
    {
@@ -930,7 +931,7 @@ export default class AbstractPluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {PluginEvent|undefined} A plugin event with invocation results.
+    * @returns {PluginEventData} The PluginEvent data.
     */
    invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -977,7 +978,7 @@ export default class AbstractPluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to remove.
     *
-    * @returns {Promise<Array<PluginRemoveData>>} A list of plugin names and removal success state.
+    * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async remove({ plugins = [] } = {})
    {
@@ -1064,7 +1065,7 @@ export default class AbstractPluginManager
    /**
     * Removes all plugins after unloading them and clearing any event bindings automatically.
     *
-    * @returns {Promise.<Array<PluginRemoveData>>} A list of plugin names and removal success state.
+    * @returns {Promise.<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async removeAll()
    {
@@ -1081,7 +1082,7 @@ export default class AbstractPluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to remove.
     *
-    * @returns {Promise<PluginRemoveData>} A list of plugin names and removal success state.
+    * @returns {Promise<DataOutPluginRemoved>} A list of plugin names and removal success state.
     * @private
     */
    async _removeEventbus(opts)
@@ -1095,7 +1096,7 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
-    * @returns {Promise.<Array<PluginRemoveData>>} A list of plugin names and removal success state.
+    * @returns {Promise.<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     * @private
     */
    async _removeAllEventbus()
@@ -1103,6 +1104,67 @@ export default class AbstractPluginManager
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       if (!this._options.noEventRemoval) { return this.removeAll(); }
+   }
+
+   /**
+    * Sets the enabled state of a plugin, a list of plugins, or all plugins.
+    *
+    * @param {object}            opts Options object.
+    *
+    * @param {boolean}           opts.enabled The enabled state.
+    *
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to set state.
+    */
+   setEnabled({ enabled, plugins = [] } = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (typeof plugins !== 'string' && !isIterable(plugins))
+      {
+         throw new TypeError(`'plugins' is not a string or iterable.`);
+      }
+
+      if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
+
+      const setEntryEnabled = (entry) =>
+      {
+         if (entry instanceof PluginEntry)
+         {
+            entry.enabled = enabled;
+
+            // Invoke `typhonjs:plugin:manager:plugin:enabled` allowing external code to react to plugin enabled state.
+            if (this._eventbus)
+            {
+               this._eventbus.trigger(`typhonjs:plugin:manager:plugin:enabled`, Object.assign({
+                  enabled
+               }, JSON.parse(JSON.stringify(entry.data))));
+            }
+         }
+      };
+
+      // Set enabled state for a single plugin if found.
+      if (typeof plugins === 'string')
+      {
+         setEntryEnabled(this._pluginMap.get(plugins));
+      }
+
+      let count = 0;
+
+      // First attempt to iterate through plugins.
+      for (const pluginName of plugins)
+      {
+         setEntryEnabled(this._pluginMap.get(pluginName));
+         count++;
+      }
+
+      // If plugins is empty then set all plugins enabled state.
+      if (count === 0)
+      {
+         for (const pluginEntry of this._pluginMap.values())
+         {
+            setEntryEnabled(pluginEntry);
+         }
+      }
    }
 
    /**
@@ -1274,67 +1336,6 @@ export default class AbstractPluginManager
 
       if (!this._options.noEventOptions) { this.setOptions(options); }
    }
-
-   /**
-    * Sets the enabled state of a plugin, a list of plugins, or all plugins.
-    *
-    * @param {object}            opts Options object.
-    *
-    * @param {boolean}           opts.enabled The enabled state.
-    *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to set state.
-    */
-   setEnabled({ enabled, plugins = [] } = {})
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof plugins !== 'string' && !isIterable(plugins))
-      {
-         throw new TypeError(`'plugins' is not a string or iterable.`);
-      }
-
-      if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
-
-      const setEntryEnabled = (entry) =>
-      {
-         if (entry instanceof PluginEntry)
-         {
-            entry.enabled = enabled;
-
-            // Invoke `typhonjs:plugin:manager:plugin:enabled` allowing external code to react to plugin enabled state.
-            if (this._eventbus)
-            {
-               this._eventbus.trigger(`typhonjs:plugin:manager:plugin:enabled`, Object.assign({
-                  enabled
-               }, JSON.parse(JSON.stringify(entry.data))));
-            }
-         }
-      };
-
-      // Set enabled state for a single plugin if found.
-      if (typeof plugins === 'string')
-      {
-         setEntryEnabled(this._pluginMap.get(plugins));
-      }
-
-      let count = 0;
-
-      // First attempt to iterate through plugins.
-      for (const pluginName of plugins)
-      {
-         setEntryEnabled(this._pluginMap.get(pluginName));
-         count++;
-      }
-
-      // If plugins is empty then set all plugins enabled state.
-      if (count === 0)
-      {
-         for (const pluginEntry of this._pluginMap.values())
-         {
-            setEntryEnabled(pluginEntry);
-         }
-      }
-   }
 }
 
 // Module Private ----------------------------------------------------------------------------------------------------
@@ -1360,7 +1361,7 @@ export default class AbstractPluginManager
  *
  * @param {boolean}                    [performErrorCheck=true] If false optional error checking is disabled.
  *
- * @returns {Promise<PluginEvent>} A PluginEvent representing the invocation results.
+ * @returns {Promise<PluginEventData>} The PluginEvent data.
  */
 const s_INVOKE_ASYNC_EVENTS = async (method, copyProps = {}, passthruProps = {}, plugins, pluginMap, options,
  performErrorCheck = true) =>
@@ -1478,7 +1479,7 @@ const s_INVOKE_ASYNC_EVENTS = async (method, copyProps = {}, passthruProps = {},
  *
  * @param {boolean}                    [performErrorCheck=true] If false optional error checking is disabled.
  *
- * @returns {PluginEvent} A PluginEvent representing the invocation results.
+ * @returns {PluginEventData} The PluginEvent data.
  */
 const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugins, pluginMap, options,
  performErrorCheck = true) =>
@@ -1569,6 +1570,26 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
 };
 
 /**
+ * @typedef {object} DataOutPluginEnabled
+ *
+ * @property {string}   plugin The plugin name
+ *
+ * @property {boolean}  enabled The enabled state of the plugin.
+ *
+ * @property {boolean}  loaded True if the plugin is actually loaded.
+ */
+
+/**
+ * @typedef {object} DataOutPluginRemoved
+ *
+ * @property {string}   plugin The plugin name
+ *
+ * @property {boolean}  success The success state for removal.
+ *
+ * @property {Error[]}  errors A list of errors that may have been thrown during removal.
+ */
+
+/**
  * @typedef {object} PluginConfig
  *
  * @property {string}      name Defines the name of the plugin; if no `target` entry is present the name
@@ -1612,6 +1633,11 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  */
 
 /**
+ * @typedef {object} PluginEventData Provides the unified event data including any pass through data to the copied data
+ *                                   supplied. Invoked functions may add to or modify this data.
+ */
+
+/**
  * @typedef {object} PluginManagerOptions
  *
  * @property {boolean}   [pluginsEnabled] If false all plugins are disabled.
@@ -1633,16 +1659,6 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  *
  * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
  *                                       thrown.
- */
-
-/**
- * @typedef {object} PluginRemoveData
- *
- * @property {string}   plugin The plugin name
- *
- * @property {boolean}  success The success state for removal.
- *
- * @property {Error[]}  errors A list of errors that may have been thrown during removal.
  */
 
 // TODO THIS NEEDS REFINEMENT
