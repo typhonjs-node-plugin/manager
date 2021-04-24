@@ -7,7 +7,7 @@ export default class Runtime
       const PluginManager = Module.default;
       const { PluginInvokeSupport } = Module;
 
-      describe(`Runtime (${data.suitePrefix}):`, () =>
+      describe(`PluginInvokeSupport Runtime (invoke):`, () =>
       {
          describe('invoke:', () =>
          {

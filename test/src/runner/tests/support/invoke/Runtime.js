@@ -1,14 +1,3 @@
-// const s_ALL_EVENTS = [
-//    'plugins:get:method:names',
-//    'plugins:get:plugin:data',
-//    'plugins:get:plugin:events',
-//    'plugins:get:plugin:method:names',
-//    'plugins:get:plugin:names',
-//    'plugins:get:plugins:by:event:name',
-//    'plugins:has:method',
-//    'plugins:has:plugin:method'
-// ];
-
 export default class Runtime
 {
    static run(Module, data, chai)
@@ -18,7 +7,7 @@ export default class Runtime
       const PluginManager = Module.default;
       const { Eventbus, PluginInvokeSupport } = Module;
 
-      describe('PluginInvokeSupport:', () =>
+      describe('PluginInvokeSupport Runtime:', () =>
       {
          let eventbus, pluginManager;
 

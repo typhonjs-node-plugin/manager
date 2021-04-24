@@ -12,8 +12,6 @@ import invokeSyncEvent  from '../../invoke/invokeSyncEvent.js';
  *
  * `plugins:has:method` - {@link PluginInvokeSupport#hasMethod}
  *
- * `plugins:has:plugin:method` - {@link PluginInvokeSupport#hasPluginMethod}
- *
  * `plugins:invoke` - {@link PluginInvokeSupport#invoke}
  *
  * `plugins:sync:invoke` - {@link PluginInvokeSupport#invokeSync}
@@ -74,7 +72,6 @@ export default class PluginInvokeSupport
          eventbus.off(`${eventPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
          eventbus.off(`${eventPrepend}:get:method:names`, this.getMethodNames, this);
          eventbus.off(`${eventPrepend}:has:method`, this.hasMethod, this);
-         eventbus.off(`${eventPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          eventbus.off(`${eventPrepend}:invoke`, this.invoke, this);
          eventbus.off(`${eventPrepend}:sync:invoke`, this.invokeSync, this);
          eventbus.off(`${eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
@@ -161,46 +158,59 @@ export default class PluginInvokeSupport
    }
 
    /**
-    * Returns true if there is at least one plugin loaded with the given method name.
+    * Checks if the provided method name exists across all plugins or specific plugins if defined.
     *
-    * @param {string}   methodName - Method name to test.
+    * @param {object}                  opts Options object.
+    *
+    * @param {string}                  opts.method Method name to test.
+    *
+    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to check for method. If
+    *                                                 undefined all plugins must contain the method.
     *
     * @returns {boolean} - True method is found.
     */
-   hasMethod(methodName)
+   hasMethod({ method, plugins = [] } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof methodName !== 'string') { throw new TypeError(`'methodName' is not a string.`); }
-
-      for (const plugin of this.pluginMap.values())
+      if (typeof method !== 'string')
       {
-         if (typeof plugin.instance[methodName] === 'function') { return true; }
+         throw new TypeError(`'method' is not a string.`);
       }
 
-      return false;
-   }
+      if (typeof plugins !== 'string' && !isIterable(plugins))
+      {
+         throw new TypeError(`'plugins' is not a string or iterable.`);
+      }
 
-   /**
-    * Returns true if there is a plugin loaded with the given plugin name that also has a method with the given
-    * method name.
-    *
-    * @param {string}   pluginName - Plugin name to test.
-    * @param {string}   methodName - Method name to test.
-    *
-    * @returns {boolean} - True if a plugin and method exists.
-    */
-   hasPluginMethod(pluginName, methodName)
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+      // Return a single boolean enabled result for a single plugin if found.
+      if (typeof plugins === 'string')
+      {
+         const entry = this.pluginMap.get(plugins);
+         return typeof entry.instance[method] === 'function';
+      }
 
-      if (typeof pluginName !== 'string') { throw new TypeError(`'pluginName' is not a string.`); }
-      if (typeof methodName !== 'string') { throw new TypeError(`'methodName' is not a string.`); }
+      let count = 0;
 
-      const plugin = this.pluginMap.get(pluginName);
+      for (const name of plugins)
+      {
+         const entry = this.pluginMap.get(name);
 
-      // TODO FIXED: CHECK THIS THOUGH
-      return typeof plugin.instance[methodName] === 'function';
+         if (typeof entry.instance[method] === 'function') { return false; }
+
+         count++;
+      }
+
+      // Iterable plugins had no entries so return all plugin data.
+      if (count === 0)
+      {
+         for (const entry of this.pluginMap.values())
+         {
+            if (typeof entry.instance[method] === 'function') { return false; }
+         }
+      }
+
+      return true;
    }
 
    /**
@@ -569,7 +579,6 @@ export default class PluginInvokeSupport
          oldEventbus.off(`${oldPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
          oldEventbus.off(`${oldPrepend}:get:method:names`, this.getMethodNames, this);
          oldEventbus.off(`${oldPrepend}:has:method`, this.hasMethod, this);
-         oldEventbus.off(`${oldPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          oldEventbus.off(`${oldPrepend}:invoke`, this.invoke, this);
          oldEventbus.off(`${oldPrepend}:sync:invoke`, this.invokeSync, this);
          oldEventbus.off(`${oldPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
@@ -581,7 +590,6 @@ export default class PluginInvokeSupport
          newEventbus.on(`${newPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
          newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this);
          newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this);
-         newEventbus.on(`${newPrepend}:has:plugin:method`, this.hasPluginMethod, this);
          newEventbus.on(`${newPrepend}:invoke`, this.invoke, this);
          newEventbus.on(`${newPrepend}:sync:invoke`, this.invokeSync, this);
          newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);

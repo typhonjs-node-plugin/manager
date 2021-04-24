@@ -7,7 +7,7 @@ export default class Runtime
       const PluginManager = Module.default;
       const { Eventbus, EventbusProxy } = Module;
 
-      describe(`Runtime (${data.suitePrefix}):`, () =>
+      describe(`Core Runtime (${data.suitePrefix}):`, () =>
       {
          describe('Type checks:', () =>
          {

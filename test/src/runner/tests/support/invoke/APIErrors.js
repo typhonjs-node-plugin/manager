@@ -6,7 +6,6 @@ const s_ASYNC_EVENTS = [
 const s_SYNC_EVENTS = [
    'plugins:get:method:names',
    'plugins:has:method',
-   'plugins:has:plugin:method',
    'plugins:invoke',
    'plugins:sync:invoke',
    'plugins:sync:invoke:event'
@@ -21,7 +20,7 @@ export default class APIErrors
       const PluginManager = Module.default;
       const { PluginInvokeSupport } = Module;
 
-      describe('API Errors (PluginInvokeSupport):', () =>
+      describe('PluginInvokeSupport API Errors:', () =>
       {
          describe('All sync triggered events throw:', () =>
          {
