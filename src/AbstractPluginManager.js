@@ -1632,6 +1632,7 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  * @property {object}   plugin.options Defines an object of options for the plugin.
  */
 
+// eslint-disable-next-line jsdoc/require-property
 /**
  * @typedef {object} PluginEventData Provides the unified event data including any pass through data to the copied data
  *                                   supplied. Invoked functions may add to or modify this data.
