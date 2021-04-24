@@ -117,7 +117,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  *
  * // Removes the plugin and unregisters events.
  * await eventbus.triggerAsync('plugins:remove', 'an-npm-plugin-enabled-module');
- *
+ *s
  * assert(eventbus.triggerSync('cool:event') === true); // Will now fail!
  *
  * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the
@@ -125,6 +125,10 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  */
 export default class AbstractPluginManager
 {
+   #privateTest = 'CAN_SEE_TEST';
+
+   get test() { return this.#privateTest; }
+
    /**
     * Instantiates AbstractPluginManager
     *

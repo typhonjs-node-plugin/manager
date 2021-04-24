@@ -11,16 +11,16 @@ import PISRuntimeInvokeASync  from './tests/support/invoke/RuntimeInvokeAsync.js
 import PISRuntimeInvokeSync   from './tests/support/invoke/RuntimeInvokeSync.js';
 
 const s_API_ERRORS                  = true;
-const s_RUNTIME                     = true;
+const s_RUNTIME                     = false;
 
-const s_UTILS_ESCAPE_TARGET         = true;
-const s_UTILS_IS_VALID_CONFIG       = true;
+const s_UTILS_ESCAPE_TARGET         = false;
+const s_UTILS_IS_VALID_CONFIG       = false;
 
-const s_PIS_API_ERRORS              = true;
-const s_PIS_RUNTIME                 = true;
-const s_PIS_RUNTIME_INVOKE          = true;
-const s_PIS_RUNTIME_INVOKE_ASYNC    = true;
-const s_PIS_RUNTIME_INVOKE_SYNC     = true;
+const s_PIS_API_ERRORS              = false;
+const s_PIS_RUNTIME                 = false;
+const s_PIS_RUNTIME_INVOKE          = false;
+const s_PIS_RUNTIME_INVOKE_ASYNC    = false;
+const s_PIS_RUNTIME_INVOKE_SYNC     = false;
 
 const s_TESTS = [];
 

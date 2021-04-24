@@ -2,7 +2,7 @@ export default class APIErrors
 {
    static run(Module, data, chai)
    {
-      const { expect } = chai;
+      const { assert, expect } = chai;
 
       const PluginManager = Module.default;
 
@@ -15,7 +15,13 @@ export default class APIErrors
             pluginManager = new PluginManager();
          });
 
-         it('constructor - throws w/ options not an object', async () =>
+         it('can see private class variable', () =>
+         {
+            assert.strictEqual(pluginManager.test, 'CAN_SEE_TEST');
+            assert.isUndefined(pluginManager.privateTest);
+         });
+
+         it('constructor - throws w/ options not an object', () =>
          {
             expect(() => new PluginManager(false)).to.throw(TypeError, `'options' is not an object.`);
          });
