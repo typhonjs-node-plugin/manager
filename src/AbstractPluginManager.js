@@ -1,12 +1,13 @@
 import Eventbus                     from '@typhonjs-plugin/eventbus';
 import { EventbusProxy }            from '@typhonjs-plugin/eventbus';
-import { deepFreeze, isIterable }   from '@typhonjs-utils/object';
 
 import PluginEntry                  from './PluginEntry.js';
 import PluginEvent                  from './PluginEvent.js';
 
 import escapeTarget                 from './utils/escapeTarget.js';
 import isValidConfig                from './utils/isValidConfig.js';
+
+import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -136,25 +137,36 @@ export default class AbstractPluginManager
     * @param {string}   [options.eventPrepend='plugin'] A customized name to prepend PluginManager events on the
     *                                                   eventbus.
     *
-    * @param {boolean}  [options.throwNoMethod=false] If true then when a method fails to be invoked by any plugin
-    *                                                 an exception will be thrown.
-    *
-    * @param {boolean}  [options.throwNoPlugin=false] If true then when no plugin is matched to be invoked an
-    *                                                 exception will be thrown.
-    *
     * @param {PluginSupportImpl|Iterable<PluginSupportImpl>} [options.PluginSupport] Optional classes to pass in which
     *                                                 extends the plugin manager. A default implementation is available:
     *                                                 {@link PluginSupport}
+    *
+    * @param {PluginManagerOptions}  [options.manager] The plugin manager options.
     */
    constructor(options = {})
    {
-      if (typeof options !== 'object') { throw new TypeError(`'options' is not an object.`); }
+      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
+
+      if (options.eventbus !== void 0 && !isObject(options.eventbus))
+      {
+         throw new TypeError(`'options.eventbus' is not an Eventbus.`);
+      }
+
+      if (options.eventPrepend !== void 0 && typeof options.eventPrepend !== 'string')
+      {
+         throw new TypeError(`'options.eventPrepend' is not a string.`);
+      }
 
       if (options.PluginSupport !== void 0 && typeof options.PluginSupport !== 'function' &&
        !isIterable(options.PluginSupport))
       {
          throw new TypeError(
-          `'PluginSupport' must be a constructor function or iterable of such matching PluginSupportImpl.`);
+          `'options.PluginSupport' must be a constructor function or iterable of such matching PluginSupportImpl.`);
+      }
+
+      if (options.manager !== void 0 && !isObject(options.manager))
+      {
+         throw new TypeError(`'options.manager' is not an object.`);
       }
 
       /**
@@ -203,7 +215,10 @@ export default class AbstractPluginManager
       }
 
       /**
-       * Defines options for throwing exceptions. Turned off by default.
+       * Defines various options for the plugin manager. By default plugins are enabled, no event invoke, and no
+       * event set options are enabled; the latter two preventing invoke dispatch methods functioning on the eventbus
+       * along with not being able to set the plugin manager options by the eventbus. These must be explicitly turned
+       * off.
        *
        * @type {PluginManagerOptions}
        * @private
@@ -213,6 +228,7 @@ export default class AbstractPluginManager
          pluginsEnabled: true,
          noEventAdd: false,
          noEventDestroy: false,
+         noEventInvoke: true,
          noEventOptions: true,
          noEventRemoval: false,
          throwNoMethod: false,
@@ -224,7 +240,7 @@ export default class AbstractPluginManager
          eventPrepend: options.eventPrepend
       });
 
-      this.setOptions(options);
+      this.setOptions(options.manager);
    }
 
    /**
@@ -457,20 +473,20 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:async:add`, this._addEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:add:all`, this._addAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:async:invoke`, this.invokeAsync, this);
-         this._eventbus.off(`${this._eventPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
+         this._eventbus.off(`${this._eventPrepend}:async:invoke`, this._invokeAsyncEventbus, this);
+         this._eventbus.off(`${this._eventPrepend}:async:invoke:event`, this._invokeAsyncEventEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:remove`, this._removeEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${this._eventPrepend}:get:enabled`, this.getEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugin, this);
-         this._eventbus.off(`${this._eventPrepend}:invoke`, this.invoke, this);
+         this._eventbus.off(`${this._eventPrepend}:invoke`, this._invokeEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
          this._eventbus.off(`${this._eventPrepend}:set:enabled`, this.setEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:sync:invoke`, this.invokeSync, this);
-         this._eventbus.off(`${this._eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
+         this._eventbus.off(`${this._eventPrepend}:sync:invoke`, this._invokeSyncEventbus, this);
+         this._eventbus.off(`${this._eventPrepend}:sync:invoke:event`, this._invokeSyncEventEventbus, this);
       }
 
       for (const pluginSupport of this._pluginSupport)
@@ -508,30 +524,6 @@ export default class AbstractPluginManager
    get isDestroyed()
    {
       return this._pluginMap === null || this._pluginMap === void 0;
-   }
-
-   /**
-    * Returns any associated eventbus.
-    *
-    * @returns {Eventbus} The associated eventbus.
-    */
-   getEventbus()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      return this._eventbus;
-   }
-
-   /**
-    * Returns a copy of the plugin manager options.
-    *
-    * @returns {PluginManagerOptions} A copy of the plugin manager options.
-    */
-   getOptions()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      return JSON.parse(JSON.stringify(this._options));
    }
 
    /**
@@ -583,6 +575,30 @@ export default class AbstractPluginManager
       }
 
       return results;
+   }
+
+   /**
+    * Returns any associated eventbus.
+    *
+    * @returns {Eventbus} The associated eventbus.
+    */
+   getEventbus()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      return this._eventbus;
+   }
+
+   /**
+    * Returns a copy of the plugin manager options.
+    *
+    * @returns {PluginManagerOptions} A copy of the plugin manager options.
+    */
+   getOptions()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      return JSON.parse(JSON.stringify(this._options));
    }
 
    /**
@@ -683,6 +699,19 @@ export default class AbstractPluginManager
       {
          throw new Error(`PluginManager failed to invoke '${method}'.`);
       }
+   }
+
+   /**
+    * Provides the eventbus callback which may prevent plugin manager dispatch for invoke if options
+    * `noEventInvoke` is enabled.
+    *
+    * @private
+    */
+   _invokeEventbus()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!this._options.noEventInvoke) { this.invoke(...arguments); }
    }
 
    /**
@@ -793,6 +822,20 @@ export default class AbstractPluginManager
    }
 
    /**
+    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeAsync if options
+    * `noEventInvoke` is enabled.
+    *
+    * @returns {Promise<*|*[]>} A single result or array of results.
+    * @private
+    */
+   async _invokeAsyncEventbus()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!this._options.noEventInvoke) { return this.invokeAsync(...arguments); }
+   }
+
+   /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
     * @param {object}   opts Options object.
@@ -805,7 +848,7 @@ export default class AbstractPluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {PluginEventData} The PluginEvent data.
+    * @returns {Promise<PluginEventData>} The PluginEvent data.
     */
    async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -818,6 +861,20 @@ export default class AbstractPluginManager
 
       // Invokes the private internal async events method with optional error checking enabled.
       return s_INVOKE_ASYNC_EVENTS(method, copyProps, passthruProps, plugins, this._pluginMap, this._options);
+   }
+
+   /**
+    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeAsyncEvent if options
+    * `noEventInvoke` is enabled.
+    *
+    * @returns {Promise<PluginEventData>} The PluginEvent data.
+    * @private
+    */
+   async _invokeAsyncEventEventbus()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!this._options.noEventInvoke) { return this.invokeAsyncEvent(...arguments); }
    }
 
    /**
@@ -919,6 +976,20 @@ export default class AbstractPluginManager
    }
 
    /**
+    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeSyncEvent if options
+    * `noEventInvoke` is enabled.
+    *
+    * @returns {*|*[]} A single result or array of results.
+    * @private
+    */
+   async _invokeSyncEventbus()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!this._options.noEventInvoke) { return this.invokeSync(...arguments); }
+   }
+
+   /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
     * @param {object}            opts Options object.
@@ -944,6 +1015,20 @@ export default class AbstractPluginManager
 
       // Invokes the private internal sync events method with optional error checking enabled.
       return s_INVOKE_SYNC_EVENTS(method, copyProps, passthruProps, plugins, this._pluginMap, this._options);
+   }
+
+   /**
+    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeSyncEvent if options
+    * `noEventInvoke` is enabled.
+    *
+    * @returns {PluginEventData} The PluginEvent data.
+    * @private
+    */
+   async _invokeSyncEventEventbus()
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!this._options.noEventInvoke) { return this.invokeSyncEvent(...arguments); }
    }
 
    /**
@@ -1252,39 +1337,39 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:async:add`, this._addEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:add:all`, this._addAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-         this._eventbus.off(`${oldPrepend}:async:invoke`, this.invokeAsync, this);
-         this._eventbus.off(`${oldPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
+         this._eventbus.off(`${oldPrepend}:async:invoke`, this._invokeAsyncEventbus, this);
+         this._eventbus.off(`${oldPrepend}:async:invoke:event`, this._invokeAsyncEventEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:remove`, this._removeEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
          this._eventbus.off(`${oldPrepend}:get:enabled`, this.getEnabled, this);
          this._eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugin, this);
-         this._eventbus.off(`${oldPrepend}:invoke`, this.invoke, this);
+         this._eventbus.off(`${oldPrepend}:invoke`, this._invokeEventbus, this);
          this._eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
          this._eventbus.off(`${oldPrepend}:set:enabled`, this.setEnabled, this);
          this._eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
-         this._eventbus.off(`${oldPrepend}:sync:invoke`, this.invokeSync, this);
-         this._eventbus.off(`${oldPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
+         this._eventbus.off(`${oldPrepend}:sync:invoke`, this._invokeSyncEventbus, this);
+         this._eventbus.off(`${oldPrepend}:sync:invoke:event`, this._invokeSyncEventEventbus, this);
       }
 
       eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this);
       eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this);
       eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-      eventbus.on(`${eventPrepend}:async:invoke`, this.invokeAsync, this);
-      eventbus.on(`${eventPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
+      eventbus.on(`${eventPrepend}:async:invoke`, this._invokeAsyncEventbus, this);
+      eventbus.on(`${eventPrepend}:async:invoke:event`, this._invokeAsyncEventEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
       eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
       eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
       eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this);
-      eventbus.on(`${eventPrepend}:invoke`, this.invoke, this);
+      eventbus.on(`${eventPrepend}:invoke`, this._invokeEventbus, this);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
       eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
-      eventbus.on(`${eventPrepend}:sync:invoke`, this.invokeSync, this);
-      eventbus.on(`${eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
+      eventbus.on(`${eventPrepend}:sync:invoke`, this._invokeSyncEventbus, this);
+      eventbus.on(`${eventPrepend}:sync:invoke:event`, this._invokeSyncEventEventbus, this);
 
       for (const pluginSupport of this._pluginSupport)
       {
@@ -1302,7 +1387,7 @@ export default class AbstractPluginManager
    }
 
    /**
-    * Set optional parameters. All parameters are off by default.
+    * Set optional parameters.
     *
     * @param {PluginManagerOptions} options Defines optional parameters to set.
     */
@@ -1310,11 +1395,12 @@ export default class AbstractPluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof options !== 'object') { throw new TypeError(`'options' is not an object.`); }
+      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
 
       if (typeof options.pluginsEnabled === 'boolean') { this._options.pluginsEnabled = options.pluginsEnabled; }
       if (typeof options.noEventAdd === 'boolean') { this._options.noEventAdd = options.noEventAdd; }
       if (typeof options.noEventDestroy === 'boolean') { this._options.noEventDestroy = options.noEventDestroy; }
+      if (typeof options.noEventInvoke === 'boolean') { this._options.noEventInvoke = options.noEventInvoke; }
       if (typeof options.noEventOptions === 'boolean') { this._options.noEventOptions = options.noEventOptions; }
       if (typeof options.noEventRemoval === 'boolean') { this._options.noEventRemoval = options.noEventRemoval; }
       if (typeof options.throwNoMethod === 'boolean') { this._options.throwNoMethod = options.throwNoMethod; }
@@ -1649,8 +1735,12 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  * @property {boolean}   [noEventDestroy] If true this prevents the plugin manager from being destroyed by
  *                                        `plugins:destroy:manager` forcing direct method invocation for destruction.
  *
+ * @property {boolean}   [noEventInvoke] If true this prevents the plugin manager from being able to invoke methods
+ *                                       from the eventbus via `plugins:async:invoke`, `plugins:async:invoke:event`,
+ *                                       `plugins:invoke`, `plugins:sync:invoke`, and `plugins:sync:invoke:event`.
+ *
  * @property {boolean}   [noEventOptions] If true this prevents setting options for the plugin manager by
- *                                        `plugins:destroy:manager` forcing direct method invocation for destruction.
+ *                                        `plugins:set:options` forcing direct method invocation for setting options.
  *
  * @property {boolean}   [noEventRemoval] If true this prevents plugins from being removed by `plugins:remove` and
  *                                        `plugins:remove:all` events forcing direct method invocation for removal.
@@ -1660,6 +1750,11 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  *
  * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
  *                                       thrown.
+ */
+
+/*
+
+
  */
 
 // TODO THIS NEEDS REFINEMENT
