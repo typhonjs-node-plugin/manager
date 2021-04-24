@@ -1,13 +1,13 @@
 /**
  * PluginEvent - Provides the data / event passed to all invoked methods in
- * {@link AbstractPluginManager#invokeSyncEvent}. The `event.data` field is returned to the caller. Before returning
+ * {@link PluginInvokeSupport#invokeSyncEvent}. The `event.data` field is returned to the caller. Before returning
  * though additional the following additional metadata is attached:
  *
  * (number)    `$$plugin_invoke_count` - The count of plugins invoked.
  *
  * (string[])  `$$plugin_invoke_names` - The names of plugins invoked.
  */
-export default class PluginEvent
+export default class PluginInvokeEvent
 {
    /**
     * Initializes PluginEvent.

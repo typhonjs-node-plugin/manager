@@ -9,22 +9,22 @@
 //    'plugins:has:plugin:method'
 // ];
 
-export default class APIErrorsPluginSupport
+export default class Runtime
 {
    static run(Module, data, chai)
    {
       const { assert } = chai;
 
       const PluginManager = Module.default;
-      const { Eventbus, PluginSupport } = Module;
+      const { Eventbus, PluginInvokeSupport } = Module;
 
-      describe('PluginSupport:', () =>
+      describe('PluginInvokeSupport:', () =>
       {
          let eventbus, pluginManager;
 
          beforeEach(() =>
          {
-            pluginManager = new PluginManager({ PluginSupport });
+            pluginManager = new PluginManager({ PluginSupport: PluginInvokeSupport });
             eventbus = pluginManager.getEventbus();
          });
 

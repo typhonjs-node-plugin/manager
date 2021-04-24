@@ -1,11 +1,12 @@
-import Eventbus                     from '@typhonjs-plugin/eventbus';
-import { EventbusProxy }            from '@typhonjs-plugin/eventbus';
+import Eventbus          from '@typhonjs-plugin/eventbus';
+import { EventbusProxy } from '@typhonjs-plugin/eventbus';
 
-import PluginEntry                  from './PluginEntry.js';
-import PluginEvent                  from './PluginEvent.js';
+import PluginEntry       from './PluginEntry.js';
 
-import escapeTarget                 from './utils/escapeTarget.js';
-import isValidConfig                from './utils/isValidConfig.js';
+import invokeAsyncEvent  from './invoke/invokeAsyncEvent.js';
+
+import escapeTarget      from './utils/escapeTarget.js';
+import isValidConfig     from './utils/isValidConfig.js';
 
 import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
 
@@ -22,10 +23,6 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * `plugins:async:add:all` - {@link AbstractPluginManager#addAll}
  *
  * `plugins:async:destroy:manager` - {@link AbstractPluginManager#destroy}
- *
- * `plugins:async:invoke` - {@link AbstractPluginManager#invokeAsync}
- *
- * `plugins:async:invoke:event` - {@link AbstractPluginManager#invokeAsyncEvent}
  *
  * `plugins:async:remove` - {@link AbstractPluginManager#remove}
  *
@@ -47,17 +44,11 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  *
  * `plugins:has:plugin` - {@link AbstractPluginManager#hasPlugin}
  *
- * `plugins:invoke` - {@link AbstractPluginManager#invoke}
- *
  * `plugins:is:valid:config` - {@link AbstractPluginManager#isValidConfig}
  *
  * `plugins:set:enabled` - {@link AbstractPluginManager#setEnabled}
  *
  * `plugins:set:options` - {@link AbstractPluginManager#setOptions}
- *
- * `plugins:sync:invoke` - {@link AbstractPluginManager#invokeSync}
- *
- * `plugins:sync:invoke:event` - {@link AbstractPluginManager#invokeSyncEvent}
  *
  * Automatically when a plugin is loaded and unloaded respective functions `onPluginLoad` and `onPluginUnload` will
  * be attempted to be invoked on the plugin. This is an opportunity for the plugin to receive any associated eventbus
@@ -361,7 +352,7 @@ export default class AbstractPluginManager
       this._pluginMap.set(pluginConfig.name, entry);
 
       // Invoke private module method which allows skipping optional error checking.
-      await s_INVOKE_ASYNC_EVENTS('onPluginLoad', {}, {}, pluginConfig.name, this._pluginMap, this._options, false);
+      await invokeAsyncEvent('onPluginLoad', {}, {}, pluginConfig.name, this._pluginMap, this._options, false);
 
       // Invoke `typhonjs:plugin:manager:plugin:added` allowing external code to react to plugin addition.
       if (this._eventbus)
@@ -481,8 +472,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:async:add`, this._addEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:add:all`, this._addAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:async:invoke`, this._invokeAsyncEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:async:invoke:event`, this._invokeAsyncEventEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:remove`, this._removeEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
@@ -493,12 +482,9 @@ export default class AbstractPluginManager
          this._eventbus.off(`${this._eventPrepend}:get:plugin:names`, this.getPluginNames, this);
          this._eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
          this._eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugin, this);
-         this._eventbus.off(`${this._eventPrepend}:invoke`, this._invokeEventbus, this);
          this._eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
          this._eventbus.off(`${this._eventPrepend}:set:enabled`, this.setEnabled, this);
          this._eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:sync:invoke`, this._invokeSyncEventbus, this);
-         this._eventbus.off(`${this._eventPrepend}:sync:invoke:event`, this._invokeSyncEventEventbus, this);
       }
 
       for (const pluginSupport of this._pluginSupport)
@@ -822,418 +808,6 @@ export default class AbstractPluginManager
    }
 
    /**
-    * This dispatch method simply invokes any plugin targets for the given method name.
-    *
-    * @param {object}   opts Options object.
-    *
-    * @param {string}   opts.method Method name to invoke.
-    *
-    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
-    *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
-    */
-   invoke({ method, args = void 0, plugins = void 0 } = {})
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
-
-      if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
-
-      if (plugins === void 0) { plugins = this._pluginMap.keys(); }
-
-      if (typeof plugins !== 'string' && !isIterable(plugins))
-      {
-         throw new TypeError(`'plugins' is not a string or iterable.`);
-      }
-
-      // Track if a plugin method is invoked.
-      let hasMethod = false;
-      let hasPlugin = false;
-
-      // Early out if plugins are not enabled.
-      if (!this._options.pluginsEnabled) { return; }
-
-      const isArgsArray = Array.isArray(args);
-
-      if (typeof plugins === 'string')
-      {
-         const plugin = this._pluginMap.get(plugins);
-
-         if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-         {
-            hasPlugin = true;
-
-            if (typeof plugin.instance[method] === 'function')
-            {
-               isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
-
-               hasMethod = true;
-            }
-         }
-      }
-      else
-      {
-         for (const name of plugins)
-         {
-            const plugin = this._pluginMap.get(name);
-
-            if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-            {
-               hasPlugin = true;
-
-               if (typeof plugin.instance[method] === 'function')
-               {
-                  isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
-
-                  hasMethod = true;
-               }
-            }
-         }
-      }
-
-      if (this._options.throwNoPlugin && !hasPlugin)
-      {
-         throw new Error(`PluginManager failed to find any target plugins.`);
-      }
-
-      if (this._options.throwNoMethod && !hasMethod)
-      {
-         throw new Error(`PluginManager failed to invoke '${method}'.`);
-      }
-   }
-
-   /**
-    * Provides the eventbus callback which may prevent plugin manager dispatch for invoke if options
-    * `noEventInvoke` is enabled.
-    *
-    * @private
-    */
-   _invokeEventbus()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (!this._options.noEventInvoke) { this.invoke(...arguments); }
-   }
-
-   /**
-    * This dispatch method is asynchronous and adds any returned results to an array which is resolved via Promise.all
-    * Any target invoked may return a Promise or any result.
-    *
-    * @param {object}   opts Options object.
-    *
-    * @param {string}   opts.method Method name to invoke.
-    *
-    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
-    *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
-    *
-    * @returns {Promise<*|*[]>} A single result or array of results.
-    */
-   async invokeAsync({ method, args = void 0, plugins = void 0 } = {})
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
-
-      if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
-
-      if (typeof plugins === 'undefined') { plugins = this._pluginMap.keys(); }
-
-      if (typeof plugins !== 'string' && !isIterable(plugins))
-      {
-         throw new TypeError(`'plugins' is not a string, array, or iterator.`);
-      }
-
-      // Track if a plugin method is invoked.
-      let hasMethod = false;
-      let hasPlugin = false;
-
-      // Capture results.
-      let result = void 0;
-      const results = [];
-
-      // Early out if plugins are not enabled.
-      if (!this._options.pluginsEnabled) { return result; }
-
-      const isArgsArray = Array.isArray(args);
-
-      if (typeof plugins === 'string')
-      {
-         const plugin = this._pluginMap.get(plugins);
-
-         if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-         {
-            hasPlugin = true;
-
-            if (typeof plugin.instance[method] === 'function')
-            {
-               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
-
-               // If we received a valid result push it to the results.
-               if (result !== void 0) { results.push(result); }
-
-               hasMethod = true;
-            }
-         }
-      }
-      else
-      {
-         for (const name of plugins)
-         {
-            const plugin = this._pluginMap.get(name);
-
-            if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-            {
-               hasPlugin = true;
-
-               if (typeof plugin.instance[method] === 'function')
-               {
-                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
-
-                  // If we received a valid result push it to the results.
-                  if (result !== void 0) { results.push(result); }
-
-                  hasMethod = true;
-               }
-            }
-         }
-      }
-
-      if (this._options.throwNoPlugin && !hasPlugin)
-      {
-         throw new Error(`PluginManager failed to find any target plugins.`);
-      }
-
-      if (this._options.throwNoMethod && !hasMethod)
-      {
-          throw new Error(`PluginManager failed to invoke '${method}'.`);
-      }
-
-      // If there are multiple results then use Promise.all otherwise Promise.resolve.
-      return results.length > 1 ? Promise.all(results).then((values) =>
-      {
-         const filtered = values.filter((entry) => entry !== void 0);
-         switch (filtered.length)
-         {
-            case 0: return void 0;
-            case 1: return filtered[0];
-            default: return filtered;
-         }
-      }) : result;
-   }
-
-   /**
-    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeAsync if options
-    * `noEventInvoke` is enabled.
-    *
-    * @returns {Promise<*|*[]>} A single result or array of results.
-    * @private
-    */
-   async _invokeAsyncEventbus()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (!this._options.noEventInvoke) { return this.invokeAsync(...arguments); }
-   }
-
-   /**
-    * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
-    *
-    * @param {object}   opts Options object.
-    *
-    * @param {string}   opts.method Method name to invoke.
-    *
-    * @param {object}   [opts.copyProps] Properties that are copied.
-    *
-    * @param {object}   [opts.passthruProps] Properties that are passed through.
-    *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
-    *
-    * @returns {Promise<PluginEventData>} The PluginEvent data.
-    */
-   async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (plugins === void 0) { plugins = this._pluginMap.keys(); }
-
-      // Early out if plugins are not enabled.
-      if (!this._options.pluginsEnabled) { return void 0; }
-
-      // Invokes the private internal async events method with optional error checking enabled.
-      return s_INVOKE_ASYNC_EVENTS(method, copyProps, passthruProps, plugins, this._pluginMap, this._options);
-   }
-
-   /**
-    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeAsyncEvent if options
-    * `noEventInvoke` is enabled.
-    *
-    * @returns {Promise<PluginEventData>} The PluginEvent data.
-    * @private
-    */
-   async _invokeAsyncEventEventbus()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (!this._options.noEventInvoke) { return this.invokeAsyncEvent(...arguments); }
-   }
-
-   /**
-    * This dispatch method synchronously passes back a single value or an array with all results returned by any
-    * invoked targets.
-    *
-    * @param {object}   opts Options object.
-    *
-    * @param {string}   opts.method Method name to invoke.
-    *
-    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
-    *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
-    *
-    * @returns {*|*[]} A single result or array of results.
-    */
-   invokeSync({ method, args = void 0, plugins = void 0 } = {})
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
-
-      if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
-
-      if (typeof plugins === 'undefined') { plugins = this._pluginMap.keys(); }
-
-      if (typeof plugins !== 'string' && !isIterable(plugins))
-      {
-         throw new TypeError(`'plugins' is not a string or iterable.`);
-      }
-
-      // Track if a plugin method is invoked.
-      let hasMethod = false;
-      let hasPlugin = false;
-
-      // Capture results.
-      let result = void 0;
-      const results = [];
-
-      // Early out if plugins are not enabled.
-      if (!this._options.pluginsEnabled) { return result; }
-
-      const isArgsArray = Array.isArray(args);
-
-      if (typeof plugins === 'string')
-      {
-         const plugin = this._pluginMap.get(plugins);
-
-         if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-         {
-            hasPlugin = true;
-
-            if (typeof plugin.instance[method] === 'function')
-            {
-               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
-
-               // If we received a valid result push it to the results.
-               if (result !== void 0) { results.push(result); }
-
-               hasMethod = true;
-            }
-         }
-      }
-      else
-      {
-         for (const name of plugins)
-         {
-            const plugin = this._pluginMap.get(name);
-
-            if (plugin instanceof PluginEntry && plugin.enabled && plugin.instance)
-            {
-               hasPlugin = true;
-
-               if (typeof plugin.instance[method] === 'function')
-               {
-                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
-
-                  // If we received a valid result push it to the results.
-                  if (result !== void 0) { results.push(result); }
-
-                  hasMethod = true;
-               }
-            }
-         }
-      }
-
-      if (this._options.throwNoPlugin && !hasPlugin)
-      {
-         throw new Error(`PluginManager failed to find any target plugins.`);
-      }
-
-      if (this._options.throwNoMethod && !hasMethod)
-      {
-         throw new Error(`PluginManager failed to invoke '${method}'.`);
-      }
-
-      // Return the results array if there are more than one or just a single result.
-      return results.length > 1 ? results : result;
-   }
-
-   /**
-    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeSyncEvent if options
-    * `noEventInvoke` is enabled.
-    *
-    * @returns {*|*[]} A single result or array of results.
-    * @private
-    */
-   async _invokeSyncEventbus()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (!this._options.noEventInvoke) { return this.invokeSync(...arguments); }
-   }
-
-   /**
-    * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
-    *
-    * @param {object}            opts Options object.
-    *
-    * @param {string}            opts.method Method name to invoke.
-    *
-    * @param {object}            [opts.copyProps] Properties that are copied.
-    *
-    * @param {object}            [opts.passthruProps] Properties that are passed through.
-    *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
-    *
-    * @returns {PluginEventData} The PluginEvent data.
-    */
-   invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (plugins === void 0) { plugins = this._pluginMap.keys(); }
-
-      // Early out if plugins are not enabled.
-      if (!this._options.pluginsEnabled) { return void 0; }
-
-      // Invokes the private internal sync events method with optional error checking enabled.
-      return s_INVOKE_SYNC_EVENTS(method, copyProps, passthruProps, plugins, this._pluginMap, this._options);
-   }
-
-   /**
-    * Provides the eventbus callback which may prevent plugin manager dispatch for invokeSyncEvent if options
-    * `noEventInvoke` is enabled.
-    *
-    * @returns {PluginEventData} The PluginEvent data.
-    * @private
-    */
-   async _invokeSyncEventEventbus()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (!this._options.noEventInvoke) { return this.invokeSyncEvent(...arguments); }
-   }
-
-   /**
     * Performs validation of a PluginConfig.
     *
     * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
@@ -1285,7 +859,7 @@ export default class AbstractPluginManager
          try
          {
             // Invoke private module method which allows skipping optional error checking.
-            await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, pluginName, this._pluginMap, this._options, false);
+            await invokeAsyncEvent('onPluginUnload', {}, {}, pluginName, this._pluginMap, this._options, false);
          }
          catch (err)
          {
@@ -1492,7 +1066,7 @@ export default class AbstractPluginManager
       if (this._pluginMap.size > 0)
       {
          // Invoke private module method which allows skipping optional error checking.
-         await s_INVOKE_ASYNC_EVENTS('onPluginUnload', {}, {}, this._pluginMap.keys(), this._pluginMap, this._options,
+         await invokeAsyncEvent('onPluginUnload', {}, {}, this._pluginMap.keys(), this._pluginMap, this._options,
           false);
 
          for (const entry of this._pluginMap.values())
@@ -1513,8 +1087,7 @@ export default class AbstractPluginManager
          }
 
          // Invoke private module method which allows skipping optional error checking.
-         await s_INVOKE_ASYNC_EVENTS('onPluginLoad', {}, {}, this._pluginMap.keys(), this._pluginMap, this._options,
-          false);
+         await invokeAsyncEvent('onPluginLoad', {}, {}, this._pluginMap.keys(), this._pluginMap, this._options, false);
 
          for (const entry of this._pluginMap.values())
          {
@@ -1539,8 +1112,6 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:async:add`, this._addEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:add:all`, this._addAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-         this._eventbus.off(`${oldPrepend}:async:invoke`, this._invokeAsyncEventbus, this);
-         this._eventbus.off(`${oldPrepend}:async:invoke:event`, this._invokeAsyncEventEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:remove`, this._removeEventbus, this);
          this._eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
          this._eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
@@ -1551,19 +1122,14 @@ export default class AbstractPluginManager
          this._eventbus.off(`${oldPrepend}:get:plugin:events`, this.getPluginEvents, this);
          this._eventbus.off(`${oldPrepend}:get:plugin:names`, this.getPluginNames, this);
          this._eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugin, this);
-         this._eventbus.off(`${oldPrepend}:invoke`, this._invokeEventbus, this);
          this._eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
          this._eventbus.off(`${oldPrepend}:set:enabled`, this.setEnabled, this);
          this._eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
-         this._eventbus.off(`${oldPrepend}:sync:invoke`, this._invokeSyncEventbus, this);
-         this._eventbus.off(`${oldPrepend}:sync:invoke:event`, this._invokeSyncEventEventbus, this);
       }
 
       eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this);
       eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this);
       eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-      eventbus.on(`${eventPrepend}:async:invoke`, this._invokeAsyncEventbus, this);
-      eventbus.on(`${eventPrepend}:async:invoke:event`, this._invokeAsyncEventEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
       eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
@@ -1574,12 +1140,9 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
       eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this);
       eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this);
-      eventbus.on(`${eventPrepend}:invoke`, this._invokeEventbus, this);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
       eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
-      eventbus.on(`${eventPrepend}:sync:invoke`, this._invokeSyncEventbus, this);
-      eventbus.on(`${eventPrepend}:sync:invoke:event`, this._invokeSyncEventEventbus, this);
 
       for (const pluginSupport of this._pluginSupport)
       {
@@ -1637,235 +1200,6 @@ export default class AbstractPluginManager
 // Module Private ----------------------------------------------------------------------------------------------------
 
 /**
- * Private implementation to invoke asynchronous events. This allows internal calls in PluginManager for
- * `onPluginLoad` and `onPluginUnload` callbacks to bypass optional error checking.
- *
- * This dispatch method asynchronously passes to and returns from any invoked targets a PluginEvent. Any invoked plugin
- * may return a Promise which is awaited upon by `Promise.all` before returning the PluginEvent data via a Promise.
- *
- * @param {string}                     method Method name to invoke.
- *
- * @param {object}                     copyProps Properties that are copied.
- *
- * @param {object}                     passthruProps Properties that are passed through.
- *
- * @param {string|Iterable<string>}    plugins Specific plugin name or iterable list of plugin names to invoke.
- *
- * @param {Map<string, PluginEvent>}   pluginMap Stores the plugins by name with an associated PluginEntry.
- *
- * @param {object}                     options Defines options for throwing exceptions. Turned off by default.
- *
- * @param {boolean}                    [performErrorCheck=true] If false optional error checking is disabled.
- *
- * @returns {Promise<PluginEventData>} The PluginEvent data.
- */
-const s_INVOKE_ASYNC_EVENTS = async (method, copyProps = {}, passthruProps = {}, plugins, pluginMap, options,
- performErrorCheck = true) =>
-{
-   if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
-   if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
-   if (typeof copyProps !== 'object') { throw new TypeError(`'copyProps' is not an object.`); }
-
-   if (typeof plugins !== 'string' && !isIterable(plugins))
-   {
-      throw new TypeError(`'plugins' is not a string or iterable.`);
-   }
-
-   // Track how many plugins were invoked.
-   let pluginInvokeCount = 0;
-   const pluginInvokeNames = [];
-
-   // Track if a plugin method is invoked
-   let hasMethod = false;
-   let hasPlugin = false;
-
-   // Create plugin event.
-   const ev = new PluginEvent(copyProps, passthruProps);
-
-   const results = [];
-
-   if (typeof plugins === 'string')
-   {
-      const entry = pluginMap.get(plugins);
-
-      if (entry instanceof PluginEntry && entry.enabled && entry.instance)
-      {
-         hasPlugin = true;
-
-         if (typeof entry.instance[method] === 'function')
-         {
-            ev.eventbus = entry.eventbusProxy;
-            ev.pluginName = entry.name;
-            ev.pluginOptions = entry.data.plugin.options;
-
-            const result = entry.instance[method](ev);
-
-            if (typeof result !== 'undefined' && result !== null) { results.push(result); }
-
-            hasMethod = true;
-            pluginInvokeCount++;
-            pluginInvokeNames.push(entry.name);
-         }
-      }
-   }
-   else
-   {
-      for (const name of plugins)
-      {
-         const entry = pluginMap.get(name);
-
-         if (entry instanceof PluginEntry && entry.enabled && entry.instance)
-         {
-            hasPlugin = true;
-
-            if (typeof entry.instance[method] === 'function')
-            {
-               ev.eventbus = entry.eventbusProxy;
-               ev.pluginName = entry.name;
-               ev.pluginOptions = entry.data.plugin.options;
-
-               const result = entry.instance[method](ev);
-
-               if (typeof result !== 'undefined' && result !== null) { results.push(result); }
-
-               hasMethod = true;
-               pluginInvokeCount++;
-               pluginInvokeNames.push(entry.name);
-            }
-         }
-      }
-   }
-
-   if (performErrorCheck && options.throwNoPlugin && !hasPlugin)
-   {
-      throw new Error(`PluginManager failed to find any target plugins.`);
-   }
-
-   if (performErrorCheck && options.throwNoMethod && !hasMethod)
-   {
-      throw new Error(`PluginManager failed to invoke '${method}'.`);
-   }
-
-   // Add meta data for plugin invoke count.
-   ev.data.$$plugin_invoke_count = pluginInvokeCount;
-   ev.data.$$plugin_invoke_names = pluginInvokeNames;
-
-   await Promise.all(results);
-
-   return ev.data;
-};
-
-/**
- * Private implementation to invoke synchronous events. This allows internal calls in PluginManager for
- * `onPluginLoad` and `onPluginUnload` callbacks to bypass optional error checking.
- *
- * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
- *
- * @param {string}                     method Method name to invoke.
- *
- * @param {object}                     copyProps Properties that are copied.
- *
- * @param {object}                     passthruProps Properties that are passed through.
- *
- * @param {string|Iterable<string>}    plugins Specific plugin name or iterable list of plugin names to invoke.
- *
- * @param {Map<string, PluginEvent>}   pluginMap Stores the plugins by name with an associated PluginEntry.
- *
- * @param {object}                     options Defines options for throwing exceptions. Turned off by default.
- *
- * @param {boolean}                    [performErrorCheck=true] If false optional error checking is disabled.
- *
- * @returns {PluginEventData} The PluginEvent data.
- */
-const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugins, pluginMap, options,
- performErrorCheck = true) =>
-{
-   if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
-   if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
-   if (typeof copyProps !== 'object') { throw new TypeError(`'copyProps' is not an object.`); }
-
-   if (typeof plugins !== 'string' && !isIterable(plugins))
-   {
-      throw new TypeError(`'plugins' is not a string or iterable.`);
-   }
-
-   // Track how many plugins were invoked.
-   let pluginInvokeCount = 0;
-   const pluginInvokeNames = [];
-
-   // Track if a plugin method is invoked
-   let hasMethod = false;
-   let hasPlugin = false;
-
-   // Create plugin event.
-   const ev = new PluginEvent(copyProps, passthruProps);
-
-   if (typeof plugins === 'string')
-   {
-      const entry = pluginMap.get(plugins);
-
-      if (entry instanceof PluginEntry && entry.enabled && entry.instance)
-      {
-         hasPlugin = true;
-
-         if (typeof entry.instance[method] === 'function')
-         {
-            ev.eventbus = entry.eventbusProxy;
-            ev.pluginName = entry.name;
-            ev.pluginOptions = entry.data.plugin.options;
-
-            entry.instance[method](ev);
-
-            hasMethod = true;
-            pluginInvokeCount++;
-            pluginInvokeNames.push(entry.name);
-         }
-      }
-   }
-   else
-   {
-      for (const name of plugins)
-      {
-         const entry = pluginMap.get(name);
-
-         if (entry instanceof PluginEntry && entry.enabled && entry.instance)
-         {
-            hasPlugin = true;
-
-            if (typeof entry.instance[method] === 'function')
-            {
-               ev.eventbus = entry.eventbusProxy;
-               ev.pluginName = entry.name;
-               ev.pluginOptions = entry.data.plugin.options;
-
-               entry.instance[method](ev);
-
-               hasMethod = true;
-               pluginInvokeCount++;
-               pluginInvokeNames.push(entry.name);
-            }
-         }
-      }
-   }
-
-   if (performErrorCheck && options.throwNoPlugin && !hasPlugin)
-   {
-      throw new Error(`PluginManager failed to find any target plugins.`);
-   }
-
-   if (performErrorCheck && options.throwNoMethod && !hasMethod)
-   {
-      throw new Error(`PluginManager failed to invoke '${method}'.`);
-   }
-
-   // Add meta data for plugin invoke count.
-   ev.data.$$plugin_invoke_count = pluginInvokeCount;
-   ev.data.$$plugin_invoke_names = pluginInvokeNames;
-
-   return ev.data;
-};
-
-/**
  * @typedef {object} DataOutPluginEnabled
  *
  * @property {string}   plugin The plugin name.
@@ -1873,6 +1207,14 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  * @property {boolean}  enabled The enabled state of the plugin.
  *
  * @property {boolean}  loaded True if the plugin is actually loaded.
+ */
+
+/**
+ * @typedef {object} DataOutPluginEvents
+ *
+ * @property {string}   plugin The plugin name.
+ *
+ * @property {string[]} events The event names registered.
  */
 
 /**
@@ -1960,11 +1302,6 @@ const s_INVOKE_SYNC_EVENTS = (method, copyProps = {}, passthruProps = {}, plugin
  *
  * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
  *                                       thrown.
- */
-
-/*
-
-
  */
 
 // TODO THIS NEEDS REFINEMENT
