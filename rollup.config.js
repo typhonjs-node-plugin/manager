@@ -1,6 +1,6 @@
 import path          from 'path';
 
-import { babel }     from '@rollup/plugin-babel';
+import { babel }     from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
 import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
