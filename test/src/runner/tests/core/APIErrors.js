@@ -2,7 +2,7 @@ export default class APIErrors
 {
    static run(Module, data, chai)
    {
-      const { assert, expect } = chai;
+      const { expect } = chai;
 
       const PluginManager = Module.default;
 
@@ -13,12 +13,6 @@ export default class APIErrors
          beforeEach(() =>
          {
             pluginManager = new PluginManager();
-         });
-
-         it('can see private class variable', () =>
-         {
-            assert.strictEqual(pluginManager.test, 'CAN_SEE_TEST');
-            assert.isUndefined(pluginManager.privateTest);
          });
 
          it('constructor - throws w/ options not an object', () =>
@@ -75,14 +69,6 @@ export default class APIErrors
          {
             await expect(pluginManager.addAll(false)).to.be.rejectedWith(TypeError,
              `'pluginConfigs' is not iterable.`);
-         });
-
-         it('createEventbusProxy - throws when _eventbus is not set (artificial)', () =>
-         {
-            pluginManager._eventbus = null;
-
-            expect(() => pluginManager.createEventbusProxy()).to.throw(ReferenceError,
-             `No eventbus assigned to plugin manager.`);
          });
 
          it('pluginManager destroyed - all methods throw', async () =>
