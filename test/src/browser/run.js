@@ -11,7 +11,7 @@ fs.copySync('./test/fixture', './test/live-server/test/fixture');
 {
    await TestRunner.runServerAndTestSuite({ reportDir: './coverage-browser' });
 
-   // Uncomment to keep live server alive; useful when testing Firefox with live server still running.
+   // Uncomment to keep live server alive; useful when manually testing Firefox with live server still running.
    // const { passed } = await TestRunner.runServerAndTestSuite({ reportDir: './coverage-browser', keepAlive: true });
    //
    // process.stdout.write('Hit `ctrl-c` to exit.')

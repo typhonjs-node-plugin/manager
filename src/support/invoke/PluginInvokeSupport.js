@@ -22,37 +22,32 @@ import invokeSyncEvent  from '../../invoke/invokeSyncEvent.js';
  */
 export default class PluginInvokeSupport
 {
+   #pluginManager = null;
+
    constructor(pluginManager)
    {
-      this._pluginManager = pluginManager;
+      this.#pluginManager = pluginManager;
    }
 
    get isDestroyed()
    {
-      return this._pluginManager === null || this._pluginManager === void 0 ||
-         this._pluginManager._pluginMap === null || this._pluginManager._pluginMap === void 0;
+      return this.#pluginManager === null || this.#pluginManager.isDestroyed;
    }
 
    get options()
    {
-      /* c8 ignore next 4 */
-      if (this.isDestroyed)
-      {
-         throw new ReferenceError('This PluginManager instance has been destroyed.');
-      }
+      /* c8 ignore next 1 */
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      return this._pluginManager._options;
+      return this.#pluginManager.getOptions();
    }
 
-   get pluginMap()
+   get pluginManager()
    {
-      /* c8 ignore next 4 */
-      if (this.isDestroyed)
-      {
-         throw new ReferenceError('This PluginManager instance has been destroyed.');
-      }
+      /* c8 ignore next 1 */
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      return this._pluginManager._pluginMap;
+      return this.#pluginManager;
    }
 
    /**
@@ -77,7 +72,7 @@ export default class PluginInvokeSupport
          eventbus.off(`${eventPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
       }
 
-      this._pluginManager = null;
+      this.#pluginManager = null;
    }
 
    /**
@@ -122,7 +117,7 @@ export default class PluginInvokeSupport
 
       for (const name of plugins)
       {
-         const entry = this.pluginMap.get(name);
+         const entry = this.pluginManager.getPluginEntry(name);
 
          if (entry !== void 0 && entry.instance && (anyEnabledState || entry.enabled === enabled))
          {
@@ -140,7 +135,7 @@ export default class PluginInvokeSupport
       // Iterable plugins had no entries so return all plugin data.
       if (count === 0)
       {
-         for (const entry of this.pluginMap.values())
+         for (const entry of this.pluginManager.getPluginMapValues())
          {
             if (entry.instance && (anyEnabledState || entry.enabled === enabled))
             {
@@ -186,7 +181,7 @@ export default class PluginInvokeSupport
       // Return a single boolean enabled result for a single plugin if found.
       if (typeof plugins === 'string')
       {
-         const entry = this.pluginMap.get(plugins);
+         const entry = this.pluginManager.getPluginEntry(plugins);
          return entry !== void 0 && typeof entry.instance[method] === 'function';
       }
 
@@ -194,7 +189,7 @@ export default class PluginInvokeSupport
 
       for (const name of plugins)
       {
-         const entry = this.pluginMap.get(name);
+         const entry = this.pluginManager.getPluginEntry(name);
 
          if (entry !== void 0 && typeof entry.instance[method] === 'function') { return false; }
 
@@ -204,7 +199,7 @@ export default class PluginInvokeSupport
       // Iterable plugins had no entries so return all plugin data.
       if (count === 0)
       {
-         for (const entry of this.pluginMap.values())
+         for (const entry of this.pluginManager.getPluginMapValues())
          {
             if (typeof entry.instance[method] === 'function') { return false; }
          }
@@ -232,7 +227,7 @@ export default class PluginInvokeSupport
 
       if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
 
-      if (plugins === void 0) { plugins = this.pluginMap.keys(); }
+      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
       if (typeof plugins !== 'string' && !isIterable(plugins))
       {
@@ -250,7 +245,7 @@ export default class PluginInvokeSupport
 
       if (typeof plugins === 'string')
       {
-         const plugin = this.pluginMap.get(plugins);
+         const plugin = this.pluginManager.getPluginEntry(plugins);
 
          if (plugin !== void 0 && plugin.enabled && plugin.instance)
          {
@@ -268,7 +263,7 @@ export default class PluginInvokeSupport
       {
          for (const name of plugins)
          {
-            const plugin = this.pluginMap.get(name);
+            const plugin = this.pluginManager.getPluginEntry(name);
 
             if (plugin !== void 0 && plugin.enabled && plugin.instance)
             {
@@ -317,7 +312,7 @@ export default class PluginInvokeSupport
 
       if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
 
-      if (typeof plugins === 'undefined') { plugins = this.pluginMap.keys(); }
+      if (typeof plugins === 'undefined') { plugins = this.pluginManager.getPluginMapKeys(); }
 
       if (typeof plugins !== 'string' && !isIterable(plugins))
       {
@@ -339,7 +334,7 @@ export default class PluginInvokeSupport
 
       if (typeof plugins === 'string')
       {
-         const plugin = this.pluginMap.get(plugins);
+         const plugin = this.pluginManager.getPluginEntry(plugins);
 
          if (plugin !== void 0 && plugin.enabled && plugin.instance)
          {
@@ -360,7 +355,7 @@ export default class PluginInvokeSupport
       {
          for (const name of plugins)
          {
-            const plugin = this.pluginMap.get(name);
+            const plugin = this.pluginManager.getPluginEntry(name);
 
             if (plugin !== void 0 && plugin.enabled && plugin.instance)
             {
@@ -421,13 +416,13 @@ export default class PluginInvokeSupport
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (plugins === void 0) { plugins = this.pluginMap.keys(); }
+      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
       // Early out if plugins are not enabled.
       if (!this.options.pluginsEnabled) { return void 0; }
 
       // Invokes the private internal async events method with optional error checking enabled.
-      return invokeAsyncEvent(method, copyProps, passthruProps, plugins, this.pluginMap, this.options);
+      return invokeAsyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
    }
 
    /**
@@ -452,7 +447,7 @@ export default class PluginInvokeSupport
 
       if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
 
-      if (typeof plugins === 'undefined') { plugins = this.pluginMap.keys(); }
+      if (typeof plugins === 'undefined') { plugins = this.pluginManager.getPluginMapKeys(); }
 
       if (typeof plugins !== 'string' && !isIterable(plugins))
       {
@@ -474,7 +469,7 @@ export default class PluginInvokeSupport
 
       if (typeof plugins === 'string')
       {
-         const plugin = this.pluginMap.get(plugins);
+         const plugin = this.pluginManager.getPluginEntry(plugins);
 
          if (plugin !== void 0 && plugin.enabled && plugin.instance)
          {
@@ -495,7 +490,7 @@ export default class PluginInvokeSupport
       {
          for (const name of plugins)
          {
-            const plugin = this.pluginMap.get(name);
+            const plugin = this.pluginManager.getPluginEntry(name);
 
             if (plugin !== void 0 && plugin.enabled && plugin.instance)
             {
@@ -547,13 +542,13 @@ export default class PluginInvokeSupport
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (plugins === void 0) { plugins = this.pluginMap.keys(); }
+      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
       // Early out if plugins are not enabled.
       if (!this.options.pluginsEnabled) { return void 0; }
 
       // Invokes the private internal sync events method with optional error checking enabled.
-      return invokeSyncEvent(method, copyProps, passthruProps, plugins, this.pluginMap, this.options);
+      return invokeSyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
    }
 
    /**

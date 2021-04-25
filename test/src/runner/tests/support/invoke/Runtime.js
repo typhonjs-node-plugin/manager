@@ -24,8 +24,6 @@ export default class Runtime
             await pluginManager.destroy();
 
             assert.strictEqual(eventbus.eventCount, 0);
-
-            assert.strictEqual(pluginManager._pluginSupport.length, 0);
          });
 
          it('get all unique method names', async () =>

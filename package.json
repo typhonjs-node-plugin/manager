@@ -48,12 +48,13 @@
   "bugs": "https://github.com/typhonjs-node-plugin/manager/issues",
   "scripts": {
     "bundle": "rollup --config",
+    "bundle-browser": "rollup --config rollup.config.browser.js",
     "eslint": "eslint .",
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
-    "pretest-browser": "rollup --config rollup.config.browser.js",
+    "pretest-browser": "npm run bundle-browser",
     "pretest-node": "npm run bundle",
     "prepublishOnly": "npm run test-node",
     "test-browser": "node ./test/src/browser/run.js",
-    "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 8000"
+    "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000"
   }
 }

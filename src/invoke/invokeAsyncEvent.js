@@ -17,7 +17,7 @@ import PluginInvokeEvent   from './PluginInvokeEvent.js';
  *
  * @param {string|Iterable<string>}    plugins Specific plugin name or iterable list of plugin names to invoke.
  *
- * @param {Map<string, PluginEntry>}   pluginMap Stores the plugins by name with an associated PluginEntry.
+ * @param {AbstractPluginManager}      pluginManager A plugin manager instance.
  *
  * @param {object}                     options Defines options for throwing exceptions. Turned off by default.
  *
@@ -25,8 +25,8 @@ import PluginInvokeEvent   from './PluginInvokeEvent.js';
  *
  * @returns {Promise<PluginEventData>} The PluginEvent data.
  */
-export default async function invokeAsyncEvent(method, copyProps = {}, passthruProps = {}, plugins, pluginMap, options,
- performErrorCheck = true)
+export default async function invokeAsyncEvent(method, copyProps = {}, passthruProps = {}, plugins, pluginManager,
+ options, performErrorCheck = true)
 {
    if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
    if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
@@ -52,9 +52,9 @@ export default async function invokeAsyncEvent(method, copyProps = {}, passthruP
 
    if (typeof plugins === 'string')
    {
-      const entry = pluginMap.get(plugins);
+      const entry = pluginManager.getPluginEntry(plugins);
 
-      if (entry.enabled && entry.instance)
+      if (entry !== void 0 && entry.enabled && entry.instance)
       {
          hasPlugin = true;
 
@@ -78,9 +78,9 @@ export default async function invokeAsyncEvent(method, copyProps = {}, passthruP
    {
       for (const name of plugins)
       {
-         const entry = pluginMap.get(name);
+         const entry = pluginManager.getPluginEntry(name);
 
-         if (entry.enabled && entry.instance)
+         if (entry !== void 0 && entry.enabled && entry.instance)
          {
             hasPlugin = true;
 

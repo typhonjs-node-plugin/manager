@@ -39,7 +39,9 @@
 
    const port = window.location.port;
 
-   const moduleURL = new URL(`http://localhost:${port}/test/fixture/formats/esm/namedExport.js`);
+   const hostname = 'localhost'; // When testing on a different box set this to the live server IP.
+
+   const moduleURL = new URL(`http://${hostname}:${port}/test/fixture/formats/esm/namedExport.js`);
    const moduleURLString = moduleURL.toString();
 
    const data = {
@@ -65,7 +67,7 @@
    };
 
    mocha.setup({
-      timeout: '6000',
+      timeout: '10000',
       ui: 'bdd'
    });
 
