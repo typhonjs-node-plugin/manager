@@ -1,10 +1,11 @@
 import path          from 'path';
 
+import { babel }     from '@rollup/plugin-babel';
 import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
 // Import config files for Terser and Postcss; refer to respective documentation for more information.
-import terserConfig  from './terser.config';
+import terserConfig from './terser.config';
 
 // The deploy path for the distribution for browser & Node.
 const s_DIST_PATH_BROWSER = './dist/browser';
@@ -58,7 +59,17 @@ export default () =>
             // sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistBrowserPath, `.`)
          }],
          plugins: [
-            resolve({ browser: true })
+            resolve({ browser: true }),
+            babel({
+               babelHelpers: 'bundled',
+               presets: [
+                  ['@babel/preset-env', {
+                     bugfixes: true,
+                     shippedProposals: true,
+                     targets: { esmodules: true }
+                  }]
+               ]
+            })
          ]
       }
    ];
