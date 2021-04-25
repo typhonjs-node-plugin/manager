@@ -2811,12 +2811,11 @@ class AbstractPluginManager
     */
    #options =
    {
-      pluginsEnabled: true,
       noEventAdd: false,
       noEventDestroy: false,
-      noEventInvoke: true,
       noEventOptions: true,
       noEventRemoval: false,
+      noEventSetEnabled: false,
       throwNoMethod: false,
       throwNoPlugin: false
    };
@@ -3174,7 +3173,7 @@ class AbstractPluginManager
          this.#eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
          this.#eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugin, this);
          this.#eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
-         this.#eventbus.off(`${this._eventPrepend}:set:enabled`, this.setEnabled, this);
+         this.#eventbus.off(`${this._eventPrepend}:set:enabled`, this._setEnabledEventbus, this);
          this.#eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
       }
 
@@ -3752,20 +3751,35 @@ class AbstractPluginManager
       let count = 0;
 
       // First attempt to iterate through plugins.
-      for (const pluginName of plugins)
+      for (const name of plugins)
       {
-         setEntryEnabled(this.#pluginMap.get(pluginName));
+         setEntryEnabled(this.#pluginMap.get(name));
          count++;
       }
 
       // If plugins is empty then set all plugins enabled state.
       if (count === 0)
       {
-         for (const pluginEntry of this.#pluginMap.values())
+         for (const entry of this.#pluginMap.values())
          {
-            setEntryEnabled(pluginEntry);
+            setEntryEnabled(entry);
          }
       }
+   }
+
+   /**
+    * Provides the eventbus callback which may prevent setEnabled if optional `noEventSetEnabled` is true. This
+    * disables the ability for setting plugin enabled state via events preventing any external code from setting state.
+    *
+    * @param {object}   opts Options object.
+    *
+    * @private
+    */
+   _setEnabledEventbus(opts)
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!this.#options.noEventSetEnabled) { this.setEnabled(opts); }
    }
 
    /**
@@ -3861,7 +3875,7 @@ class AbstractPluginManager
          this.#eventbus.off(`${oldPrepend}:get:plugin:names`, this.getPluginNames, this);
          this.#eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugin, this);
          this.#eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
-         this.#eventbus.off(`${oldPrepend}:set:enabled`, this.setEnabled, this);
+         this.#eventbus.off(`${oldPrepend}:set:enabled`, this._setEnabledEventbus, this);
          this.#eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
       }
 
@@ -3878,7 +3892,7 @@ class AbstractPluginManager
       eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, true);
       eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this, true);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, true);
-      eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this, true);
+      eventbus.on(`${eventPrepend}:set:enabled`, this._setEnabledEventbus, this, true);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, true);
 
       for (const pluginSupport of this.#pluginSupport)
@@ -3912,7 +3926,6 @@ class AbstractPluginManager
 
       if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
 
-      if (typeof options.pluginsEnabled === 'boolean') { this.#options.pluginsEnabled = options.pluginsEnabled; }
       if (typeof options.noEventAdd === 'boolean') { this.#options.noEventAdd = options.noEventAdd; }
       if (typeof options.noEventDestroy === 'boolean') { this.#options.noEventDestroy = options.noEventDestroy; }
       if (typeof options.noEventInvoke === 'boolean') { this.#options.noEventInvoke = options.noEventInvoke; }
@@ -3920,6 +3933,11 @@ class AbstractPluginManager
       if (typeof options.noEventRemoval === 'boolean') { this.#options.noEventRemoval = options.noEventRemoval; }
       if (typeof options.throwNoMethod === 'boolean') { this.#options.throwNoMethod = options.throwNoMethod; }
       if (typeof options.throwNoPlugin === 'boolean') { this.#options.throwNoPlugin = options.throwNoPlugin; }
+
+      for (const pluginSupport of this.#pluginSupport)
+      {
+         pluginSupport.setOptions({ eventbus: this.#eventbus, eventPrepend: this._eventPrepend });
+      }
    }
 
    /**
@@ -4021,23 +4039,20 @@ class AbstractPluginManager
 /**
  * @typedef {object} PluginManagerOptions
  *
- * @property {boolean}   [pluginsEnabled] If false all plugins are disabled.
- *
  * @property {boolean}   [noEventAdd] If true this prevents plugins from being added by `plugins:add` and
  *                                    `plugins:add:all` events forcing direct method invocation for addition.
  *
  * @property {boolean}   [noEventDestroy] If true this prevents the plugin manager from being destroyed by
  *                                        `plugins:destroy:manager` forcing direct method invocation for destruction.
  *
- * @property {boolean}   [noEventInvoke] If true this prevents the plugin manager from being able to invoke methods
- *                                       from the eventbus via `plugins:async:invoke`, `plugins:async:invoke:event`,
- *                                       `plugins:invoke`, `plugins:sync:invoke`, and `plugins:sync:invoke:event`.
- *
  * @property {boolean}   [noEventOptions] If true this prevents setting options for the plugin manager by
  *                                        `plugins:set:options` forcing direct method invocation for setting options.
  *
  * @property {boolean}   [noEventRemoval] If true this prevents plugins from being removed by `plugins:remove` and
  *                                        `plugins:remove:all` events forcing direct method invocation for removal.
+ *
+ * @property {boolean}   [noEventSetEnabled] If true this prevents the plugins from being enabled / disabled
+ *                                           from the eventbus via `plugins:set:enabled`.
  *
  * @property {boolean}   [throwNoMethod] If true then when a method fails to be invoked by any plugin an exception
  *                                       will be thrown.
@@ -4066,6 +4081,13 @@ class AbstractPluginManager
  *
  * @function
  * @name PluginSupportImpl#setEventbus
+ */
+
+/**
+ * A method to invoke when the plugin manager options are set.
+ *
+ * @function
+ * @name PluginSupportImpl#setOptions
  */
 
 /**
@@ -4244,8 +4266,16 @@ function invokeSyncEvent(method, copyProps = {}, passthruProps = {}, plugins, pl
  */
 class PluginInvokeSupport
 {
+   /**
+    * @type {AbstractPluginManager}
+    */
    #pluginManager = null;
 
+   /**
+    * Create PluginInvokeSupport
+    *
+    * @param {AbstractPluginManager} pluginManager The plugin manager to associate.
+    */
    constructor(pluginManager)
    {
       this.#pluginManager = pluginManager;
@@ -4460,9 +4490,6 @@ class PluginInvokeSupport
       let hasMethod = false;
       let hasPlugin = false;
 
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return; }
-
       const isArgsArray = Array.isArray(args);
 
       if (typeof plugins === 'string')
@@ -4548,9 +4575,6 @@ class PluginInvokeSupport
       // Capture results.
       let result = void 0;
       const results = [];
-
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return result; }
 
       const isArgsArray = Array.isArray(args);
 
@@ -4640,9 +4664,6 @@ class PluginInvokeSupport
 
       if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return void 0; }
-
       // Invokes the private internal async events method with optional error checking enabled.
       return invokeAsyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
    }
@@ -4683,9 +4704,6 @@ class PluginInvokeSupport
       // Capture results.
       let result = void 0;
       const results = [];
-
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return result; }
 
       const isArgsArray = Array.isArray(args);
 
@@ -4766,9 +4784,6 @@ class PluginInvokeSupport
 
       if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return void 0; }
-
       // Invokes the private internal sync events method with optional error checking enabled.
       return invokeSyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
    }
@@ -4812,6 +4827,18 @@ class PluginInvokeSupport
          newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this, true);
       }
    }
+
+   /**
+    * Set optional parameters.
+    *
+    * @param {PluginManagerOptions} options Defines optional parameters to set.
+    */
+   setOptions(options = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
+   }
 }
 
 // Module Private ----------------------------------------------------------------------------------------------------
@@ -4836,6 +4863,16 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
 
    return props;
 };
+
+/**
+ * @typedef {object} PluginInvokeSupportOptions
+ *
+ * @property {boolean}   [throwNoMethod] If true then when a method fails to be invoked by any plugin an exception
+ *                                       will be thrown.
+ *
+ * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
+ *                                       thrown.
+ */
 
 export default PluginManager;
 export { Eventbus, EventbusProxy, EventbusSecure, PluginInvokeSupport, escapeTarget, isValidConfig };

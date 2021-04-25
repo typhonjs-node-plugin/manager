@@ -1,4 +1,4 @@
-import { isIterable }   from "@typhonjs-utils/object";
+import { isIterable, isObject } from "@typhonjs-utils/object";
 
 import invokeAsyncEvent from '../../invoke/invokeAsyncEvent.js';
 import invokeSyncEvent  from '../../invoke/invokeSyncEvent.js';
@@ -22,8 +22,16 @@ import invokeSyncEvent  from '../../invoke/invokeSyncEvent.js';
  */
 export default class PluginInvokeSupport
 {
+   /**
+    * @type {AbstractPluginManager}
+    */
    #pluginManager = null;
 
+   /**
+    * Create PluginInvokeSupport
+    *
+    * @param {AbstractPluginManager} pluginManager The plugin manager to associate.
+    */
    constructor(pluginManager)
    {
       this.#pluginManager = pluginManager;
@@ -238,9 +246,6 @@ export default class PluginInvokeSupport
       let hasMethod = false;
       let hasPlugin = false;
 
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return; }
-
       const isArgsArray = Array.isArray(args);
 
       if (typeof plugins === 'string')
@@ -326,9 +331,6 @@ export default class PluginInvokeSupport
       // Capture results.
       let result = void 0;
       const results = [];
-
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return result; }
 
       const isArgsArray = Array.isArray(args);
 
@@ -418,9 +420,6 @@ export default class PluginInvokeSupport
 
       if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return void 0; }
-
       // Invokes the private internal async events method with optional error checking enabled.
       return invokeAsyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
    }
@@ -461,9 +460,6 @@ export default class PluginInvokeSupport
       // Capture results.
       let result = void 0;
       const results = [];
-
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return result; }
 
       const isArgsArray = Array.isArray(args);
 
@@ -544,9 +540,6 @@ export default class PluginInvokeSupport
 
       if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
-      // Early out if plugins are not enabled.
-      if (!this.options.pluginsEnabled) { return void 0; }
-
       // Invokes the private internal sync events method with optional error checking enabled.
       return invokeSyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
    }
@@ -590,6 +583,18 @@ export default class PluginInvokeSupport
          newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this, true);
       }
    }
+
+   /**
+    * Set optional parameters.
+    *
+    * @param {PluginManagerOptions} options Defines optional parameters to set.
+    */
+   setOptions(options = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
+      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
+   }
 }
 
 // Module Private ----------------------------------------------------------------------------------------------------
@@ -614,3 +619,13 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
 
    return props;
 };
+
+/**
+ * @typedef {object} PluginInvokeSupportOptions
+ *
+ * @property {boolean}   [throwNoMethod] If true then when a method fails to be invoked by any plugin an exception
+ *                                       will be thrown.
+ *
+ * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
+ *                                       thrown.
+ */
