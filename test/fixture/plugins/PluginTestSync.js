@@ -17,4 +17,14 @@ export default class PluginTestSync
     * @returns {number} A number.
     */
    test(a, b) { return a + b + this.c; }
+
+   /**
+    * Set event binding to `test`.
+    *
+    * @param {object}   ev PluginInvokeEvent
+    */
+   onPluginLoad(ev)
+   {
+      ev.eventbus.on('plugin:test:sync:test', this.test, this);
+   }
 }

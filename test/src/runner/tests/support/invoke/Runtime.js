@@ -34,9 +34,10 @@ export default class Runtime
             const results = eventbus.triggerSync('plugins:get:method:names');
 
             assert.isArray(results);
-            assert.lengthOf(results, 2);
-            assert.strictEqual(results[0], 'test');
-            assert.strictEqual(results[1], 'test2');
+            assert.lengthOf(results, 3);
+            assert.strictEqual(results[0], 'onPluginLoad');
+            assert.strictEqual(results[1], 'test');
+            assert.strictEqual(results[2], 'test2');
          });
 
          it('get method names for plugin', async () =>
@@ -47,8 +48,9 @@ export default class Runtime
             const results = eventbus.triggerSync('plugins:get:method:names', { plugins: 'PluginTestSync' });
 
             assert.isArray(results);
-            assert.lengthOf(results, 1);
-            assert.strictEqual(results[0], 'test');
+            assert.lengthOf(results, 2);
+            assert.strictEqual(results[0], 'onPluginLoad');
+            assert.strictEqual(results[1], 'test');
          });
 
          it('setEventbus() unregisters old eventbus / registers on new eventbus', async () =>

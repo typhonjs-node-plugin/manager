@@ -56,13 +56,13 @@ export default class Runtime
 
                assert.isArray(results);
                assert.strictEqual(JSON.stringify(results),
-                '[{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","scopedName":"plugins:PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}},{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestNoName2","scopedName":"plugins:PluginTestNoName2","target":"PluginTestNoName2","targetEscaped":"PluginTestNoName2","type":"instance","options":{}}}]');
+                '[{"manager":{"eventPrepend":"plugins","scopedName":"plugins:PluginTestSync"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}},{"manager":{"eventPrepend":"plugins","scopedName":"plugins:PluginTestNoName2"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestNoName2","target":"PluginTestNoName2","targetEscaped":"PluginTestNoName2","type":"instance","options":{}}}]');
 
                results = eventbus.triggerSync('plugins:get:plugin:data');
 
                assert.isArray(results);
                assert.strictEqual(JSON.stringify(results),
-                '[{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","scopedName":"plugins:PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}},{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestNoName2","scopedName":"plugins:PluginTestNoName2","target":"PluginTestNoName2","targetEscaped":"PluginTestNoName2","type":"instance","options":{}}}]');
+                '[{"manager":{"eventPrepend":"plugins","scopedName":"plugins:PluginTestSync"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}},{"manager":{"eventPrepend":"plugins","scopedName":"plugins:PluginTestNoName2"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestNoName2","target":"PluginTestNoName2","targetEscaped":"PluginTestNoName2","type":"instance","options":{}}}]');
             });
 
             it('get plugin data', async () =>
@@ -74,13 +74,13 @@ export default class Runtime
 
                assert.isObject(results);
                assert.strictEqual(JSON.stringify(results),
-                '{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","scopedName":"plugins:PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}}');
+                '{"manager":{"eventPrepend":"plugins","scopedName":"plugins:PluginTestSync"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}}');
 
                results = eventbus.triggerSync('plugins:get:plugin:data', { plugins: 'PluginTestSync' });
 
                assert.isObject(results);
                assert.strictEqual(JSON.stringify(results),
-                '{"manager":{"eventPrepend":"plugins"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","scopedName":"plugins:PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}}');
+                '{"manager":{"eventPrepend":"plugins","scopedName":"plugins:PluginTestSync"},"module":{"name":"modulename"},"plugin":{"name":"PluginTestSync","target":"PluginTestSync","targetEscaped":"PluginTestSync","type":"instance","options":{}}}');
             });
 
             it('get plugin event names', async () =>
@@ -135,6 +135,46 @@ export default class Runtime
                assert.lengthOf(results, 2);
                assert.strictEqual(results[0], 'PluginTestSync');
                assert.strictEqual(results[1], 'PluginTestSync2');
+            });
+
+            it('setEventbus - EventbusSecure updates', async () =>
+            {
+               const eventbus2 = new Eventbus('eventbus2');
+               const eventbusSecure = pluginManager.createEventbusSecure();
+
+               await pluginManager.add({ name: 'PluginTestSync', instance: new data.plugins.PluginTestSync() });
+               await pluginManager.add({ name: 'PluginTestSync2', instance: new data.plugins.PluginTestSync() });
+
+               let results = eventbusSecure.triggerSync('plugins:get:plugin:names');
+
+               assert.isArray(results);
+               assert.lengthOf(results, 2);
+               assert.strictEqual(results[0], 'PluginTestSync');
+               assert.strictEqual(results[1], 'PluginTestSync2');
+
+               results = eventbusSecure.triggerSync('plugin:test:sync:test', 1, 2);
+               assert.isArray(results);
+               assert.lengthOf(results, 2);
+               assert.strictEqual(results[0], 6);
+               assert.strictEqual(results[1], 6);
+
+               await pluginManager.setEventbus({ eventbus: eventbus2, eventPrepend: 'plugins2' })
+
+               assert.strictEqual(eventbusSecure.name, 'eventbus2');
+
+               results = eventbusSecure.triggerSync('plugins2:get:plugin:names');
+
+               assert.isArray(results);
+               assert.lengthOf(results, 2);
+               assert.strictEqual(results[0], 'PluginTestSync');
+               assert.strictEqual(results[1], 'PluginTestSync2');
+
+               results = eventbusSecure.triggerSync('plugin:test:sync:test', 1, 2);
+
+               assert.isArray(results);
+               assert.lengthOf(results, 2);
+               assert.strictEqual(results[0], 6);
+               assert.strictEqual(results[1], 6);
             });
          });
 

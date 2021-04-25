@@ -28,7 +28,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  *
  * `plugins:async:remove:all` - {@link AbstractPluginManager#removeAll}
  *
- * `plugins:create:eventbus:proxy` - {@link AbstractPluginManager#createEventbusProxy}
+ * `plugins:create:eventbus:secure` - {@link AbstractPluginManager#createEventbusSecure}
  *
  * `plugins:get:enabled` - {@link AbstractPluginManager#getEnabled}
  *
@@ -126,7 +126,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
 export default class AbstractPluginManager
 {
    /**
-    * Stores any associated eventbus.
+    * Stores the associated eventbus.
     *
     * @type {Eventbus}
     * @private
@@ -140,6 +140,14 @@ export default class AbstractPluginManager
     * @private
     */
    #eventbusProxies = [];
+
+   /**
+    * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
+    *
+    * @type {Array<{destroy: Function, setEventbus: Function, eventbusSecure: EventbusSecure}>}
+    * @private
+    */
+   #eventbusSecure = [];
 
    /**
     * Defines various options for the plugin manager. By default plugins are enabled, no event invoke, and no
@@ -234,12 +242,12 @@ export default class AbstractPluginManager
          this.#pluginSupport.push(new options.PluginSupport(this));
       }
 
+      this.setOptions(options.manager);
+
       this.setEventbus({
          eventbus: options.eventbus !== void 0 ? options.eventbus : new Eventbus(),
          eventPrepend: options.eventPrepend
       });
-
-      this.setOptions(options.manager);
    }
 
    /**
@@ -326,7 +334,8 @@ export default class AbstractPluginManager
       {
          manager:
          {
-            eventPrepend: this._eventPrepend
+            eventPrepend: this._eventPrepend,
+            scopedName: `${this._eventPrepend}:${pluginConfig.name}`
          },
 
          module: moduleData || {},
@@ -334,7 +343,6 @@ export default class AbstractPluginManager
          plugin:
          {
             name: pluginConfig.name,
-            scopedName: `${this._eventPrepend}:${pluginConfig.name}`,
             target,
             targetEscaped: escapeTarget(target),
             type,
@@ -342,7 +350,7 @@ export default class AbstractPluginManager
          }
       }));
 
-      deepFreeze(pluginData, ['eventPrepend', 'scopedName']);
+      deepFreeze(pluginData, ['manager']);
 
       const eventbusProxy = this.#eventbus !== null && typeof this.#eventbus !== 'undefined' ?
        new EventbusProxy(this.#eventbus) : void 0;
@@ -448,6 +456,27 @@ export default class AbstractPluginManager
    }
 
    /**
+    * If an eventbus is assigned to this plugin manager then a new EventbusSecure wrapping this eventbus is returned.
+    * It is added to `this.#eventbusSecure` so †hat the instances are destroyed when the plugin manager is destroyed.
+    *
+    * @returns {EventbusSecure} A secure wrapper for the currently set Eventbus.
+    */
+   createEventbusSecure()
+   {
+      if (!(this.#eventbus instanceof Eventbus))
+      {
+         throw new ReferenceError('No eventbus assigned to plugin manager.');
+      }
+
+      const eventbusSecureObj = this.#eventbus.createSecure();
+
+      // Store EventbusSecure object to make sure it is destroyed when the plugin manager is destroyed.
+      this.#eventbusSecure.push(eventbusSecureObj);
+
+      return eventbusSecureObj.eventbusSecure;
+   }
+
+   /**
     * Destroys all managed plugins after unloading them.
     *
     * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
@@ -456,8 +485,13 @@ export default class AbstractPluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      // Remove all plugins; this will invoke onPluginUnload.
-      const results = await this.removeAll();
+      // Destroy any EventbusSecure instances created.
+      for (const eventbusSecureObj of this.#eventbusSecure)
+      {
+         eventbusSecureObj.destroy();
+      }
+
+      this.#eventbusSecure = [];
 
       // Destroy any EventbusProxy instances created.
       for (const eventbusProxy of this.#eventbusProxies)
@@ -467,6 +501,9 @@ export default class AbstractPluginManager
 
       this.#eventbusProxies = [];
 
+      // Remove all plugins; this will invoke onPluginUnload.
+      const results = await this.removeAll();
+
       if (this.#eventbus !== null && this.#eventbus !== void 0)
       {
          this.#eventbus.off(`${this._eventPrepend}:async:add`, this._addEventbus, this);
@@ -474,7 +511,7 @@ export default class AbstractPluginManager
          this.#eventbus.off(`${this._eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
          this.#eventbus.off(`${this._eventPrepend}:async:remove`, this._removeEventbus, this);
          this.#eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
+         this.#eventbus.off(`${this._eventPrepend}:create:eventbus:secure`, this.createEventbusSecure, this);
          this.#eventbus.off(`${this._eventPrepend}:get:enabled`, this.getEnabled, this);
          this.#eventbus.off(`${this._eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
          this.#eventbus.off(`${this._eventPrepend}:get:plugin:data`, this.getPluginData, this);
@@ -1128,7 +1165,7 @@ export default class AbstractPluginManager
             catch (err) { /* nop */ }
 
             entry.data.manager.eventPrepend = eventPrepend;
-            entry.data.plugin.scopedName = `${eventPrepend}:${entry.name}`;
+            entry.data.manager.scopedName = `${eventPrepend}:${entry.name}`;
 
             if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.destroy(); }
 
@@ -1163,7 +1200,7 @@ export default class AbstractPluginManager
          this.#eventbus.off(`${oldPrepend}:async:destroy:manager`, this._destroyEventbus, this);
          this.#eventbus.off(`${oldPrepend}:async:remove`, this._removeEventbus, this);
          this.#eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
+         this.#eventbus.off(`${oldPrepend}:create:eventbus:secure`, this.createEventbusSecure, this);
          this.#eventbus.off(`${oldPrepend}:get:enabled`, this.getEnabled, this);
          this.#eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
          this.#eventbus.off(`${oldPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
@@ -1181,7 +1218,7 @@ export default class AbstractPluginManager
       eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-      eventbus.on(`${eventPrepend}:create:eventbus:proxy`, this.createEventbusProxy, this);
+      eventbus.on(`${eventPrepend}:create:eventbus:secure`, this.createEventbusSecure, this);
       eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
       eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
@@ -1203,6 +1240,11 @@ export default class AbstractPluginManager
          });
       }
 
+      // Set the new eventbus for any EventbusSecure instances created.
+      for (const eventbusSecureObj of this.#eventbusSecure)
+      {
+         eventbusSecureObj.setEventbus(eventbus);
+      }
       this.#eventbus = eventbus;
 
       return this;

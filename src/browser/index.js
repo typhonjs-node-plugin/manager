@@ -5,6 +5,6 @@ export { default as PluginInvokeSupport } from '../support/invoke/PluginInvokeSu
 export { default as escapeTarget }        from '../utils/escapeTarget.js';
 export { default as isValidConfig }       from '../utils/isValidConfig.js';
 
-export { default as Eventbus, EventbusProxy } from '@typhonjs-plugin/eventbus';
+export { default as Eventbus, EventbusProxy, EventbusSecure } from '@typhonjs-plugin/eventbus';
 
 export default PluginManager;

@@ -138,4 +138,12 @@ export default class PluginEntry
     * @returns {string} Plugin name.
     */
    get name() { return this._name; }
+
+
+   /**
+    * Set associated EventbusProxy.
+    *
+    * @param {EventbusProxy} eventbusProxy EventbusProxy instance to associate.
+    */
+   set eventbusProxy(eventbusProxy) { this._eventbusProxy = eventbusProxy; }
 }
