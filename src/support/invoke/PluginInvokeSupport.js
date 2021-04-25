@@ -619,13 +619,3 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
 
    return props;
 };
-
-/**
- * @typedef {object} PluginInvokeSupportOptions
- *
- * @property {boolean}   [throwNoMethod] If true then when a method fails to be invoked by any plugin an exception
- *                                       will be thrown.
- *
- * @property {boolean}   [throwNoPlugin] If true then when no plugin is matched to be invoked an exception will be
- *                                       thrown.
- */
