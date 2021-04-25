@@ -581,13 +581,13 @@ export default class PluginInvokeSupport
 
       if (newEventbus !== null && newEventbus !== void 0)
       {
-         newEventbus.on(`${newPrepend}:async:invoke`, this.invokeAsync, this);
-         newEventbus.on(`${newPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
-         newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this);
-         newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this);
-         newEventbus.on(`${newPrepend}:invoke`, this.invoke, this);
-         newEventbus.on(`${newPrepend}:sync:invoke`, this.invokeSync, this);
-         newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
+         newEventbus.on(`${newPrepend}:async:invoke`, this.invokeAsync, this, true);
+         newEventbus.on(`${newPrepend}:async:invoke:event`, this.invokeAsyncEvent, this, true);
+         newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this, true);
+         newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this, true);
+         newEventbus.on(`${newPrepend}:invoke`, this.invoke, this, true);
+         newEventbus.on(`${newPrepend}:sync:invoke`, this.invokeSync, this, true);
+         newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this, true);
       }
    }
 }

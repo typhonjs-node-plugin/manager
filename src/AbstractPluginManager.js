@@ -142,7 +142,7 @@ export default class AbstractPluginManager
    /**
     * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
     *
-    * @type {Array<{destroy: Function, setEventbus: Function, eventbusSecure: EventbusSecure}>}
+    * @type {EventbusSecureObj[]}
     * @private
     */
    #eventbusSecure = [];
@@ -440,6 +440,8 @@ export default class AbstractPluginManager
     */
    createEventbusProxy()
    {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
       if (this.#eventbus === null)
       {
          throw new ReferenceError('No eventbus assigned to plugin manager.');
@@ -461,6 +463,8 @@ export default class AbstractPluginManager
     */
    createEventbusSecure()
    {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
       if (this.#eventbus === null)
       {
          throw new ReferenceError('No eventbus assigned to plugin manager.');
@@ -1208,21 +1212,21 @@ export default class AbstractPluginManager
          this.#eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
       }
 
-      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this);
-      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this);
-      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
-      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
-      eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
-      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
-      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this);
-      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
-      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this);
-      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this);
-      eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
-      eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this);
-      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
+      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this, true);
+      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this, true);
+      eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, true);
+      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this, true);
+      eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, true);
+      eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this, true);
+      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, true);
 
       for (const pluginSupport of this.#pluginSupport)
       {
@@ -1409,4 +1413,14 @@ export default class AbstractPluginManager
  *
  * @function
  * @name PluginSupportImpl#setEventbus
+ */
+
+/**
+ * @typedef {object} EventbusSecureObj The control object returned by `EventbusSecure.initialize`.
+ *
+ * @property {Function} destroy A function which destroys the underlying Eventbus reference.
+ *
+ * @property {EventbusSecure} eventbusSecure The EventbusSecure instance.
+ *
+ * @property {Function} setEventbus A function to set the underlying Eventbus reference.
  */

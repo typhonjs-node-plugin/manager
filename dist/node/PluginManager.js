@@ -316,12 +316,17 @@ const eventSplitter = /\s+/;
  * Iterates over the standard `event, callback` (as well as the fancy multiple space-separated events `"change blur",
  * callback` and jQuery-style event maps `{event: callback}`).
  *
- * @param {Function} iteratee    - Event operation to invoke.
- * @param {Events} events        - Events object
- * @param {string|object} name   - A single event name, compound event names, or a hash of event names.
- * @param {Function} callback    - Event callback function
- * @param {object}   opts        - Optional parameters
- * @returns {Events} Events object
+ * @param {Function}       iteratee Event operation to invoke.
+ *
+ * @param {object}         events Events object
+ *
+ * @param {string|object}  name A single event name, compound event names, or a hash of event names.
+ *
+ * @param {Function}       callback Event callback function
+ *
+ * @param {object}         opts Optional parameters
+ *
+ * @returns {object} Events object
  */
 function eventsAPI(iteratee, events, name, callback, opts)
 {
@@ -354,7 +359,7 @@ function eventsAPI(iteratee, events, name, callback, opts)
 /**
  * Provides  protected Object.keys functionality.
  *
- * @param {object}   object - Object to retrieve keys.
+ * @param {object}   object Object to retrieve keys.
  *
  * @returns {string[]} Keys of object if any.
  */
@@ -367,10 +372,14 @@ const objectKeys = (object) =>
  * Reduces the event callbacks into a map of `{event: beforeWrapper}`. `after` unbinds the `beforeWrapper` after
  * it has been called the number of times specified by options.count.
  *
- * @param {Events}   map      - Events object
- * @param {string}   name     - Event name
- * @param {Function} callback - Event callback
- * @param {object}   opts    - Function to invoke after event has been triggered once; `off()`
+ * @param {Events}   map Events object
+ *
+ * @param {string}   name Event name
+ *
+ * @param {Function} callback Event callback
+ *
+ * @param {object}   opts Function to invoke after event has been triggered once; `off()`
+ *
  * @returns {Events} The Events object.
  */
 function beforeMap(map, name, callback, opts)
@@ -390,6 +399,8 @@ function beforeMap(map, name, callback, opts)
    return map;
 }
 
+// Module Private ----------------------------------------------------------------------------------------------------
+
 /**
  * Creates a function that invokes `before`, with the `this` binding and arguments of the created function, while
  * it's called less than `count` times. Subsequent calls to the created function return the result of the last `before`
@@ -397,9 +408,12 @@ function beforeMap(map, name, callback, opts)
  *
  * `after` is invoked after the count is reduced.
  *
- * @param {number} count The number of calls at which `before` is no longer invoked and then `after` is invoked.
+ * @param {number}   count The number of calls at which `before` is no longer invoked and then `after` is invoked.
+ *
  * @param {Function} before The function to restrict.
+ *
  * @param {Function} after The function to invoke after count number of calls.
+ *
  * @returns {Function} Returns the new restricted function.
  */
 const s_BEFORE = function(count, before, after)
@@ -420,19 +434,6 @@ const s_BEFORE = function(count, before, after)
       return result;
    };
 };
-
-/**
- * @typedef {object} EventData The callback data for an event.
- *
- * @property {Function} callback - Callback function
- * @property {object} context -
- * @property {object} ctx -
- * @property {object} listening -
- */
-
-/**
- * @typedef {object.<string, EventData[]>} Events Event data stored by event name.
- */
 
 /**
  * EventbusProxy provides a protected proxy of another Eventbus instance.
@@ -494,12 +495,22 @@ class EventbusProxy
     *
     * @param {object}         context Event context
     *
-    * @returns {EventbusProxy} This Eventbus instance.
+    * @param {boolean}        [guarded=false] When set to true this registration is guarded.
+    *
+    * @returns {EventbusProxy} This EventbusProxy instance.
     */
-   before(count, name, callback, context = void 0)
+   before(count, name, callback, context = void 0, guarded = false)
    {
       if (this.isDestroyed) { throw new ReferenceError('This EventbusProxy instance has been destroyed.'); }
       if (!Number.isInteger(count)) { throw new TypeError(`'count' is not an integer`); }
+
+      const data = {};
+      if (this.#eventbus.isGuarded(name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - before() failed as event name(s) are guarded: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
 
       // Map the event into a `{event: beforeWrapper}` object.
       const events = eventsAPI(beforeMap, {}, name, callback, {
@@ -509,7 +520,7 @@ class EventbusProxy
 
       if (typeof name === 'string' && (context === null || context === void 0)) { callback = void 0; }
 
-      return this.on(events, callback, context);
+      return this.on(events, callback, context, guarded);
    }
 
    /**
@@ -598,6 +609,22 @@ class EventbusProxy
    }
 
    /**
+    * Returns whether an event name is guarded.
+    *
+    * @param {string|object}  name Event name(s) or event map to verify.
+    *
+    * @param {object}         [data] Stores the output of which names are guarded.
+    *
+    * @returns {boolean} Whether the given event name is guarded.
+    */
+   isGuarded(name, data = {})
+   {
+      if (this.isDestroyed) { throw new ReferenceError('This EventbusProxy instance has been destroyed.'); }
+
+      return this.#eventbus.isGuarded(name, data);
+   }
+
+   /**
     * Remove a previously-bound proxied event binding.
     *
     * Please see {@link Eventbus#off}.
@@ -638,11 +665,21 @@ class EventbusProxy
     *
     * @param {object}         context  Event context
     *
+    * @param {boolean}        [guarded=false] When set to true this registration is guarded.
+    *
     * @returns {EventbusProxy} This EventbusProxy
     */
-   on(name, callback, context = void 0)
+   on(name, callback, context = void 0, guarded = false)
    {
       if (this.isDestroyed) { throw new ReferenceError('This EventbusProxy instance has been destroyed.'); }
+
+      const data = {};
+      if (this.#eventbus.isGuarded(name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - on() failed as event name(s) are guarded: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
 
       let targetContext;
 
@@ -657,9 +694,9 @@ class EventbusProxy
          targetContext = context || this;
       }
 
-      this.#events = eventsAPI(s_ON_API$1, this.#events || {}, name, callback, { context: targetContext });
+      this.#events = eventsAPI(s_ON_API$1, this.#events || {}, name, callback, { context: targetContext, guarded });
 
-      this.#eventbus.on(name, callback, targetContext);
+      this.#eventbus.on(name, callback, targetContext, guarded);
 
       return this;
    }
@@ -677,11 +714,21 @@ class EventbusProxy
     *
     * @param {object}         context Event context
     *
-    * @returns {EventbusProxy} This Eventbus instance.
+    * @param {boolean}        [guarded=false] When set to true this registration is guarded.
+    *
+    * @returns {EventbusProxy} This EventbusProxy instance.
     */
-   once(name, callback, context = void 0)
+   once(name, callback, context = void 0, guarded = false)
    {
       if (this.isDestroyed) { throw new ReferenceError('This EventbusProxy instance has been destroyed.'); }
+
+      const data = {};
+      if (this.#eventbus.isGuarded(name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - once() failed as event name(s) are guarded: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
 
       // Map the event into a `{event: beforeWrapper}` object.
       const events = eventsAPI(beforeMap, {}, name, callback, {
@@ -691,7 +738,7 @@ class EventbusProxy
 
       if (typeof name === 'string' && (context === null || context === void 0)) { callback = void 0; }
 
-      return this.on(events, callback, context);
+      return this.on(events, callback, context, guarded);
    }
 
    /**
@@ -717,7 +764,7 @@ class EventbusProxy
             {
                for (const event of this.#events[name])
                {
-                  yield [name, event.callback, event.context];
+                  yield [name, event.callback, event.context, event.guarded];
                }
             }
          }
@@ -728,7 +775,7 @@ class EventbusProxy
          {
             for (const event of this.#events[name])
             {
-               yield [name, event.callback, event.context];
+               yield [name, event.callback, event.context, event.guarded];
             }
          }
       }
@@ -928,8 +975,9 @@ const s_ON_API$1 = (events, name, callback, opts) =>
    {
       const handlers = events[name] || (events[name] = []);
       const context = opts.context;
+      const guarded = typeof opts.guarded === 'boolean' ? opts.guarded /* c8 ignore next */ : false;
 
-      handlers.push({ callback, context });
+      handlers.push({ callback, context, guarded });
    }
 
    return events;
@@ -963,9 +1011,15 @@ class EventbusSecure
    #eventbus;
 
    /**
-    * Creates the EventbusSecure instance with an existing instance of Eventbus.
+    * Creates the EventbusSecure instance with an existing instance of Eventbus. An object / EventbusSecureObj is
+    * returned with an EventbusSecure reference and two functions for controlling the underlying Eventbus reference.
+    *
+    * `destroy()` will destroy the underlying Eventbus reference.
+    * `setEventbus(<eventbus>)` will set the underlying reference.
     *
     * @param {Eventbus}   eventbus - The target eventbus instance.
+    *
+    * @returns {EventbusSecureObj} The control object which contains an EventbusSecure reference and
     */
    static initialize(eventbus)
    {
@@ -1109,6 +1163,16 @@ class EventbusSecure
 }
 
 /**
+ * @typedef {object} EventbusSecureObj The control object returned by `EventbusSecure.initialize`.
+ *
+ * @property {Function} destroy A function which destroys the underlying Eventbus reference.
+ *
+ * @property {EventbusSecure} eventbusSecure The EventbusSecure instance.
+ *
+ * @property {Function} setEventbus A function to set the underlying Eventbus reference.
+ */
+
+/**
  * `@typhonjs-plugin/eventbus` / Provides the ability to bind and trigger custom named events.
  *
  * This module is an evolution of Backbone Events. (http://backbonejs.org/#Events). Eventbus extends the
@@ -1184,11 +1248,21 @@ class Eventbus
     *
     * @param {object}         context  - Event context
     *
+    * @param {boolean}        [guarded=false] When set to true this registration is guarded.
+    *
     * @returns {Eventbus} This Eventbus instance.
     */
-   before(count, name, callback, context = void 0)
+   before(count, name, callback, context = void 0, guarded = false)
    {
       if (!Number.isInteger(count)) { throw new TypeError(`'count' is not an integer`); }
+
+      const data = {};
+      if (this.isGuarded(name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - before() failed as event name(s) are guarded: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
 
       // Map the event into a `{event: beforeWrapper}` object.
       const events = eventsAPI(beforeMap, {}, name, callback, {
@@ -1198,11 +1272,11 @@ class Eventbus
 
       if (typeof name === 'string' && (context === null || context === void 0)) { callback = void 0; }
 
-      return this.on(events, callback, context);
+      return this.on(events, callback, context, guarded);
    }
 
    /**
-    * Creates an EventProxy wrapping this events instance. An EventProxy proxies events allowing all listeners added
+    * Creates an EventbusProxy wrapping this events instance. An EventProxy proxies events allowing all listeners added
     * to be easily removed from the wrapped Events instance.
     *
     * @returns {EventbusProxy} A new EventbusProxy for this eventbus.
@@ -1213,10 +1287,10 @@ class Eventbus
    }
 
    /**
-    * Creates an EventProxy wrapping this events instance. An EventProxy proxies events allowing all listeners added
+    * Creates an EventbusSecure wrapping this events instance. An EventSecure instance provides a secure
     * to be easily removed from the wrapped Events instance.
     *
-    * @returns {object} A new EventbusProxy for this eventbus.
+    * @returns {EventbusSecureObj} An EventbusSecure control object for this eventbus.
     */
    createSecure()
    {
@@ -1244,7 +1318,7 @@ class Eventbus
             {
                for (const event of this.#events[name])
                {
-                  yield [name, event.callback, event.ctx];
+                  yield [name, event.callback, event.ctx, event.guarded];
                }
             }
          }
@@ -1255,7 +1329,7 @@ class Eventbus
          {
             for (const event of this.#events[name])
             {
-               yield [name, event.callback, event.ctx];
+               yield [name, event.callback, event.ctx, event.guarded];
             }
          }
       }
@@ -1275,6 +1349,25 @@ class Eventbus
       for (const name in this.#events) { count += this.#events[name].length; }
 
       return count;
+   }
+
+   /**
+    * Returns whether an event name is guarded.
+    *
+    * @param {string|object}  name Event name(s) or event map to verify.
+    *
+    * @param {object}         [data] Stores the output of which names are guarded.
+    *
+    * @returns {boolean} Whether the given event name is guarded.
+    */
+   isGuarded(name, data = {})
+   {
+      data.names = [];
+      data.guarded = false;
+
+      const result = eventsAPI(s_IS_GUARDED, data, name, void 0, { events: this.#events });
+
+      return result.guarded;
    }
 
    /**
@@ -1340,6 +1433,15 @@ class Eventbus
    listenTo(obj, name, callback)
    {
       if (!obj) { return this; }
+
+      const data = {};
+      if (s_TRY_CATCH_IS_GUARDED(obj, name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - listenTo() failed as event name(s) are guarded for target object: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
+
       const id = obj._listenId || (obj._listenId = s_UNIQUE_ID('l'));
       const listeningTo = this._listeningTo || (this._listeningTo = {});
       let listening = _listening = listeningTo[id];
@@ -1440,7 +1542,7 @@ class Eventbus
     *
     * @see http://backbonejs.org/#Events-off
     *
-    * @param {string|object}  name Event name(s) or event map
+    * @param {string|object}  [name] Event name(s) or event map
     *
     * @param {Function}       [callback] Event callback function
     *
@@ -1492,14 +1594,25 @@ class Eventbus
     *
     * @param {object}         [context] Event context
     *
+    * @param {boolean}        [guarded=false] When set to true this registration is guarded.
+    *
     * @returns {Eventbus} This Eventbus instance.
     */
-   on(name, callback, context = void 0)
+   on(name, callback, context = void 0, guarded = false)
    {
+      const data = {};
+      if (this.isGuarded(name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - on() failed as event name(s) are guarded: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
+
       this.#events = eventsAPI(s_ON_API, this.#events || {}, name, callback,
       {
          context,
          ctx: this,
+         guarded,
          listening: _listening
       });
 
@@ -1528,10 +1641,20 @@ class Eventbus
     *
     * @param {object}         [context] Event context
     *
+    * @param {boolean}        [guarded=false] When set to true this registration is guarded.
+    *
     * @returns {Eventbus} This Eventbus instance.
     */
-   once(name, callback, context = void 0)
+   once(name, callback, context = void 0, guarded = false)
    {
+      const data = {};
+      if (this.isGuarded(name, data))
+      {
+         console.warn(`@typhonjs-plugin/eventbus - once() failed as event name(s) are guarded: `
+          + `${JSON.stringify(data.names)}`);
+         return this;
+      }
+
       // Map the event into a `{event: beforeWrapper}` object.
       const events = eventsAPI(beforeMap, {}, name, callback, {
          count: 1,
@@ -1540,7 +1663,7 @@ class Eventbus
 
       if (typeof name === 'string' && (context === null || context === void 0)) { callback = void 0; }
 
-      return this.on(events, callback, context);
+      return this.on(events, callback, context, guarded);
    }
 
    /**
@@ -1826,6 +1949,38 @@ class Listening
 }
 
 /**
+ * The reducing API that tests if an event name is guarded. The name will be added to the output names array.
+ *
+ * @param {object}   output The output object.
+ *
+ * @param {string}   name Event name
+ *
+ * @param {Function} callback Event callback
+ *
+ * @param {object}   opts Optional parameters
+ *
+ * @returns {object} The output object.
+ */
+const s_IS_GUARDED = (output, name, callback, opts) =>
+{
+   const events = opts.events;
+
+   if (events)
+   {
+      const handlers = events[name];
+
+      if (Array.isArray(handlers) && handlers.length === 1 && typeof handlers[0].guarded === 'boolean' &&
+         handlers[0].guarded)
+      {
+         output.names.push(name);
+         output.guarded = true;
+      }
+   }
+
+   return output;
+};
+
+/**
  * The reducing API that removes a callback from the `events` object.
  *
  * @param {Events}   events Events object
@@ -1834,16 +1989,16 @@ class Listening
  *
  * @param {Function} callback Event callback
  *
- * @param {object}   options Optional parameters
+ * @param {object}   opts Optional parameters
  *
  * @returns {void|Events} Events object
  */
-const s_OFF_API = (events, name, callback, options) =>
+const s_OFF_API = (events, name, callback, opts) =>
 {
    /* c8 ignore next 1 */
    if (!events) { return; }
 
-   const context = options.context, listeners = options.listeners;
+   const context = opts.context, listeners = opts.listeners;
    let i = 0, names;
 
    // Delete all event listeners and "drop" events.
@@ -1906,20 +2061,29 @@ const s_OFF_API = (events, name, callback, options) =>
  *
  * @param {Function} callback Event callback
  *
- * @param {object}   options Optional parameters
+ * @param {object}   opts Optional parameters
  *
  * @returns {Events} Events object.
  */
-const s_ON_API = (events, name, callback, options) =>
+const s_ON_API = (events, name, callback, opts) =>
 {
    if (callback)
    {
       const handlers = events[name] || (events[name] = []);
-      const context = options.context, ctx = options.ctx, listening = options.listening;
+      const context = opts.context, ctx = opts.ctx, listening = opts.listening;
+      const guarded = typeof opts.guarded === 'boolean' ? opts.guarded : false;
+
+      // Extra sanity check for guarded event registrations.
+      /* c8 ignore next 5 */
+      if (handlers.length === 1 && typeof handlers[0].guarded === 'boolean' && handlers[0].guarded)
+      {
+         console.warn(`@typhonjs-plugin/eventbus - s_ON_API failed as event name is guarded.`);
+         return events;
+      }
 
       if (listening) { listening.incrementCount(); }
 
-      handlers.push({ callback, context, ctx: context || ctx, listening });
+      handlers.push({ callback, context, ctx: context || ctx, guarded, listening });
    }
    return events;
 };
@@ -2236,6 +2400,37 @@ const s_TRIGGER_SYNC_EVENTS = (events, args) =>
 
    // Return the results array if there are more than one or just a single result.
    return results.length > 1 ? results : results.length === 1 ? results[0] : void 0;
+};
+
+/**
+ * A try-catch guarded function. Used when attempting to invoke `isGuarded` from an other eventbus / context via
+ * `listenTo`.
+ *
+ * @param {object}         obj Event target / context
+ *
+ * @param {string|object}  name Event name(s) or event map.
+ *
+ * @param {object}         data Output data.
+ *
+ * @returns {boolean} Any error if thrown.
+ */
+const s_TRY_CATCH_IS_GUARDED = (obj, name, data = {}) =>
+{
+   let guarded = false;
+
+   try
+   {
+      const result = obj.isGuarded(name, data);
+      if (typeof result === 'boolean') { guarded = result; }
+   }
+   catch (err)
+   {
+      guarded = false;
+      data.names = [];
+      data.guarded = false;
+   }
+
+   return guarded;
 };
 
 /**
@@ -2907,7 +3102,7 @@ class AbstractPluginManager
    /**
     * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
     *
-    * @type {Array<{destroy: Function, setEventbus: Function, eventbusSecure: EventbusSecure}>}
+    * @type {EventbusSecureObj[]}
     * @private
     */
    #eventbusSecure = [];
@@ -3205,6 +3400,8 @@ class AbstractPluginManager
     */
    createEventbusProxy()
    {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
       if (this.#eventbus === null)
       {
          throw new ReferenceError('No eventbus assigned to plugin manager.');
@@ -3226,6 +3423,8 @@ class AbstractPluginManager
     */
    createEventbusSecure()
    {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
       if (this.#eventbus === null)
       {
          throw new ReferenceError('No eventbus assigned to plugin manager.');
@@ -3973,21 +4172,21 @@ class AbstractPluginManager
          this.#eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
       }
 
-      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this);
-      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this);
-      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
-      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
-      eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
-      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
-      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this);
-      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
-      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this);
-      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this);
-      eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this);
-      eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this);
-      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this);
+      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this, true);
+      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this, true);
+      eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this, true);
+      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, true);
+      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this, true);
+      eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, true);
+      eventbus.on(`${eventPrepend}:set:enabled`, this.setEnabled, this, true);
+      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, true);
 
       for (const pluginSupport of this.#pluginSupport)
       {
@@ -4174,6 +4373,16 @@ class AbstractPluginManager
  *
  * @function
  * @name PluginSupportImpl#setEventbus
+ */
+
+/**
+ * @typedef {object} EventbusSecureObj The control object returned by `EventbusSecure.initialize`.
+ *
+ * @property {Function} destroy A function which destroys the underlying Eventbus reference.
+ *
+ * @property {EventbusSecure} eventbusSecure The EventbusSecure instance.
+ *
+ * @property {Function} setEventbus A function to set the underlying Eventbus reference.
  */
 
 const requireMod = module.createRequire(import.meta.url);
@@ -4980,13 +5189,13 @@ class PluginInvokeSupport
 
       if (newEventbus !== null && newEventbus !== void 0)
       {
-         newEventbus.on(`${newPrepend}:async:invoke`, this.invokeAsync, this);
-         newEventbus.on(`${newPrepend}:async:invoke:event`, this.invokeAsyncEvent, this);
-         newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this);
-         newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this);
-         newEventbus.on(`${newPrepend}:invoke`, this.invoke, this);
-         newEventbus.on(`${newPrepend}:sync:invoke`, this.invokeSync, this);
-         newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this);
+         newEventbus.on(`${newPrepend}:async:invoke`, this.invokeAsync, this, true);
+         newEventbus.on(`${newPrepend}:async:invoke:event`, this.invokeAsyncEvent, this, true);
+         newEventbus.on(`${newPrepend}:get:method:names`, this.getMethodNames, this, true);
+         newEventbus.on(`${newPrepend}:has:method`, this.hasMethod, this, true);
+         newEventbus.on(`${newPrepend}:invoke`, this.invoke, this, true);
+         newEventbus.on(`${newPrepend}:sync:invoke`, this.invokeSync, this, true);
+         newEventbus.on(`${newPrepend}:sync:invoke:event`, this.invokeSyncEvent, this, true);
       }
    }
 }
