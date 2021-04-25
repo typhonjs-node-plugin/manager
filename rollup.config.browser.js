@@ -1,7 +1,8 @@
-import path     from 'path';
+import path       from 'path';
 
-import istanbul from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
-import resolve  from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import { babel }  from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
+import istanbul   from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
+import resolve    from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 
 // The test browser distribution is bundled to `./test/live-server`.
 const s_TEST_BROWSER_PATH = './test/live-server';
@@ -24,6 +25,16 @@ export default () =>
          }],
          plugins: [
             resolve({ browser: true }),
+            babel({
+               babelHelpers: 'bundled',
+               presets: [
+                  ['@babel/preset-env', {
+                     bugfixes: true,
+                     shippedProposals: true,
+                     targets: { esmodules: true }
+                  }]
+               ]
+            }),
             istanbul()
          ]
       },
