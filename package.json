@@ -6,6 +6,7 @@
   "type": "module",
   "main": "dist/node/PluginManager.js",
   "module": "dist/node/PluginManager.js",
+  "browser": "./dist/browser/PluginManager.js",
   "exports": {
     ".": {
       "browser": "./dist/browser/PluginManager.js",
