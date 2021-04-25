@@ -2793,8 +2793,6 @@ function isValidConfig(pluginConfig)
  *
  * `plugins:async:remove:all` - {@link AbstractPluginManager#removeAll}
  *
- * `plugins:create:eventbus:secure` - {@link AbstractPluginManager#createEventbusSecure}
- *
  * `plugins:get:enabled` - {@link AbstractPluginManager#getEnabled}
  *
  * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
@@ -3207,7 +3205,7 @@ class AbstractPluginManager
     */
    createEventbusProxy()
    {
-      if (!(this.#eventbus instanceof Eventbus))
+      if (this.#eventbus === null)
       {
          throw new ReferenceError('No eventbus assigned to plugin manager.');
       }
@@ -3228,7 +3226,7 @@ class AbstractPluginManager
     */
    createEventbusSecure()
    {
-      if (!(this.#eventbus instanceof Eventbus))
+      if (this.#eventbus === null)
       {
          throw new ReferenceError('No eventbus assigned to plugin manager.');
       }
@@ -3276,7 +3274,6 @@ class AbstractPluginManager
          this.#eventbus.off(`${this._eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
          this.#eventbus.off(`${this._eventPrepend}:async:remove`, this._removeEventbus, this);
          this.#eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:create:eventbus:secure`, this.createEventbusSecure, this);
          this.#eventbus.off(`${this._eventPrepend}:get:enabled`, this.getEnabled, this);
          this.#eventbus.off(`${this._eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
          this.#eventbus.off(`${this._eventPrepend}:get:plugin:data`, this.getPluginData, this);
@@ -3725,8 +3722,7 @@ class AbstractPluginManager
          }
          catch (err) { /* noop */ }
 
-         if (entry.eventbusProxy instanceof EventbusProxy)
-         { entry.eventbusProxy.destroy(); }
+         if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.destroy(); }
 
          this.#pluginMap.delete(pluginName);
 
@@ -3898,7 +3894,7 @@ class AbstractPluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (!(eventbus instanceof Eventbus)) { throw new TypeError(`'eventbus' is not an Eventbus.`); }
+      if (!isObject(eventbus)) { throw new TypeError(`'eventbus' is not an Eventbus.`); }
       if (typeof eventPrepend !== 'string') { throw new TypeError(`'eventPrepend' is not a string.`); }
 
       // Early escape if the eventbus is the same as the current eventbus.
@@ -3965,7 +3961,6 @@ class AbstractPluginManager
          this.#eventbus.off(`${oldPrepend}:async:destroy:manager`, this._destroyEventbus, this);
          this.#eventbus.off(`${oldPrepend}:async:remove`, this._removeEventbus, this);
          this.#eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:create:eventbus:secure`, this.createEventbusSecure, this);
          this.#eventbus.off(`${oldPrepend}:get:enabled`, this.getEnabled, this);
          this.#eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
          this.#eventbus.off(`${oldPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
@@ -3983,7 +3978,6 @@ class AbstractPluginManager
       eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this);
       eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-      eventbus.on(`${eventPrepend}:create:eventbus:secure`, this.createEventbusSecure, this);
       eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this);
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this);
       eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
