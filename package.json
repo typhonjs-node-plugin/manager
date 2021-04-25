@@ -6,13 +6,7 @@
   "type": "module",
   "main": "dist/node/PluginManager.js",
   "module": "dist/node/PluginManager.js",
-  "browser": "./dist/browser/PluginManager.js",
-  "exports": {
-    ".": {
-      "browser": "./dist/browser/PluginManager.js",
-      "node": "./dist/node/PluginManager.js"
-    }
-  },
+  "browser": "dist/browser/PluginManager.js",
   "contributors": [
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
