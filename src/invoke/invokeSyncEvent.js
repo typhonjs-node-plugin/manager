@@ -8,19 +8,19 @@ import PluginInvokeEvent   from './PluginInvokeEvent.js';
  *
  * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
  *
- * @param {string}                     method Method name to invoke.
+ * @param {string}                     method - Method name to invoke.
  *
- * @param {object}                     copyProps Properties that are copied.
+ * @param {object}                     copyProps - Properties that are copied.
  *
- * @param {object}                     passthruProps Properties that are passed through.
+ * @param {object}                     passthruProps - Properties that are passed through.
  *
- * @param {string|Iterable<string>}    plugins Specific plugin name or iterable list of plugin names to invoke.
+ * @param {string|Iterable<string>}    plugins - Specific plugin name or iterable list of plugin names to invoke.
  *
- * @param {AbstractPluginManager}      pluginManager A plugin manager instance.
+ * @param {PluginManager}              pluginManager - A plugin manager instance.
  *
- * @param {object}                     options Defines options for throwing exceptions. Turned off by default.
+ * @param {object}                     options - Defines options for throwing exceptions. Turned off by default.
  *
- * @param {boolean}                    [performErrorCheck=true] If false optional error checking is disabled.
+ * @param {boolean}                    [performErrorCheck=true] - If false optional error checking is disabled.
  *
  * @returns {PluginEventData} The PluginEvent data.
  */

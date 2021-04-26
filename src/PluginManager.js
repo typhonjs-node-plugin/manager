@@ -1,5 +1,6 @@
 import Eventbus          from '@typhonjs-plugin/eventbus';
 import { EventbusProxy } from '@typhonjs-plugin/eventbus';
+import ModuleLoader      from '@typhonjs-utils/loader-module';
 
 import PluginEntry       from './PluginEntry.js';
 
@@ -7,8 +8,10 @@ import invokeAsyncEvent  from './invoke/invokeAsyncEvent.js';
 
 import escapeTarget      from './utils/escapeTarget.js';
 import isValidConfig     from './utils/isValidConfig.js';
+import resolveModule     from './utils/resolveModule.js';
 
 import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
+
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -18,35 +21,35 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * A default eventbus will be created, but you may also pass in an eventbus from `@typhonjs-plugin/eventbus` and the
  * plugin manager will register by default under these event categories:
  *
- * `plugins:async:add` - {@link AbstractPluginManager#add}
+ * `plugins:async:add` - {@link PluginManager#add}
  *
- * `plugins:async:add:all` - {@link AbstractPluginManager#addAll}
+ * `plugins:async:add:all` - {@link PluginManager#addAll}
  *
- * `plugins:async:destroy:manager` - {@link AbstractPluginManager#destroy}
+ * `plugins:async:destroy:manager` - {@link PluginManager#destroy}
  *
- * `plugins:async:remove` - {@link AbstractPluginManager#remove}
+ * `plugins:async:remove` - {@link PluginManager#remove}
  *
- * `plugins:async:remove:all` - {@link AbstractPluginManager#removeAll}
+ * `plugins:async:remove:all` - {@link PluginManager#removeAll}
  *
- * `plugins:get:enabled` - {@link AbstractPluginManager#getEnabled}
+ * `plugins:get:enabled` - {@link PluginManager#getEnabled}
  *
- * `plugins:get:options` - {@link AbstractPluginManager#getOptions}
+ * `plugins:get:options` - {@link PluginManager#getOptions}
  *
- * `plugins:get:plugin:by:event` - {@link PluginSupport#getPluginByEvent}
+ * `plugins:get:plugin:by:event` - {@link PluginManager#getPluginByEvent}
  *
- * `plugins:get:plugin:data` - {@link PluginSupport#getPluginData}
+ * `plugins:get:plugin:data` - {@link PluginManager#getPluginData}
  *
- * `plugins:get:plugin:events` - {@link PluginSupport#getPluginEvents}
+ * `plugins:get:plugin:events` - {@link PluginManager#getPluginEvents}
  *
- * `plugins:get:plugin:names` - {@link PluginSupport#getPluginNames}
+ * `plugins:get:plugin:names` - {@link PluginManager#getPluginNames}
  *
- * `plugins:has:plugin` - {@link AbstractPluginManager#hasPlugin}
+ * `plugins:has:plugin` - {@link PluginManager#hasPlugin}
  *
- * `plugins:is:valid:config` - {@link AbstractPluginManager#isValidConfig}
+ * `plugins:is:valid:config` - {@link PluginManager#isValidConfig}
  *
- * `plugins:set:enabled` - {@link AbstractPluginManager#setEnabled}
+ * `plugins:set:enabled` - {@link PluginManager#setEnabled}
  *
- * `plugins:set:options` - {@link AbstractPluginManager#setOptions}
+ * `plugins:set:options` - {@link PluginManager#setOptions}
  *
  * Automatically when a plugin is loaded and unloaded respective functions `onPluginLoad` and `onPluginUnload` will
  * be attempted to be invoked on the plugin. This is an opportunity for the plugin to receive any associated eventbus
@@ -64,7 +67,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * `createEventbusProxy` method will return a proxy to the default or currently set eventbus.
  *
  * If eventbus functionality is enabled it is important especially if using a process / global level eventbus such as
- * `@typhonjs-plugin/eventbus/instances` to call {@link AbstractPluginManager#destroy} to clean up all plugin eventbus
+ * `@typhonjs-plugin/eventbus/instances` to call {@link PluginManager#destroy} to clean up all plugin eventbus
  * resources and the plugin manager event bindings; this is primarily a testing concern.
  *
  * @see https://www.npmjs.com/package/@typhonjs-plugin/eventbus
@@ -121,7 +124,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the
  * // main thread of execution scope to remove all plugins and the plugin manager event bindings!
  */
-export default class AbstractPluginManager
+export default class PluginManager
 {
    /**
     * Stores the associated eventbus.
@@ -159,10 +162,10 @@ export default class AbstractPluginManager
    #options =
    {
       noEventAdd: false,
-      noEventDestroy: false,
+      noEventDestroy: true,
       noEventOptions: true,
       noEventRemoval: false,
-      noEventSetEnabled: false,
+      noEventSetEnabled: true,
       throwNoMethod: false,
       throwNoPlugin: false
    };
@@ -184,21 +187,21 @@ export default class AbstractPluginManager
    #pluginSupport = [];
 
    /**
-    * Instantiates AbstractPluginManager
+    * Instantiates PluginManager
     *
-    * @param {object}   [options] Provides various configuration options:
+    * @param {object}   [options] - Provides various configuration options:
     *
-    * @param {Eventbus} [options.eventbus] An instance of '@typhonjs-plugin/eventbus' used as the plugin
-    *                                      eventbus. If not provided a default eventbus is created.
+    * @param {Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus' used as the plugin
+    *                                        eventbus. If not provided a default eventbus is created.
     *
-    * @param {string}   [options.eventPrepend='plugin'] A customized name to prepend PluginManager events on the
-    *                                                   eventbus.
+    * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
+    *                                                     eventbus.
     *
-    * @param {PluginSupportImpl|Iterable<PluginSupportImpl>} [options.PluginSupport] Optional classes to pass in which
+    * @param {PluginSupportImpl|Iterable<PluginSupportImpl>} [options.PluginSupport] - Optional classes to pass in which
     *                                                 extends the plugin manager. A default implementation is available:
     *                                                 {@link PluginSupport}
     *
-    * @param {PluginManagerOptions}  [options.manager] The plugin manager options.
+    * @param {PluginManagerOptions}  [options.manager] - The plugin manager options.
     */
    constructor(options = {})
    {
@@ -253,9 +256,9 @@ export default class AbstractPluginManager
     * existing `instance` to use as the plugin. Then the `target` is chosen as the NPM module / local file to load.
     * By passing in `options` this will be stored and accessible to the plugin during all callbacks.
     *
-    * @param {PluginConfig}   pluginConfig Defines the plugin to load.
+    * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
     *
-    * @param {object}         [moduleData] Optional object hash to associate with plugin.
+    * @param {object}         [moduleData] - Optional object hash to associate with plugin.
     *
     * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
     */
@@ -309,11 +312,25 @@ export default class AbstractPluginManager
          // If a target is defined use it instead of the name.
          target = pluginConfig.target || pluginConfig.name;
 
-         // Defer to child class to load module in Node or the browser.
-         const result = await this._loadModule(target);
+         try
+         {
+            const result = await ModuleLoader.load({ modulepath: target, resolveModule })
 
-         instance = result.instance;
-         type = result.type;
+            // Please note that a plugin or other logger must be setup on the associated eventbus.
+            if (this.#eventbus !== null)
+            {
+               this.#eventbus.trigger('log:debug',
+                `@typhonjs-plugin/manager - ${result.isESM ? 'import' : 'require'}: ${result.loadpath}`);
+            }
+
+            instance = result.instance;
+            type = result.type;
+         }
+         catch (err)
+         {
+            throw new Error(`@typhonjs-plugin/manager - Could not load target: ${target}\n\nPluginConfig:\n`
+             + `${JSON.stringify(pluginConfig, null, 3)}\n\n${err}`);
+         }
       }
 
       // Convert any URL target a string.
@@ -371,9 +388,9 @@ export default class AbstractPluginManager
    /**
     * Initializes multiple plugins in a single call.
     *
-    * @param {Iterable<PluginConfig>}  pluginConfigs An iterable list of plugin config object hash entries.
+    * @param {Iterable<PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
     *
-    * @param {object}                  [moduleData] Optional object hash to associate with all plugins.
+    * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
     */
@@ -399,9 +416,9 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {PluginConfig}   pluginConfig Defines the plugin to load.
+    * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
     *
-    * @param {object}         [moduleData] Optional object hash to associate with all plugins.
+    * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
     * @private
@@ -417,9 +434,9 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {Iterable<PluginConfig>}  pluginConfigs An iterable list of plugin config object hash entries.
+    * @param {Iterable<PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
     *
-    * @param {object}                  [moduleData] Optional object hash to associate with all plugins.
+    * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
     * @private
@@ -460,7 +477,7 @@ export default class AbstractPluginManager
     *
     * @returns {EventbusSecure} A secure wrapper for the currently set Eventbus.
     */
-   createEventbusSecure()
+   createEventbusSecure(name = void 0)
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -469,7 +486,7 @@ export default class AbstractPluginManager
          throw new ReferenceError('No eventbus assigned to plugin manager.');
       }
 
-      const eventbusSecureObj = this.#eventbus.createSecure();
+      const eventbusSecureObj = this.#eventbus.createSecure(name);
 
       // Store EventbusSecure object to make sure it is destroyed when the plugin manager is destroyed.
       this.#eventbusSecure.push(eventbusSecureObj);
@@ -564,9 +581,9 @@ export default class AbstractPluginManager
    /**
     * Returns the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {object}                  [opts] Options object. If undefined all plugin enabled state is returned.
+    * @param {object}                  [opts] - Options object. If undefined all plugin enabled state is returned.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to get state.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get state.
     *
     * @returns {boolean|DataOutPluginEnabled[]} Enabled state for single plugin or array of results for multiple
     *                                           plugins.
@@ -641,7 +658,7 @@ export default class AbstractPluginManager
     *
     * @param {string}   pluginName - Plugin name to set state.
     *
-    * @returns {string[]|DataOutPluginEvents[]} - Event binding names registered from the plugin.
+    * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
    getPluginByEvent({ event = void 0 } = {})
    {
@@ -684,9 +701,9 @@ export default class AbstractPluginManager
    /**
     * Gets the plugin data for a plugin, list of plugins, or all plugins.
     *
-    * @param {object}                  [opts] Options object. If undefined all plugin data is returned.
+    * @param {object}                  [opts] - Options object. If undefined all plugin data is returned.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to get plugin data.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get plugin data.
     *
     * @returns {PluginData|PluginData[]|undefined} The plugin data for a plugin or list of plugins.
     */
@@ -740,7 +757,7 @@ export default class AbstractPluginManager
    /**
     * Gets a PluginEntry instance for the given plugin name.
     *
-    * @param {string} plugin The plugin name to get.
+    * @param {string} plugin - The plugin name to get.
     *
     * @returns {void|PluginEntry} The PluginEntry for the given plugin name.
     */
@@ -756,7 +773,7 @@ export default class AbstractPluginManager
     *
     * @param {string}   pluginName - Plugin name to set state.
     *
-    * @returns {string[]|DataOutPluginEvents[]} - Event binding names registered from the plugin.
+    * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
    getPluginEvents({ plugins = [] } = {})
    {
@@ -849,7 +866,7 @@ export default class AbstractPluginManager
    /**
     * Returns all plugin names or if enabled is set then return plugins matching the enabled state.
     *
-    * @param {object}  [opts] Options object.
+    * @param {object}  [opts] - Options object.
     *
     * @param {boolean} [opts.enabled] - If enabled is a boolean it will return plugins given their enabled state.
     *
@@ -879,9 +896,9 @@ export default class AbstractPluginManager
    /**
     * Returns true if there is a plugin loaded with the given plugin name.
     *
-    * @param {object}                  [opts] Options object. If undefined all plugin enabled state is returned.
+    * @param {object}                  [opts] - Options object. If undefined all plugin enabled state is returned.
     *
-    * @param {string|Iterable<string>} [opts.plugin] Plugin name or iterable list of names to get state.
+    * @param {string|Iterable<string>} [opts.plugin] - Plugin name or iterable list of names to get state.
     *
     * @returns {boolean} True if a plugin exists.
     */
@@ -897,7 +914,7 @@ export default class AbstractPluginManager
    /**
     * Performs validation of a PluginConfig.
     *
-    * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
+    * @param {PluginConfig}   pluginConfig - A PluginConfig to validate.
     *
     * @returns {boolean} True if the given PluginConfig is valid.
     */
@@ -907,24 +924,12 @@ export default class AbstractPluginManager
    }
 
    /**
-    * Child implementations provide platform specific module loading by overriding this method.
-    *
-    * @param {string|URL}   moduleOrPath A module name, file path, or URL.
-    *
-    * @returns {Promise<*>} Loaded module.
-    * @private
-    */
-   async _loadModule(moduleOrPath)  // eslint-disable-line no-unused-vars
-   {
-   }
-
-   /**
     * Removes a plugin by name or all names in an iterable list unloading them and clearing any event bindings
     * automatically.
     *
-    * @param {object}                  opts Options object
+    * @param {object}                  opts - Options object
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to remove.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
     *
     * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
@@ -1025,9 +1030,9 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
-    * @param {object}                  opts Options object
+    * @param {object}                  opts - Options object
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to remove.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
     *
     * @returns {Promise<DataOutPluginRemoved>} A list of plugin names and removal success state.
     * @private
@@ -1056,11 +1061,11 @@ export default class AbstractPluginManager
    /**
     * Sets the enabled state of a plugin, a list of plugins, or all plugins.
     *
-    * @param {object}            opts Options object.
+    * @param {object}            opts - Options object.
     *
-    * @param {boolean}           opts.enabled The enabled state.
+    * @param {boolean}           opts.enabled - The enabled state.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to set state.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to set state.
     */
    setEnabled({ enabled, plugins = [] } = {})
    {
@@ -1118,7 +1123,7 @@ export default class AbstractPluginManager
     * Provides the eventbus callback which may prevent setEnabled if optional `noEventSetEnabled` is true. This
     * disables the ability for setting plugin enabled state via events preventing any external code from setting state.
     *
-    * @param {object}   opts Options object.
+    * @param {object}   opts - Options object.
     *
     * @private
     */
@@ -1134,14 +1139,14 @@ export default class AbstractPluginManager
     * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
     * events will be removed from the old eventbus and then `onPluginLoad` will be called with the new eventbus.
     *
-    * @param {object}     opts An options object.
+    * @param {object}     opts - An options object.
     *
-    * @param {Eventbus}   opts.eventbus The new eventbus to associate.
+    * @param {Eventbus}   opts.eventbus - The new eventbus to associate.
     *
-    * @param {string}     [opts.eventPrepend='plugins'] An optional string to prepend to all of the event
-    *                                                      binding targets.
+    * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
+    *                                                     binding targets.
     *
-    * @returns {Promise<AbstractPluginManager>} This plugin manager.
+    * @returns {Promise<PluginManager>} This plugin manager.
     */
    async setEventbus({ eventbus, eventPrepend = 'plugins' } = {})
    {
@@ -1265,7 +1270,7 @@ export default class AbstractPluginManager
    /**
     * Set optional parameters.
     *
-    * @param {PluginManagerOptions} options Defines optional parameters to set.
+    * @param {PluginManagerOptions} options - Defines optional parameters to set.
     */
    setOptions(options = {})
    {

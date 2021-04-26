@@ -23,14 +23,14 @@ import invokeSyncEvent  from '../../invoke/invokeSyncEvent.js';
 export default class PluginInvokeSupport
 {
    /**
-    * @type {AbstractPluginManager}
+    * @type {PluginManager}
     */
    #pluginManager = null;
 
    /**
     * Create PluginInvokeSupport
     *
-    * @param {AbstractPluginManager} pluginManager The plugin manager to associate.
+    * @param {PluginManager} pluginManager - The plugin manager to associate.
     */
    constructor(pluginManager)
    {
@@ -61,11 +61,11 @@ export default class PluginInvokeSupport
    /**
     * Destroys all managed plugins after unloading them.
     *
-    * @param {object}     options - An options object.
+    * @param {object}     opts - An options object.
     *
-    * @param {Eventbus}   options.eventbus - The eventbus to disassociate.
+    * @param {Eventbus}   opts.eventbus - The eventbus to disassociate.
     *
-    * @param {string}     options.eventPrepend - The current event prepend.
+    * @param {string}     opts.eventPrepend - The current event prepend.
     */
    async destroy({ eventbus, eventPrepend } = {})
    {
@@ -87,12 +87,12 @@ export default class PluginInvokeSupport
     * Returns method names for a specific plugin, list of plugins, or all plugins. The enabled state can be specified
     * along with sorting methods by plugin name.
     *
-    * @param {object}                  [opts] Options object. If undefined all plugin data is returned.
+    * @param {object}                  [opts] - Options object. If undefined all plugin data is returned.
     *
-    * @param {boolean}                 [opts.enabled] If enabled is a boolean it will return plugin methods names given
-    *                                                 the respective enabled state.
+    * @param {boolean}                 [opts.enabled] - If enabled is a boolean it will return plugin methods names
+    *                                                   given the respective enabled state.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names.
     *
     * @returns {string[]} A list of method names
     */
@@ -163,12 +163,12 @@ export default class PluginInvokeSupport
    /**
     * Checks if the provided method name exists across all plugins or specific plugins if defined.
     *
-    * @param {object}                  opts Options object.
+    * @param {object}                  opts - Options object.
     *
-    * @param {string}                  opts.method Method name to test.
+    * @param {string}                  opts.method - Method name to test.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Plugin name or iterable list of names to check for method. If
-    *                                                 undefined all plugins must contain the method.
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to check for method. If
+    *                                                   undefined all plugins must contain the method.
     *
     * @returns {boolean} - True method is found.
     */
@@ -219,13 +219,13 @@ export default class PluginInvokeSupport
    /**
     * This dispatch method simply invokes any plugin targets for the given method name.
     *
-    * @param {object}   opts Options object.
+    * @param {object}   opts - Options object.
     *
-    * @param {string}   opts.method Method name to invoke.
+    * @param {string}   opts.method - Method name to invoke.
     *
-    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
+    * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
+    * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     */
    invoke({ method, args = void 0, plugins = void 0 } = {})
    {
@@ -299,13 +299,13 @@ export default class PluginInvokeSupport
     * This dispatch method is asynchronous and adds any returned results to an array which is resolved via Promise.all
     * Any target invoked may return a Promise or any result.
     *
-    * @param {object}   opts Options object.
+    * @param {object}   opts - Options object.
     *
-    * @param {string}   opts.method Method name to invoke.
+    * @param {string}   opts.method - Method name to invoke.
     *
-    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
+    * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
+    * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
     * @returns {Promise<*|*[]>} A single result or array of results.
     */
@@ -402,15 +402,15 @@ export default class PluginInvokeSupport
    /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
-    * @param {object}   opts Options object.
+    * @param {object}   opts - Options object.
     *
-    * @param {string}   opts.method Method name to invoke.
+    * @param {string}   opts.method - Method name to invoke.
     *
-    * @param {object}   [opts.copyProps] Properties that are copied.
+    * @param {object}   [opts.copyProps] - Properties that are copied.
     *
-    * @param {object}   [opts.passthruProps] Properties that are passed through.
+    * @param {object}   [opts.passthruProps] - Properties that are passed through.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
+    * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
     * @returns {Promise<PluginEventData>} The PluginEvent data.
     */
@@ -428,13 +428,13 @@ export default class PluginInvokeSupport
     * This dispatch method synchronously passes back a single value or an array with all results returned by any
     * invoked targets.
     *
-    * @param {object}   opts Options object.
+    * @param {object}   opts - Options object.
     *
-    * @param {string}   opts.method Method name to invoke.
+    * @param {string}   opts.method - Method name to invoke.
     *
-    * @param {*[]}      [opts.args] Method arguments. This array will be spread as multiple arguments.
+    * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
+    * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
     * @returns {*|*[]} A single result or array of results.
     */
@@ -522,15 +522,15 @@ export default class PluginInvokeSupport
    /**
     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
     *
-    * @param {object}            opts Options object.
+    * @param {object}            opts - Options object.
     *
-    * @param {string}            opts.method Method name to invoke.
+    * @param {string}            opts.method - Method name to invoke.
     *
-    * @param {object}            [opts.copyProps] Properties that are copied.
+    * @param {object}            [opts.copyProps] - Properties that are copied.
     *
-    * @param {object}            [opts.passthruProps] Properties that are passed through.
+    * @param {object}            [opts.passthruProps] - Properties that are passed through.
     *
-    * @param {string|Iterable<string>} [opts.plugins] Specific plugin name or iterable list of plugin names to invoke.
+    * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
     * @returns {PluginEventData} The PluginEvent data.
     */
@@ -549,15 +549,15 @@ export default class PluginInvokeSupport
     * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
     * events will be removed from the old eventbus and then `onPluginLoad` will be called with the new eventbus.
     *
-    * @param {object}     options - An options object.
+    * @param {object}     opts - An options object.
     *
-    * @param {Eventbus}   options.oldEventbus - The old eventbus to disassociate.
+    * @param {Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
     *
-    * @param {Eventbus}   options.newEventbus - The new eventbus to associate.
+    * @param {Eventbus}   opts.newEventbus - The new eventbus to associate.
     *
-    * @param {string}     options.oldPrepend - The old event prepend.
+    * @param {string}     opts.oldPrepend - The old event prepend.
     *
-    * @param {string}     options.newPrepend - The new event prepend.
+    * @param {string}     opts.newPrepend - The new event prepend.
     */
    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend } = {})
    {

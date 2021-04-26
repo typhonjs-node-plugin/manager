@@ -65,6 +65,12 @@ export default class APIErrors
              `A plugin already exists with name: NAME.`);
          });
 
+         it('add - throws w/ bad module path', async () =>
+         {
+            const pluginConfig = { name: 'bad-module', target: 'bad-path.js' };
+            await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(Error);
+         });
+
          it('addAll - pluginConfigs not iterable', async () =>
          {
             await expect(pluginManager.addAll(false)).to.be.rejectedWith(TypeError,

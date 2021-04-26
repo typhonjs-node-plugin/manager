@@ -15,7 +15,7 @@ const relativeTestBrowserPath = path.relative(`${s_TEST_BROWSER_PATH}`, '.');
 export default () =>
 {
    return [{ // This bundle is for the Istanbul instrumented browser test.
-         input: ['src/browser/index.js'],
+         input: ['src/index.js'],
          output: [{
             file: `${s_TEST_BROWSER_PATH}/PluginManager.js`,
             format: 'es',

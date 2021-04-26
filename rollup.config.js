@@ -15,7 +15,7 @@ const s_DIST_PATH_NODE = './dist/node';
 const s_SOURCEMAP = true;
 
 // Adds Terser to the output plugins for server bundle if true.
-const s_MINIFY = typeof process.env.ROLLUP_MINIFY === 'string' ? process.env.ROLLUP_MINIFY === 'true' : false;
+const s_MINIFY = typeof process.env.ROLLUP_MINIFY === 'string' ? process.env.ROLLUP_MINIFY === 'true' : true;
 
 export default () =>
 {
@@ -33,7 +33,7 @@ export default () =>
    // const relativeDistNodePath = path.relative(`${s_DIST_PATH_NODE}`, '.');
 
    return [{   // This bundle is for the Node distribution.
-         input: ['src/node/index.js'],
+         input: ['src/index.js'],
          output: [{
             file: `${s_DIST_PATH_NODE}${path.sep}PluginManager.js`,
             format: 'es',
@@ -49,7 +49,7 @@ export default () =>
 
       // This bundle is for the browser distribution.
       {
-         input: ['src/browser/index.js'],
+         input: ['src/index.js'],
          output: [{
             file: `${s_DIST_PATH_BROWSER}${path.sep}PluginManager.js`,
             format: 'es',
