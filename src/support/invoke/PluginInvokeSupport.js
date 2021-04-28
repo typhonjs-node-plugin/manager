@@ -1,4 +1,4 @@
-import { isIterable, isObject } from "@typhonjs-utils/object";
+import { isIterable }   from "@typhonjs-utils/object";
 
 import invokeAsyncEvent from './invokeAsyncEvent.js';
 import invokeSyncEvent  from './invokeSyncEvent.js';
@@ -587,9 +587,8 @@ export default class PluginInvokeSupport
     */
    setOptions(options = {})
    {
+      /* c8 ignore next 1 */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
    }
 }
 
