@@ -158,7 +158,7 @@ export default class Runtime
                assert.strictEqual(results[0], 6);
                assert.strictEqual(results[1], 6);
 
-               await pluginManager.setEventbus({ eventbus: eventbus2, eventPrepend: 'plugins2' })
+               await pluginManager.setEventbus({ eventbus: eventbus2, eventPrepend: 'plugins2' });
 
                assert.strictEqual(eventbusSecure.name, 'eventbus2');
 

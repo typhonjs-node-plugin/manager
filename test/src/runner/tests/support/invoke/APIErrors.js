@@ -10,31 +10,31 @@
 //    'plugins:sync:invoke',
 //    'plugins:sync:invoke:event'
 // ];
-
-export default class APIErrors
-{
-   static run(Module, data, chai)
-   {
-      // const { assert } = chai;
-      //
-      // const PluginManager = Module.default;
-      // const { PluginInvokeSupport } = Module;
-
-      // describe('PluginInvokeSupport is destroyed', () =>
-      // {
-      //    let eventbus, pluginManager;
-      //
-      //    beforeEach(async () =>
-      //    {
-      //       pluginManager = new PluginManager({ PluginSupport: PluginInvokeSupport });
-      //       eventbus = pluginManager.getEventbus();
-      //       await pluginManager.destroy();
-      //    });
-      //
-      //    it('pluginManager destroy', () =>
-      //    {
-      //       assert.strictEqual(eventbus.eventCount, 0);
-      //    });
-      // });
-   }
-}
+//
+// export default class APIErrors
+// {
+//    static run(Module, data, chai)
+//    {
+//       const { assert } = chai;
+//
+//       const PluginManager = Module.default;
+//       const { PluginInvokeSupport } = Module;
+//
+//       describe('PluginInvokeSupport is destroyed', () =>
+//       {
+//          let eventbus, pluginManager;
+//
+//          beforeEach(async () =>
+//          {
+//             pluginManager = new PluginManager({ PluginSupport: PluginInvokeSupport });
+//             eventbus = pluginManager.getEventbus();
+//             await pluginManager.destroy();
+//          });
+//
+//          it('pluginManager destroy', () =>
+//          {
+//             assert.strictEqual(eventbus.eventCount, 0);
+//          });
+//       });
+//    }
+// }
