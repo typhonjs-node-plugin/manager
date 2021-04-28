@@ -26,43 +26,44 @@ export default class APIErrors
 
             const pluginConfig = { name: false };
             await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(TypeError,
-             `'pluginConfig.name' is not a string for entry: ${JSON.stringify(pluginConfig)}.`);
+             `'pluginConfig.name' is not a string for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
          it('add - throws w/ bad pluginConfig (name)', async () =>
          {
             const pluginConfig = { name: false };
             await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(TypeError,
-             `'pluginConfig.name' is not a string for entry: ${JSON.stringify(pluginConfig)}.`);
+             `'pluginConfig.name' is not a string for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
          it('add - throws w/ bad pluginConfig (target)', async () =>
          {
             const pluginConfig = { name: 'a name', target: false };
             await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(TypeError,
-             `'pluginConfig.target' is not a string or URL for entry: ${JSON.stringify(pluginConfig)}.`);
+             `'pluginConfig.target' is not a string or URL for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
          it('add - throws w/ bad pluginConfig (options)', async () =>
          {
             const pluginConfig = { name: 'a name', options: false };
             await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(TypeError,
-             `'pluginConfig.options' is not an object for entry: ${JSON.stringify(pluginConfig)}.`);
+             `'pluginConfig.options' is not an object for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
          it('add - throws w/ bad moduleData', async () =>
          {
             const pluginConfig = { name: 'a name' };
             await expect(pluginManager.add(pluginConfig, false)).to.be.rejectedWith(TypeError,
-             `'moduleData' is not an object for entry: ${JSON.stringify(pluginConfig)}.`);
+             `'moduleData' is not an object for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
          it('add - already has a plugin with same name', async () =>
          {
-            await pluginManager.add({ name: 'NAME', instance: {} });
+            const pluginConfig = { name: 'NAME', instance: {} };
+            await pluginManager.add(pluginConfig);
 
-            await expect(pluginManager.add({ name: 'NAME', instance: {} })).to.be.rejectedWith(Error,
-             `A plugin already exists with name: NAME.`);
+            await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(Error,
+             `A plugin already exists with name: NAME for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
          it('add - throws w/ bad module path', async () =>

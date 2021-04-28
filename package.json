@@ -18,7 +18,7 @@
     "@typhonjs-plugin/eventbus": "^0.0.1",
     "@typhonjs-utils/build-test": "^0.1.0",
     "@typhonjs-utils/build-test-browser": "^0.0.7",
-    "@typhonjs-utils/loader-module": "^0.0.0",
+    "@typhonjs-utils/loader-module": "^0.0.1",
     "@typhonjs-utils/object": "^0.0.0",
     "rollup": "^2",
     "rollup-plugin-istanbul": "^3.0.0",

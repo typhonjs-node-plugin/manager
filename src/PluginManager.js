@@ -269,30 +269,33 @@ export default class PluginManager
 
       if (typeof pluginConfig.name !== 'string')
       {
-         throw new TypeError(`'pluginConfig.name' is not a string for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(
+          `'pluginConfig.name' is not a string for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
       }
 
-      if (typeof pluginConfig.target !== 'undefined' && typeof pluginConfig.target !== 'string' &&
+      if (pluginConfig.target !== void 0 && typeof pluginConfig.target !== 'string' &&
        !(pluginConfig.target instanceof URL))
       {
          throw new TypeError(
-          `'pluginConfig.target' is not a string or URL for entry: ${JSON.stringify(pluginConfig)}.`);
+          `'pluginConfig.target' is not a string or URL for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
       }
 
-      if (typeof pluginConfig.options !== 'undefined' && typeof pluginConfig.options !== 'object')
+      if (pluginConfig.options !== void 0 && typeof pluginConfig.options !== 'object')
       {
-         throw new TypeError(`'pluginConfig.options' is not an object for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(
+          `'pluginConfig.options' is not an object for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
       }
 
-      if (typeof moduleData !== 'undefined' && typeof moduleData !== 'object')
+      if (moduleData !== void 0 && typeof moduleData !== 'object')
       {
-         throw new TypeError(`'moduleData' is not an object for entry: ${JSON.stringify(pluginConfig)}.`);
+         throw new TypeError(`'moduleData' is not an object for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
       }
 
       // If a plugin with the same name already exists post a warning and exit early.
       if (this.#pluginMap.has(pluginConfig.name))
       {
-         throw new Error(`A plugin already exists with name: ${pluginConfig.name}.`);
+         throw new Error(`A plugin already exists with name: ${pluginConfig.name} for entry:\n${
+          JSON.stringify(pluginConfig, null, 3)}`);
       }
 
       let instance, target, type;
