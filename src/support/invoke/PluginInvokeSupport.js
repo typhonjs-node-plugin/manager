@@ -1,7 +1,7 @@
 import { isIterable, isObject } from "@typhonjs-utils/object";
 
-import invokeAsyncEvent from '../../invoke/invokeAsyncEvent.js';
-import invokeSyncEvent  from '../../invoke/invokeSyncEvent.js';
+import invokeAsyncEvent from './invokeAsyncEvent.js';
+import invokeSyncEvent  from './invokeSyncEvent.js';
 
 /**
  * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
@@ -418,10 +418,8 @@ export default class PluginInvokeSupport
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
-
-      // Invokes the private internal async events method with optional error checking enabled.
-      return invokeAsyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
+      // Invokes the private internal async events method.
+      return invokeAsyncEvent({ method, manager: this.pluginManager, copyProps, passthruProps, plugins });
    }
 
    /**
@@ -538,10 +536,8 @@ export default class PluginInvokeSupport
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
-
-      // Invokes the private internal sync events method with optional error checking enabled.
-      return invokeSyncEvent(method, copyProps, passthruProps, plugins, this.pluginManager, this.options);
+      // Invokes the private internal sync events method.
+      return invokeSyncEvent({ method, manager: this.pluginManager, copyProps, passthruProps, plugins });
    }
 
    /**

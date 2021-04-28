@@ -1,17 +1,16 @@
-import Eventbus          from '@typhonjs-plugin/eventbus';
-import { EventbusProxy } from '@typhonjs-plugin/eventbus';
-import ModuleLoader      from '@typhonjs-utils/loader-module';
+import Eventbus            from '@typhonjs-plugin/eventbus';
+import { EventbusProxy }   from '@typhonjs-plugin/eventbus';
+import ModuleLoader        from '@typhonjs-utils/loader-module';
 
-import PluginEntry       from './PluginEntry.js';
+import PluginEntry         from './PluginEntry.js';
 
-import invokeAsyncEvent  from './invoke/invokeAsyncEvent.js';
+import invokeAsyncEvent    from './support/invoke/invokeAsyncEvent.js';
 
-import escapeTarget      from './utils/escapeTarget.js';
-import isValidConfig     from './utils/isValidConfig.js';
-import resolveModule     from './utils/resolveModule.js';
+import escapeTarget        from './utils/escapeTarget.js';
+import isValidConfig       from './utils/isValidConfig.js';
+import resolveModule       from './utils/resolveModule.js';
 
 import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
-
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -373,8 +372,8 @@ export default class PluginManager
 
       this.#pluginMap.set(pluginConfig.name, entry);
 
-      // Invoke private module method which allows skipping optional error checking.
-      await invokeAsyncEvent('onPluginLoad', {}, {}, pluginConfig.name, this, this.getOptions(), false);
+      // Invokes the private internal async events method which allows skipping of error checking.
+      await invokeAsyncEvent({ method: 'onPluginLoad', manager: this, plugins: pluginConfig.name, errorCheck: false });
 
       // Invoke `typhonjs:plugin:manager:plugin:added` allowing external code to react to plugin addition.
       if (this.#eventbus)
@@ -950,8 +949,8 @@ export default class PluginManager
 
          try
          {
-            // Invoke private module method which allows skipping optional error checking.
-            await invokeAsyncEvent('onPluginUnload', {}, {}, pluginName, this, this.getOptions(), false);
+            // Invokes the private internal async events method which allows skipping of error checking.
+            await invokeAsyncEvent({ method: 'onPluginUnload', manager: this, plugins: pluginName, errorCheck: false });
          }
          catch (err)
          {
@@ -1171,8 +1170,8 @@ export default class PluginManager
       // Unload and reload any existing plugins from the old eventbus to the target eventbus.
       if (this.#pluginMap.size > 0)
       {
-         // Invoke private module method which allows skipping optional error checking.
-         await invokeAsyncEvent('onPluginUnload', {}, {}, this.#pluginMap.keys(), this, this.getOptions(), false);
+         // Invokes the private internal async events method which allows skipping of error checking.
+         await invokeAsyncEvent({ method: 'onPluginUnload', manager: this, errorCheck: false });
 
          for (const entry of this.#pluginMap.values())
          {
@@ -1191,8 +1190,8 @@ export default class PluginManager
             entry.eventbusProxy = new EventbusProxy(eventbus);
          }
 
-         // Invoke private module method which allows skipping optional error checking.
-         await invokeAsyncEvent('onPluginLoad', {}, {}, this.#pluginMap.keys(), this, this.getOptions(), false);
+         // Invokes the private internal async events method which allows skipping of error checking.
+         await invokeAsyncEvent({ method: 'onPluginLoad', manager: this, errorCheck: false });
 
          for (const entry of this.#pluginMap.values())
          {

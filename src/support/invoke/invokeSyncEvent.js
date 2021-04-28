@@ -1,6 +1,6 @@
 import { isIterable }      from '@typhonjs-utils/object';
 
-import PluginInvokeEvent   from './PluginInvokeEvent.js';
+import PluginInvokeEvent from './PluginInvokeEvent.js';
 
 /**
  * Private implementation to invoke synchronous events. This allows internal calls in PluginManager for
@@ -8,28 +8,33 @@ import PluginInvokeEvent   from './PluginInvokeEvent.js';
  *
  * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
  *
- * @param {string}                     method - Method name to invoke.
+ * @param {object}                     opts - Options object.
  *
- * @param {object}                     copyProps - Properties that are copied.
+ * @param {string}                     opts.method - Method name to invoke.
  *
- * @param {object}                     passthruProps - Properties that are passed through.
+ * @param {PluginManager}              opts.manager - A plugin manager instance.
  *
- * @param {string|Iterable<string>}    plugins - Specific plugin name or iterable list of plugin names to invoke.
+ * @param {object}                     [opts.copyProps] - Properties that are copied.
  *
- * @param {PluginManager}              pluginManager - A plugin manager instance.
+ * @param {object}                     [opts.passthruProps] - Properties that are passed through.
  *
- * @param {object}                     options - Defines options for throwing exceptions. Turned off by default.
+ * @param {string|Iterable<string>}    [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
  *
- * @param {boolean}                    [performErrorCheck=true] - If false optional error checking is disabled.
+ * @param {object}                     [opts.options] - Defines options for throwing exceptions. Turned off by default.
+ *
+ * @param {boolean}                    [opts.errorCheck=true] - If false optional error checking is disabled.
  *
  * @returns {PluginEventData} The PluginEvent data.
  */
-export default function invokeSyncEvent(method, copyProps = {}, passthruProps = {}, plugins, pluginManager, options,
- performErrorCheck = true)
+export default function invokeSyncEvent({ method, manager, copyProps = {}, passthruProps = {}, plugins = void 0,
+ options = void 0, errorCheck = true } = {})
 {
    if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
    if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
    if (typeof copyProps !== 'object') { throw new TypeError(`'copyProps' is not an object.`); }
+
+   if (options === void 0) { options = manager.getOptions(); }
+   if (plugins === void 0) { plugins = manager.getPluginMapKeys(); }
 
    if (typeof plugins !== 'string' && !isIterable(plugins))
    {
@@ -49,7 +54,7 @@ export default function invokeSyncEvent(method, copyProps = {}, passthruProps = 
 
    if (typeof plugins === 'string')
    {
-      const entry = pluginManager.getPluginEntry(plugins);
+      const entry = manager.getPluginEntry(plugins);
 
       if (entry !== void 0 && entry.enabled && entry.instance)
       {
@@ -73,7 +78,7 @@ export default function invokeSyncEvent(method, copyProps = {}, passthruProps = 
    {
       for (const name of plugins)
       {
-         const entry = pluginManager.getPluginEntry(name);
+         const entry = manager.getPluginEntry(name);
 
          if (entry !== void 0 && entry.enabled && entry.instance)
          {
@@ -95,12 +100,12 @@ export default function invokeSyncEvent(method, copyProps = {}, passthruProps = 
       }
    }
 
-   if (performErrorCheck && options.throwNoPlugin && !hasPlugin)
+   if (errorCheck && options.throwNoPlugin && !hasPlugin)
    {
       throw new Error(`PluginManager failed to find any target plugins.`);
    }
 
-   if (performErrorCheck && options.throwNoMethod && !hasMethod)
+   if (errorCheck && options.throwNoMethod && !hasMethod)
    {
       throw new Error(`PluginManager failed to invoke '${method}'.`);
    }

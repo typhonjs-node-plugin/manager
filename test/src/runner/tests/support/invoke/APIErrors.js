@@ -11,10 +11,10 @@
 //    'plugins:sync:invoke:event'
 // ];
 //
-// export default class APIErrors
-// {
-//    static run(Module, data, chai)
-//    {
+export default class APIErrors
+{
+   static run(Module, data, chai)
+   {
 //       const { assert } = chai;
 //
 //       const PluginManager = Module.default;
@@ -36,5 +36,5 @@
 //             assert.strictEqual(eventbus.eventCount, 0);
 //          });
 //       });
-//    }
-// }
+   }
+}
