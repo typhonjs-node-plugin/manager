@@ -13,8 +13,10 @@ export default class PluginTestAsync
     *
     * @returns {Promise} A Promise.
     */
-   onPluginLoad()
+   onPluginLoad(ev)
    {
+      ev.eventbus.on('plugin:test:async:test', this.test, this);
+
       return new Promise((resolve) =>
       {
          setTimeout(() => resolve(), 1000);

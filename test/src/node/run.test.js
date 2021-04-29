@@ -45,6 +45,7 @@ const data = {
       { name: 'ESM-InstancePlugin', target: './test/fixture/formats/esm/InstancePlugin.js', type: 'import-path' },
       { name: 'ESM-StaticPlugin', target: './test/fixture/formats/esm/StaticPlugin.js', type: 'import-path' },
       { name: 'ESM-namedExport', target: './test/fixture/formats/esm/namedExport.js', type: 'import-path' },
+      { name: '@typhonjs-utils/object', type: 'import-module' },
       { name: 'ESM-URL-namedExport', target: moduleURL, type: 'import-url' },
       { name: 'ESM-file-URL-namedExport', target: moduleURLString, type: 'import-url' }
    ]

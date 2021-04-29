@@ -4,6 +4,54 @@
 export default class PluginEntry
 {
    /**
+    * Data describing the plugin, manager, and optional module data.
+    *
+    * @type {PluginData}
+    * @private
+    */
+   #data;
+
+   /**
+    * The plugin enabled state.
+    *
+    * @type {boolean}
+    * @private
+    */
+   #enabled;
+
+   /**
+    * The plugin name.
+    *
+    * @type {string}
+    * @private
+    */
+   #name;
+
+   /**
+    * The loaded plugin instance.
+    *
+    * @type {object}
+    * @private
+    */
+   #instance;
+
+   /**
+    * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
+    *
+    * @type {EventbusProxy}
+    * @private
+    */
+   #eventbusProxy;
+
+   /**
+    * Stores the proxied event names, callback functions, context and guarded state when this plugin is disabled.
+    *
+    * @type {Array<[string, Function, object, boolean]>}
+    * @private
+    */
+   #events;
+
+   /**
     * Instantiates a PluginEntry.
     *
     * @param {string}      name - The plugin name.
@@ -17,53 +65,15 @@ export default class PluginEntry
     */
    constructor(name, data, instance, eventbusProxy = void 0)
    {
-      /**
-       * Data describing the plugin, manager, and optional module data.
-       *
-       * @type {PluginData}
-       * @private
-       */
-      this._data = data;
+      this.#data = data;
 
-      /**
-       * The plugin enabled state.
-       *
-       * @type {boolean}
-       * @private
-       */
-      this._enabled = true;
+      this.#enabled = true;
 
-      /**
-       * The plugin name.
-       *
-       * @type {string}
-       * @private
-       */
-      this._name = name;
+      this.#name = name;
 
-      /**
-       * The loaded plugin instance.
-       *
-       * @type {object}
-       * @private
-       */
-      this._instance = instance;
+      this.#instance = instance;
 
-      /**
-       * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
-       *
-       * @type {EventbusProxy}
-       * @private
-       */
-      this._eventbusProxy = eventbusProxy;
-
-      /**
-       * Stores the proxied event names, callback functions, and context when this plugin is disabled.
-       *
-       * @type {Array<Array<string, Function, object>>}
-       * @private
-       */
-      this._events = void 0;
+      this.#eventbusProxy = eventbusProxy;
    }
 
    /**
@@ -71,14 +81,14 @@ export default class PluginEntry
     *
     * @returns {PluginData} The associated PluginData.
     */
-   get data() { return this._data; }
+   get data() { return this.#data; }
 
    /**
     * Get enabled.
     *
     * @returns {boolean} Current enabled state.
     */
-   get enabled() { return this._enabled; }
+   get enabled() { return this.#enabled; }
 
    /**
     * Set enabled.
@@ -87,33 +97,27 @@ export default class PluginEntry
     */
    set enabled(enabled)
    {
-      /**
-       * The plugin enabled state.
-       *
-       * @type {boolean}
-       * @private
-       */
-      this._enabled = enabled;
+      this.#enabled = enabled;
 
       // If enabled and there are stored events then turn them on with the eventbus proxy.
       if (enabled)
       {
-         if (this._eventbusProxy !== void 0 && Array.isArray(this._events))
+         if (this.#eventbusProxy !== void 0 && Array.isArray(this.#events))
          {
-            for (const event of this._events)
+            for (const event of this.#events)
             {
-               this._eventbusProxy.on(...event);
+               this.#eventbusProxy.on(...event);
             }
 
-            this._events = void 0;
+            this.#events = void 0;
          }
       }
       else // Store any proxied events and unregister the proxied events.
       {
-         if (this._eventbusProxy !== void 0)
+         if (this.#eventbusProxy !== void 0)
          {
-            this._events = Array.from(this._eventbusProxy.proxyEntries());
-            this._eventbusProxy.off();
+            this.#events = Array.from(this.#eventbusProxy.proxyEntries());
+            this.#eventbusProxy.off();
          }
       }
    }
@@ -123,21 +127,21 @@ export default class PluginEntry
     *
     * @returns {EventbusProxy} Associated EventbusProxy.
     */
-   get eventbusProxy() { return this._eventbusProxy; }
+   get eventbusProxy() { return this.#eventbusProxy; }
 
    /**
     * Get plugin instance.
     *
     * @returns {object} The plugin instance.
     */
-   get instance() { return this._instance; }
+   get instance() { return this.#instance; }
 
    /**
     * Get plugin name.
     *
     * @returns {string} Plugin name.
     */
-   get name() { return this._name; }
+   get name() { return this.#name; }
 
 
    /**
@@ -145,5 +149,5 @@ export default class PluginEntry
     *
     * @param {EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
     */
-   set eventbusProxy(eventbusProxy) { this._eventbusProxy = eventbusProxy; }
+   set eventbusProxy(eventbusProxy) { this.#eventbusProxy = eventbusProxy; }
 }

@@ -132,8 +132,7 @@ export default class PluginInvokeSupport
             for (const name of s_GET_ALL_PROPERTY_NAMES(entry.instance))
             {
                // Skip any names that are not a function or are the constructor.
-               if (entry.instance[name] instanceof Function && name !== 'constructor')
-               { results[name] = true; }
+               if (typeof entry.instance[name] === 'function' && name !== 'constructor') { results[name] = true; }
             }
          }
 
@@ -150,8 +149,7 @@ export default class PluginInvokeSupport
                for (const name of s_GET_ALL_PROPERTY_NAMES(entry.instance))
                {
                   // Skip any names that are not a function or are the constructor.
-                  if (entry.instance[name] instanceof Function && name !== 'constructor')
-                  { results[name] = true; }
+                  if (typeof entry.instance[name] === 'function' && name !== 'constructor') { results[name] = true; }
                }
             }
          }
@@ -199,17 +197,17 @@ export default class PluginInvokeSupport
       {
          const entry = this.pluginManager.getPluginEntry(name);
 
-         if (entry !== void 0 && typeof entry.instance[method] === 'function') { return false; }
+         if (entry !== void 0 && typeof entry.instance[method] !== 'function') { return false; }
 
          count++;
       }
 
-      // Iterable plugins had no entries so return all plugin data.
+      // Iterable plugins had no entries so check all plugin data.
       if (count === 0)
       {
          for (const entry of this.pluginManager.getPluginMapValues())
          {
-            if (typeof entry.instance[method] === 'function') { return false; }
+            if (typeof entry.instance[method] !== 'function') { return false; }
          }
       }
 
@@ -250,15 +248,15 @@ export default class PluginInvokeSupport
 
       if (typeof plugins === 'string')
       {
-         const plugin = this.pluginManager.getPluginEntry(plugins);
+         const entry = this.pluginManager.getPluginEntry(plugins);
 
-         if (plugin !== void 0 && plugin.enabled && plugin.instance)
+         if (entry !== void 0 && entry.enabled && entry.instance)
          {
             hasPlugin = true;
 
-            if (typeof plugin.instance[method] === 'function')
+            if (typeof entry.instance[method] === 'function')
             {
-               isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+               isArgsArray ? entry.instance[method](...args) : entry.instance[method]();
 
                hasMethod = true;
             }
@@ -268,15 +266,15 @@ export default class PluginInvokeSupport
       {
          for (const name of plugins)
          {
-            const plugin = this.pluginManager.getPluginEntry(name);
+            const entry = this.pluginManager.getPluginEntry(name);
 
-            if (plugin !== void 0 && plugin.enabled && plugin.instance)
+            if (entry !== void 0 && entry.enabled && entry.instance)
             {
                hasPlugin = true;
 
-               if (typeof plugin.instance[method] === 'function')
+               if (typeof entry.instance[method] === 'function')
                {
-                  isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+                  isArgsArray ? entry.instance[method](...args) : entry.instance[method]();
 
                   hasMethod = true;
                }
@@ -317,11 +315,11 @@ export default class PluginInvokeSupport
 
       if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
 
-      if (typeof plugins === 'undefined') { plugins = this.pluginManager.getPluginMapKeys(); }
+      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
       if (typeof plugins !== 'string' && !isIterable(plugins))
       {
-         throw new TypeError(`'plugins' is not a string, array, or iterator.`);
+         throw new TypeError(`'plugins' is not a string or iterable.`);
       }
 
       // Track if a plugin method is invoked.
@@ -344,7 +342,7 @@ export default class PluginInvokeSupport
 
             if (typeof plugin.instance[method] === 'function')
             {
-               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method]();
 
                // If we received a valid result push it to the results.
                if (result !== void 0) { results.push(result); }
@@ -365,7 +363,7 @@ export default class PluginInvokeSupport
 
                if (typeof plugin.instance[method] === 'function')
                {
-                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method]();
 
                   // If we received a valid result push it to the results.
                   if (result !== void 0) { results.push(result); }
@@ -444,7 +442,7 @@ export default class PluginInvokeSupport
 
       if (args !== void 0 && !Array.isArray(args)) { throw new TypeError(`'args' is not an array.`); }
 
-      if (typeof plugins === 'undefined') { plugins = this.pluginManager.getPluginMapKeys(); }
+      if (plugins === void 0) { plugins = this.pluginManager.getPluginMapKeys(); }
 
       if (typeof plugins !== 'string' && !isIterable(plugins))
       {
@@ -471,7 +469,7 @@ export default class PluginInvokeSupport
 
             if (typeof plugin.instance[method] === 'function')
             {
-               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+               result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method]();
 
                // If we received a valid result push it to the results.
                if (result !== void 0) { results.push(result); }
@@ -492,7 +490,7 @@ export default class PluginInvokeSupport
 
                if (typeof plugin.instance[method] === 'function')
                {
-                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method](args);
+                  result = isArgsArray ? plugin.instance[method](...args) : plugin.instance[method]();
 
                   // If we received a valid result push it to the results.
                   if (result !== void 0) { results.push(result); }
@@ -557,6 +555,8 @@ export default class PluginInvokeSupport
     */
    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend } = {})
    {
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+
       if (oldEventbus !== null && oldEventbus !== void 0)
       {
          oldEventbus.off(`${oldPrepend}:async:invoke`, this.invokeAsync, this);
@@ -587,7 +587,6 @@ export default class PluginInvokeSupport
     */
    setOptions(options = {})
    {
-      /* c8 ignore next 1 */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
    }
 }
@@ -610,7 +609,7 @@ const s_GET_ALL_PROPERTY_NAMES = (obj) =>
    {
       Object.getOwnPropertyNames(obj).forEach((prop) => { if (props.indexOf(prop) === -1) { props.push(prop); } });
       obj = Object.getPrototypeOf(obj);
-   } while (typeof obj !== 'undefined' && obj !== null && !(obj === Object.prototype));
+   } while (obj !== void 0 && obj !== null && !(obj === Object.prototype));
 
    return props;
 };

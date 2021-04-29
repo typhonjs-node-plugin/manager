@@ -42,7 +42,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  *
  * `plugins:get:plugin:names` - {@link PluginManager#getPluginNames}
  *
- * `plugins:has:plugin` - {@link PluginManager#hasPlugin}
+ * `plugins:has:plugin` - {@link PluginManager#hasPlugins}
  *
  * `plugins:is:valid:config` - {@link PluginManager#isValidConfig}
  *
@@ -162,9 +162,9 @@ export default class PluginManager
    {
       noEventAdd: false,
       noEventDestroy: true,
-      noEventOptions: true,
       noEventRemoval: false,
       noEventSetEnabled: true,
+      noEventSetOptions: true,
       throwNoMethod: false,
       throwNoPlugin: false
    };
@@ -196,11 +196,11 @@ export default class PluginManager
     * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
     *                                                     eventbus.
     *
+    * @param {PluginManagerOptions}  [options.manager] - The plugin manager options.
+    *
     * @param {PluginSupportImpl|Iterable<PluginSupportImpl>} [options.PluginSupport] - Optional classes to pass in which
     *                                                 extends the plugin manager. A default implementation is available:
     *                                                 {@link PluginSupport}
-    *
-    * @param {PluginManagerOptions}  [options.manager] - The plugin manager options.
     */
    constructor(options = {})
    {
@@ -216,16 +216,16 @@ export default class PluginManager
          throw new TypeError(`'options.eventPrepend' is not a string.`);
       }
 
+      if (options.manager !== void 0 && !isObject(options.manager))
+      {
+         throw new TypeError(`'options.manager' is not an object.`);
+      }
+
       if (options.PluginSupport !== void 0 && typeof options.PluginSupport !== 'function' &&
        !isIterable(options.PluginSupport))
       {
          throw new TypeError(
           `'options.PluginSupport' must be a constructor function or iterable of such matching PluginSupportImpl.`);
-      }
-
-      if (options.manager !== void 0 && !isObject(options.manager))
-      {
-         throw new TypeError(`'options.manager' is not an object.`);
       }
 
       // Instantiate any PluginSupport classes
@@ -368,8 +368,8 @@ export default class PluginManager
 
       deepFreeze(pluginData, ['manager']);
 
-      const eventbusProxy = this.#eventbus !== null && typeof this.#eventbus !== 'undefined' ?
-       new EventbusProxy(this.#eventbus) : void 0;
+      const eventbusProxy = this.#eventbus !== null && this.#eventbus !== void 0 ?
+       new EventbusProxy(this.#eventbus) /* c8 ignore next */ : void 0;
 
       const entry = new PluginEntry(pluginConfig.name, pluginData, instance, eventbusProxy);
 
@@ -427,6 +427,7 @@ export default class PluginManager
     */
    async _addEventbus(pluginConfig, moduleData)
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       return !this.#options.noEventAdd ? this.add(pluginConfig, moduleData) : void 0;
@@ -445,9 +446,10 @@ export default class PluginManager
     */
    async _addAllEventbus(pluginConfigs, moduleData)
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (!this.#options.noEventAdd) { return this.addAll(pluginConfigs, moduleData); }
+      return !this.#options.noEventAdd ? this.addAll(pluginConfigs, moduleData) : [];
    }
 
    /**
@@ -460,10 +462,8 @@ export default class PluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (this.#eventbus === null)
-      {
-         throw new ReferenceError('No eventbus assigned to plugin manager.');
-      }
+      /* c8 ignore next */
+      if (this.#eventbus === null) { throw new ReferenceError('No eventbus assigned to plugin manager.'); }
 
       const eventbusProxy = new EventbusProxy(this.#eventbus);
 
@@ -483,10 +483,8 @@ export default class PluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (this.#eventbus === null)
-      {
-         throw new ReferenceError('No eventbus assigned to plugin manager.');
-      }
+      /* c8 ignore next */
+      if (this.#eventbus === null) { throw new ReferenceError('No eventbus assigned to plugin manager.'); }
 
       const eventbusSecureObj = this.#eventbus.createSecure(name);
 
@@ -537,7 +535,7 @@ export default class PluginManager
          this.#eventbus.off(`${this._eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
          this.#eventbus.off(`${this._eventPrepend}:get:plugin:names`, this.getPluginNames, this);
          this.#eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
-         this.#eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugin, this);
+         this.#eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugins, this);
          this.#eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
          this.#eventbus.off(`${this._eventPrepend}:set:enabled`, this._setEnabledEventbus, this);
          this.#eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
@@ -565,9 +563,10 @@ export default class PluginManager
     */
    async _destroyEventbus()
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (!this.#options.noEventDestroy) { return this.destroy(); }
+      return !this.#options.noEventDestroy ? this.destroy() : [];
    }
 
    /**
@@ -610,21 +609,21 @@ export default class PluginManager
 
       let count = 0;
 
-      for (const name of plugins)
+      for (const plugin of plugins)
       {
-         const entry = this.#pluginMap.get(name);
+         const entry = this.#pluginMap.get(plugin);
          const loaded = entry !== void 0;
-         results.push({ name, enabled: loaded && entry.enabled, loaded });
+         results.push({ plugin, enabled: loaded && entry.enabled, loaded });
          count++;
       }
 
       // Iterable plugins had no entries so return all plugin data.
       if (count === 0)
       {
-         for (const [name, entry] of this.#pluginMap.entries())
+         for (const [plugin, entry] of this.#pluginMap.entries())
          {
             const loaded = entry !== void 0;
-            results.push({ name, enabled: loaded && entry.enabled, loaded });
+            results.push({ plugin, enabled: loaded && entry.enabled, loaded });
          }
       }
 
@@ -711,8 +710,7 @@ export default class PluginManager
     */
    getPluginData({ plugins = [] } = {})
    {
-      if (this.isDestroyed)
-      { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       if (typeof plugins !== 'string' && !isIterable(plugins))
       {
@@ -773,7 +771,9 @@ export default class PluginManager
    /**
     * Returns the event binding names registered on any associated plugin EventbusProxy.
     *
-    * @param {string}   pluginName - Plugin name to set state.
+    * @param {object}                  [opts] - Options object. If undefined all plugin data is returned.
+    *
+    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get plugin data.
     *
     * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
@@ -790,7 +790,8 @@ export default class PluginManager
       if (typeof plugins === 'string')
       {
          const entry = this.#pluginMap.get(plugins);
-         return entry !== void 0 && entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()).sort() : [];
+         return entry !== void 0 && entry.eventbusProxy ?
+          Array.from(entry.eventbusProxy.proxyKeys()).sort() /* c8 ignore next */ : [];
       }
 
       const results = [];
@@ -805,7 +806,8 @@ export default class PluginManager
          {
             results.push({
                plugin,
-               events: entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()).sort() : []
+               events: entry.eventbusProxy ?
+                Array.from(entry.eventbusProxy.proxyKeys()).sort() /* c8 ignore next */ : []
             });
          }
          count++;
@@ -820,25 +822,14 @@ export default class PluginManager
             {
                results.push({
                   plugin: entry.name,
-                  events: entry.eventbusProxy ? Array.from(entry.eventbusProxy.proxyKeys()).sort() : []
+                  events: entry.eventbusProxy ?
+                   Array.from(entry.eventbusProxy.proxyKeys()).sort() /* c8 ignore next */ : []
                });
             }
          }
       }
 
       return results;
-   }
-
-   /**
-    * Returns an iterable of PluginEntry instances.
-    *
-    * @returns {Iterable<PluginEntry>} An iterable of PluginEntry instances.
-    */
-   getPluginMapEntries()
-   {
-      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
-
-      return this.#pluginMap.entries();
    }
 
    /**
@@ -856,7 +847,7 @@ export default class PluginManager
    /**
     * Returns an iterable of plugin map keys (plugin names).
     *
-    * @returns {Iterable<string>} An iterable of plugin map keys.
+    * @returns {Iterable<PluginEntry>} An iterable of plugin map keys.
     */
    getPluginMapValues()
    {
@@ -896,21 +887,47 @@ export default class PluginManager
    }
 
    /**
-    * Returns true if there is a plugin loaded with the given plugin name.
+    * Returns true if there is a plugin loaded with the given plugin name(s). If no options are provided then
+     * the result will be if any plugins are loaded.
     *
-    * @param {object}                  [opts] - Options object. If undefined all plugin enabled state is returned.
+    * @param {object}                  [opts] - Options object. If undefined returns whether there are any plugins.
     *
-    * @param {string|Iterable<string>} [opts.plugin] - Plugin name or iterable list of names to get state.
+    * @param {string|Iterable<string>} [opts.plugin] - Plugin name or iterable list of names to check existence.
     *
     * @returns {boolean} True if a plugin exists.
     */
-   hasPlugin({ plugin = void 0 } = {})
+   hasPlugins({ plugins = [] } = {})
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (typeof plugin !== 'string') { throw new TypeError(`'plugin' is not a string.`); }
+      if (typeof plugins !== 'string' && !isIterable(plugins))
+      {
+         throw new TypeError(`'plugins' is not a string or iterable.`);
+      }
 
-      return this.#pluginMap.has(plugin);
+      // Return whether a single plugin exists.
+      if (typeof plugins === 'string')
+      {
+         return this.#pluginMap.has(plugins);
+      }
+
+      let count = 0;
+
+      // Return whether all plugins specified exist.
+      for (const name of plugins)
+      {
+         if (!this.#pluginMap.has(name)) { return false; }
+
+         count++;
+      }
+
+      // Iterable plugins had no entries so simply check size of the map.
+      if (count === 0)
+      {
+         return this.#pluginMap.size !== 0;
+      }
+
+      return true;
    }
 
    /**
@@ -985,7 +1002,7 @@ export default class PluginManager
             errors.push(err);
          }
 
-         return { name: pluginName, success: errors.length === 0, errors };
+         return { plugin: pluginName, success: errors.length === 0, errors };
       };
 
       const results = [];
@@ -1041,6 +1058,7 @@ export default class PluginManager
     */
    async _removeEventbus(opts)
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       return !this.#options.noEventRemoval ? this.remove(opts) : [];
@@ -1055,9 +1073,10 @@ export default class PluginManager
     */
    async _removeAllEventbus()
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (!this.#options.noEventRemoval) { return this.removeAll(); }
+      return !this.#options.noEventRemoval ? this.removeAll() : [];
    }
 
    /**
@@ -1131,6 +1150,7 @@ export default class PluginManager
     */
    _setEnabledEventbus(opts)
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       if (!this.#options.noEventSetEnabled) { this.setEnabled(opts); }
@@ -1147,8 +1167,6 @@ export default class PluginManager
     *
     * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                     binding targets.
-    *
-    * @returns {Promise<PluginManager>} This plugin manager.
     */
    async setEventbus({ eventbus, eventPrepend = 'plugins' } = {})
    {
@@ -1158,7 +1176,7 @@ export default class PluginManager
       if (typeof eventPrepend !== 'string') { throw new TypeError(`'eventPrepend' is not a string.`); }
 
       // Early escape if the eventbus is the same as the current eventbus.
-      if (eventbus === this.#eventbus) { return this; }
+      if (eventbus === this.#eventbus) { return; }
 
       const oldPrepend = this._eventPrepend;
 
@@ -1183,6 +1201,7 @@ export default class PluginManager
             {
                entry.instance._eventbus = void 0;
             }
+            /* c8 ignore next */
             catch (err) { /* nop */ }
 
             entry.data.manager.eventPrepend = eventPrepend;
@@ -1227,7 +1246,7 @@ export default class PluginManager
          this.#eventbus.off(`${oldPrepend}:get:plugin:data`, this.getPluginData, this);
          this.#eventbus.off(`${oldPrepend}:get:plugin:events`, this.getPluginEvents, this);
          this.#eventbus.off(`${oldPrepend}:get:plugin:names`, this.getPluginNames, this);
-         this.#eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugin, this);
+         this.#eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugins, this);
          this.#eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
          this.#eventbus.off(`${oldPrepend}:set:enabled`, this._setEnabledEventbus, this);
          this.#eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
@@ -1244,7 +1263,7 @@ export default class PluginManager
       eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this, true);
       eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this, true);
       eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, true);
-      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugin, this, true);
+      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugins, this, true);
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, true);
       eventbus.on(`${eventPrepend}:set:enabled`, this._setEnabledEventbus, this, true);
       eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, true);
@@ -1264,9 +1283,8 @@ export default class PluginManager
       {
          eventbusSecureObj.setEventbus(eventbus);
       }
-      this.#eventbus = eventbus;
 
-      return this;
+      this.#eventbus = eventbus;
    }
 
    /**
@@ -1281,21 +1299,33 @@ export default class PluginManager
       if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
 
       if (typeof options.noEventAdd === 'boolean') { this.#options.noEventAdd = options.noEventAdd; }
+
       if (typeof options.noEventDestroy === 'boolean') { this.#options.noEventDestroy = options.noEventDestroy; }
-      if (typeof options.noEventInvoke === 'boolean') { this.#options.noEventInvoke = options.noEventInvoke; }
-      if (typeof options.noEventOptions === 'boolean') { this.#options.noEventOptions = options.noEventOptions; }
+
       if (typeof options.noEventRemoval === 'boolean') { this.#options.noEventRemoval = options.noEventRemoval; }
+
+      if (typeof options.noEventSetEnabled === 'boolean')
+      {
+         this.#options.noEventSetEnabled = options.noEventSetEnabled;
+      }
+
+      if (typeof options.noEventSetOptions === 'boolean')
+      {
+         this.#options.noEventSetOptions = options.noEventSetOptions;
+      }
+
       if (typeof options.throwNoMethod === 'boolean') { this.#options.throwNoMethod = options.throwNoMethod; }
+
       if (typeof options.throwNoPlugin === 'boolean') { this.#options.throwNoPlugin = options.throwNoPlugin; }
 
       for (const pluginSupport of this.#pluginSupport)
       {
-         pluginSupport.setOptions({ eventbus: this.#eventbus, eventPrepend: this._eventPrepend });
+         pluginSupport.setOptions(options);
       }
    }
 
    /**
-    * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventOptions` is
+    * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions` is
     * enabled. This disables the ability for the plugin manager options to be set via events preventing any external
     * code modifying options.
     *
@@ -1305,8 +1335,9 @@ export default class PluginManager
     */
    _setOptionsEventbus(options = {})
    {
+      /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      if (!this.#options.noEventOptions) { this.setOptions(options); }
+      if (!this.#options.noEventSetOptions) { this.setOptions(options); }
    }
 }

@@ -84,14 +84,15 @@
  * @property {boolean}   [noEventDestroy] - If true this prevents the plugin manager from being destroyed by
  *                                         `plugins:destroy:manager` forcing direct method invocation for destruction.
  *
- * @property {boolean}   [noEventOptions] - If true this prevents setting options for the plugin manager by
- *                                          `plugins:set:options` forcing direct method invocation for setting options.
- *
  * @property {boolean}   [noEventRemoval] - If true this prevents plugins from being removed by `plugins:remove` and
  *                                          `plugins:remove:all` events forcing direct method invocation for removal.
  *
  * @property {boolean}   [noEventSetEnabled] - If true this prevents the plugins from being enabled / disabled
  *                                             from the eventbus via `plugins:set:enabled`.
+ *
+ * @property {boolean}   [noEventSetOptions] - If true this prevents setting options for the plugin manager by
+ *                                             `plugins:set:options` forcing direct method invocation for setting
+ *                                             options.
  *
  * @property {boolean}   [throwNoMethod] - If true then when a method fails to be invoked by any plugin an exception
  *                                         will be thrown.
