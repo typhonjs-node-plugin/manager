@@ -1,6 +1,6 @@
 {
   "name": "@typhonjs-plugin/manager",
-  "description": "Provides a plugin manager with eventbus support.",
+  "description": "Provides a plugin manager & eventbus for Node & browser (supports ESM & CJS).",
   "version": "0.0.0",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
@@ -48,7 +48,7 @@
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "npm run bundle-browser",
     "pretest-node": "npm run bundle",
-    "prepublishOnly": "npm run test-node",
+    "prepublishOnly": "npm run test-node && npm-test-browser",
     "test-browser": "node ./test/src/browser/run.js",
     "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000"
   }

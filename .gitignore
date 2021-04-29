@@ -4,6 +4,7 @@ npm-debug.log
 *-debug.log
 *-error.log
 /node_modules
+/dist
 /env
 /.nyc_output
 /coverage

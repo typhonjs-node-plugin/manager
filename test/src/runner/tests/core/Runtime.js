@@ -64,7 +64,7 @@ export default class Runtime
 
                const results = await eventbus.triggerAsync('plugins:async:destroy:manager');
 
-               assert.isArray(results)
+               assert.isArray(results);
                assert.strictEqual(results.length, 1);
                assert.strictEqual(results[0].plugin, 'PluginTestSync');
                assert.strictEqual(results[0].success, true);
@@ -83,14 +83,14 @@ export default class Runtime
 
                results = eventbus.triggerSync('plugins:get:enabled', { plugins: ['PluginTestSync'] });
 
-               assert.isArray(results)
+               assert.isArray(results);
                assert.strictEqual(results.length, 1);
                assert.strictEqual(results[0].plugin, 'PluginTestSync');
                assert.strictEqual(results[0].enabled, true);
 
                results = eventbus.triggerSync('plugins:get:enabled');
 
-               assert.isArray(results)
+               assert.isArray(results);
                assert.strictEqual(results.length, 1);
                assert.strictEqual(results[0].plugin, 'PluginTestSync');
                assert.strictEqual(results[0].enabled, true);
@@ -436,9 +436,9 @@ export default class Runtime
 
                assert.isArray(rData);
                assert.strictEqual(rData.length, 1);
-               assert.strictEqual(rData[0].plugin, 'PluginTest')
-               assert.strictEqual(rData[0].success, false)
-               assert.strictEqual(rData[0].errors[0].message, '!Error')
+               assert.strictEqual(rData[0].plugin, 'PluginTest');
+               assert.strictEqual(rData[0].success, false);
+               assert.strictEqual(rData[0].errors[0].message, '!Error');
             });
 
             it('error - add / remove - event - onPluginUnload & typhonjs:plugin:manager:plugin:removed', async () =>
@@ -456,10 +456,10 @@ export default class Runtime
 
                assert.isArray(rData);
                assert.strictEqual(rData.length, 1);
-               assert.strictEqual(rData[0].plugin, 'PluginTest')
-               assert.strictEqual(rData[0].success, false)
-               assert.strictEqual(rData[0].errors[0].message, '!Error')
-               assert.strictEqual(rData[0].errors[1].message, '!!Error')
+               assert.strictEqual(rData[0].plugin, 'PluginTest');
+               assert.strictEqual(rData[0].success, false);
+               assert.strictEqual(rData[0].errors[0].message, '!Error');
+               assert.strictEqual(rData[0].errors[1].message, '!!Error');
             });
 
             it('module loader add / remove multiple', async () =>
