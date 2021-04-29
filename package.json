@@ -48,7 +48,7 @@
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "npm run bundle-browser",
     "pretest-node": "npm run bundle",
-    "prepublishOnly": "npm run test-node && npm-test-browser",
+    "prepublishOnly": "npm run test-node && npm run test-browser",
     "test-browser": "node ./test/src/browser/run.js",
     "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000"
   }
