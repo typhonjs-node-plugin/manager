@@ -1214,23 +1214,6 @@ export default class PluginManager
 
          // Invokes the private internal async events method which allows skipping of error checking.
          await invokeAsyncEvent({ method: 'onPluginLoad', manager: this, errorCheck: false });
-
-         for (const entry of this.#pluginMap.values())
-         {
-            // Invoke `typhonjs:plugin:manager:eventbus:changed` allowing external code to react to plugin
-            // changing eventbus.
-            if (this.#eventbus)
-            {
-               this.#eventbus.trigger(`typhonjs:plugin:manager:eventbus:changed`, Object.assign({
-                  oldEventbus: this.#eventbus,
-                  oldManagerEventPrepend: oldPrepend,
-                  oldScopedName: `${oldPrepend}:${entry.name}`,
-                  newEventbus: eventbus,
-                  newManagerEventPrepend: eventPrepend,
-                  newScopedName: `${eventPrepend}:${entry.name}`
-               }, JSON.parse(JSON.stringify(entry.data))));
-            }
-         }
       }
 
       if (this.#eventbus !== null)
