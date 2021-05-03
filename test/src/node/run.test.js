@@ -25,11 +25,16 @@ fs.emptyDirSync('./coverage');
 const moduleURL = url.pathToFileURL(path.resolve('./test/fixture/formats/esm/namedExport.js'));
 const moduleURLString = moduleURL.toString();
 
+// Test to make sure module exports field properly resolves with Node 12.17+ The plugin is export scoped.
+const moduleExports = '@typhonjs-utils/object/plugin';
+
 const data = {
    suitePrefix: 'node/PluginManager',
    moduleURL,
    moduleURLString,
+   moduleExports,
    isBrowser: false,
+   isNode12_2: process.version === 'v12.2.0',
 
    plugins: {
       PluginTest,
@@ -45,7 +50,7 @@ const data = {
       { name: 'ESM-InstancePlugin', target: './test/fixture/formats/esm/InstancePlugin.js', type: 'import-path' },
       { name: 'ESM-StaticPlugin', target: './test/fixture/formats/esm/StaticPlugin.js', type: 'import-path' },
       { name: 'ESM-namedExport', target: './test/fixture/formats/esm/namedExport.js', type: 'import-path' },
-      { name: '@typhonjs-utils/object/plugin', type: 'import-module' },
+      { name: '@typhonjs-utils/object', type: 'import-module' },
       { name: 'ESM-URL-namedExport', target: moduleURL, type: 'import-url' },
       { name: 'ESM-file-URL-namedExport', target: moduleURLString, type: 'import-url' }
    ]

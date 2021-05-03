@@ -507,6 +507,19 @@ export default class Runtime
                   assert.strictEqual(entry.success, true);
                }
             });
+
+            // Only test package.json exports plugin on Node 12.17+
+            if (!data.isNode12_2 && !data.isBrowser)
+            {
+               it('module loader add (package.json exports / plugin)', async () =>
+               {
+                  const eventbus = pluginManager.getEventbus();
+
+                  await pluginManager.add({ name: data.moduleExports });
+
+                  assert.isTrue(eventbus.triggerSync('typhonjs:utils:object:is:object', {}));
+               });
+            }
          });
       });
    }
