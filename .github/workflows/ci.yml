@@ -29,10 +29,14 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      # Earlier versions of NPM do not support package.json exports field.
+      - name: Install npm 6.14.4 (same as Node 12.17)
+        run: npm install -g npm@6.14.4
+
       - name: Install dependencies
         run: npm install
 
-      # Specifically load `esm` separately to run ESM Mocha tests for 12.0.0
+      # Specifically load `esm` separately to run ESM Mocha tests for 12.2.0
       - name: Install esm
         run: npm install esm
 
