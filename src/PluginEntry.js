@@ -1,5 +1,3 @@
-import { type }   from './typedef.js';  // eslint-disable-line no-unused-vars
-
 /**
  * Defines a class holding the data associated with a plugin including its instance.
  */
@@ -8,7 +6,7 @@ export default class PluginEntry
    /**
     * Data describing the plugin, manager, and optional module data.
     *
-    * @type {type.PluginData}
+    * @type {PluginData}
     * @private
     */
    #data;
@@ -58,7 +56,7 @@ export default class PluginEntry
     *
     * @param {string}      name - The plugin name.
     *
-    * @param {type.PluginData}  data - Describes the plugin, manager, and optional module data.
+    * @param {PluginData}  data - Describes the plugin, manager, and optional module data.
     *
     * @param {object}      instance - The loaded plugin instance.
     *
@@ -81,7 +79,7 @@ export default class PluginEntry
    /**
     * Get plugin data.
     *
-    * @returns {type.PluginData} The associated PluginData.
+    * @returns {PluginData} The associated PluginData.
     */
    get data() { return this.#data; }
 

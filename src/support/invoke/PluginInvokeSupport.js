@@ -3,8 +3,6 @@ import { isIterable }   from "@typhonjs-utils/object";
 import invokeAsyncEvent from './invokeAsyncEvent.js';
 import invokeSyncEvent  from './invokeSyncEvent.js';
 
-import { type }         from '../../typedef.js';  // eslint-disable-line no-unused-vars
-
 /**
  * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
  *
@@ -20,7 +18,7 @@ import { type }         from '../../typedef.js';  // eslint-disable-line no-unus
  *
  * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
  *
- * @implements {type.PluginSupportImpl}
+ * @implements {PluginSupportImpl}
  */
 export default class PluginInvokeSupport
 {
@@ -52,7 +50,7 @@ export default class PluginInvokeSupport
    /**
     * Returns the associated plugin manager options.
     *
-    * @returns {type.PluginManagerOptions} The associated plugin manager options.
+    * @returns {PluginManagerOptions} The associated plugin manager options.
     */
    get options()
    {
@@ -426,7 +424,7 @@ export default class PluginInvokeSupport
     *
     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {Promise<type.PluginEventData>} The PluginEvent data.
+    * @returns {Promise<PluginEventData>} The PluginEvent data.
     */
    async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -544,7 +542,7 @@ export default class PluginInvokeSupport
     *
     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {type.PluginEventData} The PluginEvent data.
+    * @returns {PluginEventData} The PluginEvent data.
     */
    invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -599,7 +597,7 @@ export default class PluginInvokeSupport
    /**
     * Set optional parameters.
     *
-    * @param {type.PluginManagerOptions} options Defines optional parameters to set.
+    * @param {PluginManagerOptions} options Defines optional parameters to set.
     */
    setOptions(options = {})
    {

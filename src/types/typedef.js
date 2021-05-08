@@ -1,5 +1,5 @@
 /**
- * @typedef {object} type.DataOutPluginEnabled
+ * @typedef {object} DataOutPluginEnabled
  *
  * @property {string}   plugin - The plugin name.
  *
@@ -9,7 +9,7 @@
  */
 
 /**
- * @typedef {object} type.DataOutPluginEvents
+ * @typedef {object} DataOutPluginEvents
  *
  * @property {string}   plugin - The plugin name.
  *
@@ -17,7 +17,7 @@
  */
 
 /**
- * @typedef {object} type.DataOutPluginRemoved
+ * @typedef {object} DataOutPluginRemoved
  *
  * @property {string}   plugin - The plugin name.
  *
@@ -27,7 +27,7 @@
  */
 
 /**
- * @typedef {object} type.PluginConfig
+ * @typedef {object} PluginConfig
  *
  * @property {string}      name - Defines the name of the plugin; if no `target` entry is present the name
  *                                doubles as the target (please see target).
@@ -42,7 +42,7 @@
  */
 
 /**
- * @typedef {object} type.PluginData
+ * @typedef {object} PluginData
  *
  * @property {object}   manager - Data about the plugin manager.
  *
@@ -71,12 +71,12 @@
 
 // eslint-disable-next-line jsdoc/require-property
 /**
- * @typedef {object} type.PluginEventData - Provides the unified event data including any pass through data to the
+ * @typedef {object} PluginEventData - Provides the unified event data including any pass through data to the
  *                                          copied data supplied. Invoked functions may add to or modify this data.
  */
 
 /**
- * @typedef {object} type.PluginManagerOptions
+ * @typedef {object} PluginManagerOptions
  *
  * @property {boolean}   [noEventAdd] - If true this prevents plugins from being added by `plugins:add` and
  *                                      `plugins:add:all` events forcing direct method invocation for addition.
@@ -105,7 +105,7 @@
 // /**
 //  * Interface for PluginSupport implementation classes.
 //  *
-//  * @interface type.PluginSupportImpl
+//  * @interface PluginSupportImpl
 //  */
 //
 // /**
@@ -113,39 +113,19 @@
 //  *
 //  * @function
 //  * @async
-//  * @name type.PluginSupportImpl#destroy
+//  * @name PluginSupportImpl#destroy
 //  */
 //
 // /**
 //  * A method to invoke when the plugin manager eventbus is set.
 //  *
 //  * @function
-//  * @name type.PluginSupportImpl#setEventbus
+//  * @name PluginSupportImpl#setEventbus
 //  */
 //
 // /**
 //  * A method to invoke when the plugin manager options are set.
 //  *
 //  * @function
-//  * @name type.PluginSupportImpl#setOptions
+//  * @name PluginSupportImpl#setOptions
 //  */
-
-/**
- * @typedef {object} type.PluginSupportImpl
- *
- * @property {Function} destroy
- * @property {Function} setEventbus
- * @property {Function} setOptions
- */
-
-/**
- * @typedef {object} type.EventbusSecureObj - The control object returned by `EventbusSecure.initialize`.
- *
- * @property {Function} destroy - A function which destroys the underlying Eventbus reference.
- *
- * @property {EventbusSecure} eventbusSecure - The EventbusSecure instance.
- *
- * @property {Function} setEventbus - A function to set the underlying Eventbus reference.
- */
-
-export const type = {};

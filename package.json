@@ -13,9 +13,10 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
+    "@rollup/plugin-alias": "^3.0.0",
     "@rollup/plugin-babel": "^5.0.0",
     "@rollup/plugin-node-resolve": "^11",
-    "@typhonjs-plugin/eventbus": "^0.0.2",
+    "@typhonjs-plugin/eventbus": "^0.0.4",
     "@typhonjs-utils/build-test": "^0.1.0",
     "@typhonjs-utils/build-test-browser": "^0.0.7",
     "@typhonjs-utils/loader-module": "^0.0.1",
@@ -54,6 +55,6 @@
     "prepublishOnly": "npm run test-node && npm run test-browser",
     "test-browser": "node ./test/src/browser/run.js",
     "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000",
-    "types": "npx -p typescript tsc ./src/index.js --declaration --allowJs --emitDeclarationOnly --target esnext --outDir ./lib && rollup --config rollup.config.types.js"
+    "types": "npx -p typescript tsc && rollup --config rollup.config.types.js"
   }
 }

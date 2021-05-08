@@ -1,263 +1,164 @@
+type DataOutPluginEnabled = {
+    /**
+     * - The plugin name.
+     */
+    plugin: string;
+    /**
+     * - The enabled state of the plugin.
+     */
+    enabled: boolean;
+    /**
+     * - True if the plugin is actually loaded.
+     */
+    loaded: boolean;
+};
+type DataOutPluginEvents = {
+    /**
+     * - The plugin name.
+     */
+    plugin: string;
+    /**
+     * - The event names registered.
+     */
+    events: string[];
+};
+type DataOutPluginRemoved = {
+    /**
+     * - The plugin name.
+     */
+    plugin: string;
+    /**
+     * - The success state for removal.
+     */
+    success: boolean;
+    /**
+     * - A list of errors that may have been thrown during removal.
+     */
+    errors: Error[];
+};
+type PluginConfig = {
+    /**
+     * - Defines the name of the plugin; if no `target` entry is present the name
+     *   doubles as the target (please see target).
+     */
+    name: string;
+    /**
+     * - Defines the target Node module to load or defines a local file (full
+     *    path or relative to current working directory to load. Target may also be a file
+     *    URL / string or in the browser a web URL.
+     */
+    target?: string | URL;
+    /**
+     * - Defines an existing object instance to use as the plugin.
+     */
+    instance?: string;
+    /**
+     * - Defines an object of options for the plugin.
+     */
+    options?: object;
+};
+type PluginData = {
+    /**
+     * - Data about the plugin manager.
+     */
+    manager: {
+        eventPrepend: string;
+    };
+    /**
+     * - Optional object hash to associate with plugin.
+     */
+    module: object;
+    /**
+     * - Data about the plugin.
+     */
+    plugin: {
+        name: string;
+        scopedName: string;
+        target: string;
+        targetEscaped: string;
+        type: string;
+        options: object;
+    };
+};
 /**
- * @typedef {object} type.DataOutPluginEnabled
- *
- * @property {string}   plugin - The plugin name.
- *
- * @property {boolean}  enabled - The enabled state of the plugin.
- *
- * @property {boolean}  loaded - True if the plugin is actually loaded.
- */
-/**
- * @typedef {object} type.DataOutPluginEvents
- *
- * @property {string}   plugin - The plugin name.
- *
- * @property {string[]} events - The event names registered.
- */
-/**
- * @typedef {object} type.DataOutPluginRemoved
- *
- * @property {string}   plugin - The plugin name.
- *
- * @property {boolean}  success - The success state for removal.
- *
- * @property {Error[]}  errors - A list of errors that may have been thrown during removal.
- */
-/**
- * @typedef {object} type.PluginConfig
- *
- * @property {string}      name - Defines the name of the plugin; if no `target` entry is present the name
- *                                doubles as the target (please see target).
- *
- * @property {string|URL}  [target] - Defines the target Node module to load or defines a local file (full
- *                                    path or relative to current working directory to load. Target may also be a file
- *                                    URL / string or in the browser a web URL.
- *
- * @property {string}      [instance] - Defines an existing object instance to use as the plugin.
- *
- * @property {object}      [options] - Defines an object of options for the plugin.
- */
-/**
- * @typedef {object} type.PluginData
- *
- * @property {object}   manager - Data about the plugin manager.
- *
- * @property {string}   manager.eventPrepend - The plugin manager event prepend string.
- *
- * @property {object}   module - Optional object hash to associate with plugin.
- *
- * @property {object}   plugin - Data about the plugin.
- *
- * @property {string}   plugin.name - The name of the plugin.
- *
- * @property {string}   plugin.scopedName - The name of the plugin with the plugin managers event prepend string.
- *
- * @property {string}   plugin.target - Defines the target NPM module to loaded or defines a local file (full
- *                                    path or relative to current working directory to load.
- *
- * @property {string}   plugin.targetEscaped - Provides the target, but properly escaped for RegExp usage.
- *
- * @property {string}   plugin.type - The type of plugin: `instance`
- *                                    In Node: `import-module`, `import-path`, `import-url`, `require-module`, or
- *                                    `require-module`, `require-path`, `require-url`.
- *                                    In Browser: `import-path`, `import-url`.
- *
- * @property {object}   plugin.options - Defines an object of options for the plugin.
- */
-/**
- * @typedef {object} type.PluginEventData - Provides the unified event data including any pass through data to the
+ * - Provides the unified event data including any pass through data to the
  *                                          copied data supplied. Invoked functions may add to or modify this data.
  */
-/**
- * @typedef {object} type.PluginManagerOptions
- *
- * @property {boolean}   [noEventAdd] - If true this prevents plugins from being added by `plugins:add` and
- *                                      `plugins:add:all` events forcing direct method invocation for addition.
- *
- * @property {boolean}   [noEventDestroy] - If true this prevents the plugin manager from being destroyed by
- *                                         `plugins:destroy:manager` forcing direct method invocation for destruction.
- *
- * @property {boolean}   [noEventRemoval] - If true this prevents plugins from being removed by `plugins:remove` and
- *                                          `plugins:remove:all` events forcing direct method invocation for removal.
- *
- * @property {boolean}   [noEventSetEnabled] - If true this prevents the plugins from being enabled / disabled
- *                                             from the eventbus via `plugins:set:enabled`.
- *
- * @property {boolean}   [noEventSetOptions] - If true this prevents setting options for the plugin manager by
- *                                             `plugins:set:options` forcing direct method invocation for setting
- *                                             options.
- *
- * @property {boolean}   [throwNoMethod] - If true then when a method fails to be invoked by any plugin an exception
- *                                         will be thrown.
- *
- * @property {boolean}   [throwNoPlugin] - If true then when no plugin is matched to be invoked an exception will be
- *                                         thrown.
- */
-/**
- * @typedef {object} type.PluginSupportImpl
- *
- * @property {Function} destroy
- * @property {Function} setEventbus
- * @property {Function} setOptions
- */
-/**
- * @typedef {object} type.EventbusSecureObj - The control object returned by `EventbusSecure.initialize`.
- *
- * @property {Function} destroy - A function which destroys the underlying Eventbus reference.
- *
- * @property {EventbusSecure} eventbusSecure - The EventbusSecure instance.
- *
- * @property {Function} setEventbus - A function to set the underlying Eventbus reference.
- */
-declare const type: {};
-declare namespace type {
-    type DataOutPluginEnabled = {
-        /**
-         * - The plugin name.
-         */
-        plugin: string;
-        /**
-         * - The enabled state of the plugin.
-         */
-        enabled: boolean;
-        /**
-         * - True if the plugin is actually loaded.
-         */
-        loaded: boolean;
-    };
-    type DataOutPluginEvents = {
-        /**
-         * - The plugin name.
-         */
-        plugin: string;
-        /**
-         * - The event names registered.
-         */
-        events: string[];
-    };
-    type DataOutPluginRemoved = {
-        /**
-         * - The plugin name.
-         */
-        plugin: string;
-        /**
-         * - The success state for removal.
-         */
-        success: boolean;
-        /**
-         * - A list of errors that may have been thrown during removal.
-         */
-        errors: Error[];
-    };
-    type PluginConfig = {
-        /**
-         * - Defines the name of the plugin; if no `target` entry is present the name
-         *   doubles as the target (please see target).
-         */
-        name: string;
-        /**
-         * - Defines the target Node module to load or defines a local file (full
-         *    path or relative to current working directory to load. Target may also be a file
-         *    URL / string or in the browser a web URL.
-         */
-        target?: string | URL;
-        /**
-         * - Defines an existing object instance to use as the plugin.
-         */
-        instance?: string;
-        /**
-         * - Defines an object of options for the plugin.
-         */
-        options?: object;
-    };
-    type PluginData = {
-        /**
-         * - Data about the plugin manager.
-         */
-        manager: {
-            eventPrepend: string;
-        };
-        /**
-         * - Optional object hash to associate with plugin.
-         */
-        module: object;
-        /**
-         * - Data about the plugin.
-         */
-        plugin: {
-            name: string;
-            scopedName: string;
-            target: string;
-            targetEscaped: string;
-            type: string;
-            options: object;
-        };
-    };
+type PluginEventData = object;
+type PluginManagerOptions = {
     /**
-     * - Provides the unified event data including any pass through data to the
-     *                                          copied data supplied. Invoked functions may add to or modify this data.
+     * - If true this prevents plugins from being added by `plugins:add` and
+     *    `plugins:add:all` events forcing direct method invocation for addition.
      */
-    type PluginEventData = object;
-    type PluginManagerOptions = {
-        /**
-         * - If true this prevents plugins from being added by `plugins:add` and
-         *    `plugins:add:all` events forcing direct method invocation for addition.
-         */
-        noEventAdd?: boolean;
-        /**
-         * - If true this prevents the plugin manager from being destroyed by
-         *   `plugins:destroy:manager` forcing direct method invocation for destruction.
-         */
-        noEventDestroy?: boolean;
-        /**
-         * - If true this prevents plugins from being removed by `plugins:remove` and
-         *    `plugins:remove:all` events forcing direct method invocation for removal.
-         */
-        noEventRemoval?: boolean;
-        /**
-         * - If true this prevents the plugins from being enabled / disabled
-         *    from the eventbus via `plugins:set:enabled`.
-         */
-        noEventSetEnabled?: boolean;
-        /**
-         * - If true this prevents setting options for the plugin manager by
-         *    `plugins:set:options` forcing direct method invocation for setting
-         *    options.
-         */
-        noEventSetOptions?: boolean;
-        /**
-         * - If true then when a method fails to be invoked by any plugin an exception
-         *    will be thrown.
-         */
-        throwNoMethod?: boolean;
-        /**
-         * - If true then when no plugin is matched to be invoked an exception will be
-         *    thrown.
-         */
-        throwNoPlugin?: boolean;
-    };
-    type PluginSupportImpl = {
-        destroy: Function;
-        setEventbus: Function;
-        setOptions: Function;
-    };
+    noEventAdd?: boolean;
     /**
-     * - The control object returned by `EventbusSecure.initialize`.
+     * - If true this prevents the plugin manager from being destroyed by
+     *   `plugins:destroy:manager` forcing direct method invocation for destruction.
      */
-    type EventbusSecureObj = {
-        /**
-         * - A function which destroys the underlying Eventbus reference.
-         */
-        destroy: Function;
-        /**
-         * - The EventbusSecure instance.
-         */
-        eventbusSecure: any;
-        /**
-         * - A function to set the underlying Eventbus reference.
-         */
-        setEventbus: Function;
-    };
+    noEventDestroy?: boolean;
+    /**
+     * - If true this prevents plugins from being removed by `plugins:remove` and
+     *    `plugins:remove:all` events forcing direct method invocation for removal.
+     */
+    noEventRemoval?: boolean;
+    /**
+     * - If true this prevents the plugins from being enabled / disabled
+     *    from the eventbus via `plugins:set:enabled`.
+     */
+    noEventSetEnabled?: boolean;
+    /**
+     * - If true this prevents setting options for the plugin manager by
+     *    `plugins:set:options` forcing direct method invocation for setting
+     *    options.
+     */
+    noEventSetOptions?: boolean;
+    /**
+     * - If true then when a method fails to be invoked by any plugin an exception
+     *    will be thrown.
+     */
+    throwNoMethod?: boolean;
+    /**
+     * - If true then when no plugin is matched to be invoked an exception will be
+     *    thrown.
+     */
+    throwNoPlugin?: boolean;
+};
+
+export interface PluginSupportImpl {
+   /**
+    * Destroys all managed plugins after unloading them.
+    *
+    * @param {object}     opts - An options object.
+    *
+    * @param {Eventbus}   opts.eventbus - The eventbus to disassociate.
+    *
+    * @param {string}     opts.eventPrepend - The current event prepend.
+    */
+   destroy({ eventbus: Eventbus, eventPrepend: string }): Promise<void>;
+
+   /**
+    * Sets the eventbus associated with this plugin manager. If any previous eventbus was associated all plugin manager
+    * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
+    * events will be removed from the old eventbus and then `onPluginLoad` will be called with the new eventbus.
+    *
+    * @param {object}     opts - An options object.
+    *
+    * @param {Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+    *
+    * @param {Eventbus}   opts.newEventbus - The new eventbus to associate.
+    *
+    * @param {string}     opts.oldPrepend - The old event prepend.
+    *
+    * @param {string}     opts.newPrepend - The new event prepend.
+    */
+   setEventbus({ oldEventbus, newEventbus: Eventbus, oldPrepend, newPrepend: string });
+
+   /**
+    * Set optional parameters.
+    *
+    * @param {PluginManagerOptions} options Defines optional parameters to set.
+    */
+   setOptions(options: PluginManagerOptions);
 }
 
 /**
@@ -275,9 +176,9 @@ declare namespace type {
  *
  * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
  *
- * @implements {type.PluginSupportImpl}
+ * @implements {PluginSupportImpl}
  */
-declare class PluginInvokeSupport implements type.PluginSupportImpl {
+declare class PluginInvokeSupport implements PluginSupportImpl {
     /**
      * Create PluginInvokeSupport
      *
@@ -293,9 +194,9 @@ declare class PluginInvokeSupport implements type.PluginSupportImpl {
     /**
      * Returns the associated plugin manager options.
      *
-     * @returns {type.PluginManagerOptions} The associated plugin manager options.
+     * @returns {PluginManagerOptions} The associated plugin manager options.
      */
-    get options(): type.PluginManagerOptions;
+    get options(): PluginManagerOptions;
     /**
      * Gets the associated plugin manager.
      *
@@ -396,14 +297,14 @@ declare class PluginInvokeSupport implements type.PluginSupportImpl {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
      *
-     * @returns {Promise<type.PluginEventData>} The PluginEvent data.
+     * @returns {Promise<PluginEventData>} The PluginEvent data.
      */
     invokeAsyncEvent({ method, copyProps, passthruProps, plugins }?: {
         method: string;
         copyProps?: object;
         passthruProps?: object;
         plugins?: string | Iterable<string>;
-    }): Promise<type.PluginEventData>;
+    }): Promise<PluginEventData>;
     /**
      * This dispatch method synchronously passes back a single value or an array with all results returned by any
      * invoked targets.
@@ -436,14 +337,14 @@ declare class PluginInvokeSupport implements type.PluginSupportImpl {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
      *
-     * @returns {type.PluginEventData} The PluginEvent data.
+     * @returns {PluginEventData} The PluginEvent data.
      */
     invokeSyncEvent({ method, copyProps, passthruProps, plugins }?: {
         method: string;
         copyProps?: object;
         passthruProps?: object;
         plugins?: string | Iterable<string>;
-    }): type.PluginEventData;
+    }): PluginEventData;
     /**
      * Sets the eventbus associated with this plugin manager. If any previous eventbus was associated all plugin manager
      * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
@@ -468,9 +369,10 @@ declare class PluginInvokeSupport implements type.PluginSupportImpl {
     /**
      * Set optional parameters.
      *
-     * @param {type.PluginManagerOptions} options Defines optional parameters to set.
+     * @param {PluginManagerOptions} options Defines optional parameters to set.
      */
-    setOptions(options?: type.PluginManagerOptions): void;
+    setOptions(options?: PluginManagerOptions): void;
+    #private;
 }
 
 /**
@@ -488,11 +390,668 @@ declare function escapeTarget(target: string | URL): string;
 /**
  * Performs validation of a PluginConfig.
  *
- * @param {type.PluginConfig}   pluginConfig A PluginConfig to validate.
+ * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
  *
  * @returns {boolean} True if the given PluginConfig is valid.
  */
-declare function isValidConfig(pluginConfig: type.PluginConfig): boolean;
+declare function isValidConfig(pluginConfig: PluginConfig): boolean;
+
+/**
+ * - The control object returned by `EventbusSecure.initialize`.
+ */
+type EventbusSecureObj = {
+    /**
+     * - A function which destroys the underlying Eventbus reference.
+     */
+    destroy: Function;
+    /**
+     * - The EventbusSecure instance.
+     */
+    eventbusSecure: any;
+    /**
+     * - A function to set the underlying Eventbus reference.
+     */
+    setEventbus: Function;
+};
+
+/**
+ * EventbusProxy provides a protected proxy of another Eventbus instance.
+ *
+ * The main use case of EventbusProxy is to allow indirect access to an eventbus. This is handy when it comes to
+ * managing the event lifecycle for a plugin system. When a plugin is added it could receive a callback, perhaps named
+ * `onPluginLoaded`, which contains an EventbusProxy instance rather than the direct eventbus. This EventbusProxy
+ * instance is associated in the management system controlling plugin lifecycle. When a plugin is removed / unloaded the
+ * management system can automatically unregister all events for the plugin without requiring the plugin author doing it
+ * correctly if they had full control. IE This allows to plugin system to guarantee no dangling listeners.
+ *
+ * EventbusProxy provides the on / off, before, once, and trigger methods with the same signatures as found in
+ * Eventbus. However, the proxy tracks all added event bindings which is used to proxy between the target
+ * eventbus which is passed in from the constructor. All registration methods (on / off / once) proxy. In addition
+ * there is a `destroy` method which will unregister all of proxied events and remove references to the managed
+ * eventbus. Any further usage of a destroyed EventbusProxy instance results in a ReferenceError thrown.
+ *
+ * Finally the EventbusProxy only allows events registered through it to be turned off providing a buffer between
+ * any consumers such that they can not turn off other registrations made on the eventbus or other proxy instances.
+ */
+declare class EventbusProxy {
+    /**
+     * Creates the event proxy with an existing instance of Eventbus.
+     *
+     * @param {Eventbus}   eventbus - The target eventbus instance.
+     */
+    constructor(eventbus: any);
+    /**
+     * Just like `on`, but causes the bound callback to fire several times up to the count specified before being
+     * removed. When multiple events are passed in using the space separated syntax, the event
+     * will fire count times for every event you passed in, not once for a combination of all events.
+     *
+     * @param {number}            count - Number of times the function will fire before being removed.
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @param {object}            [context] - Event context
+     *
+     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     *
+     * @returns {EventbusProxy} This EventbusProxy instance.
+     */
+    before(count: number, name: string | object, callback: Function | object, context?: object, guarded?: boolean): EventbusProxy;
+    /**
+     * Creates an EventbusSecure instance wrapping the proxied Eventbus reference. An EventbusSecure instance provides a
+     * secure window to public consumers with only trigger dispatch available.
+     *
+     * @param {string}   [name] - Optional name for the EventbusSecure instance.
+     *
+     * @returns {EventbusSecureObj} An EventbusSecure control object for this eventbus.
+     */
+    createSecure(name?: string): EventbusSecureObj;
+    /**
+     * Unregisters all proxied events from the target eventbus and removes any local references. All subsequent calls
+     * after `destroy` has been called result in a ReferenceError thrown.
+     */
+    destroy(): void;
+    /**
+     * Returns an iterable for all events from the proxied eventbus yielding an array with event name, callback function,
+     * and event context.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    entries(regex?: RegExp): Generator<any, void, unknown>;
+    /**
+     * Returns the current proxied eventbus event count.
+     *
+     * @returns {number} Returns the current proxied event count.
+     */
+    get eventCount(): number;
+    /**
+     * Returns the current proxied eventbus callback count.
+     *
+     * @returns {number} Returns the current proxied callback count.
+     */
+    get callbackCount(): number;
+    /**
+     * Returns an iterable for the event names / keys of proxied eventbus event listeners.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    keys(regex?: RegExp): Generator<any, void, unknown>;
+    /**
+     * Returns whether this EventbusProxy has already been destroyed.
+     *
+     * @returns {boolean} Is destroyed state.
+     */
+    get isDestroyed(): boolean;
+    /**
+     * Returns the target eventbus name.
+     *
+     * @returns {string} The target eventbus name.
+     */
+    get name(): string;
+    /**
+     * Returns the current proxied event count.
+     *
+     * @returns {number} Returns the current proxied event count.
+     */
+    get proxyEventCount(): number;
+    /**
+     * Returns the current proxied callback count.
+     *
+     * @returns {number} Returns the current proxied callback count.
+     */
+    get proxyCallbackCount(): number;
+    /**
+     * Returns whether an event name is guarded.
+     *
+     * @param {string|object}  name - Event name(s) or event map to verify.
+     *
+     * @param {object}         [data] - Stores the output of which names are guarded.
+     *
+     * @returns {boolean} Whether the given event name is guarded.
+     */
+    isGuarded(name: string | object, data?: object): boolean;
+    /**
+     * Remove a previously-bound proxied event binding.
+     *
+     * Please see {@link Eventbus#off}.
+     *
+     * @param {string|object}  [name] - Event name(s) or event map.
+     *
+     * @param {Function}       [callback] - Event callback function
+     *
+     * @param {object}         [context] - Event context
+     *
+     * @returns {EventbusProxy} This EventbusProxy
+     */
+    off(name?: string | object, callback?: Function, context?: object): EventbusProxy;
+    /**
+     * Bind a callback function to an object. The callback will be invoked whenever the event is fired. If you have a
+     * large number of different events on a page, the convention is to use colons to namespace them: "poll:start", or
+     * "change:selection".
+     *
+     * Please see {@link Eventbus#on}.
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @param {object}            [context] - Event context
+     *
+     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     *
+     * @returns {EventbusProxy} This EventbusProxy
+     */
+    on(name: string | object, callback: Function | object, context?: object, guarded?: boolean): EventbusProxy;
+    /**
+     * Just like `on`, but causes the bound callback to fire only once before being removed. Handy for saying "the next
+     * time that X happens, do this". When multiple events are passed in using the space separated syntax, the event
+     * will fire once for every event you passed in, not once for a combination of all events
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @param {object}            context - Event context
+     *
+     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     *
+     * @returns {EventbusProxy} This EventbusProxy instance.
+     */
+    once(name: string | object, callback: Function | object, context?: object, guarded?: boolean): EventbusProxy;
+    /**
+     * Returns an iterable for all stored locally proxied events yielding an array with event name, callback
+     * function, and event context.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    proxyEntries(regex?: RegExp): Generator<any[], void, unknown>;
+    /**
+     * Returns an iterable for the event names / keys of the locally proxied event names.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    proxyKeys(regex?: RegExp): Generator<string, void, unknown>;
+    /**
+     * Trigger callbacks for the given event, or space-delimited list of events. Subsequent arguments to trigger will be
+     * passed along to the event callbacks.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {EventbusProxy} This EventbusProxy.
+     */
+    trigger(name: string, ...args: any[]): EventbusProxy;
+    /**
+     * Provides `trigger` functionality, but collects any returned Promises from invoked targets and returns a
+     * single Promise generated by `Promise.resolve` for a single value or `Promise.all` for multiple results. This is
+     * a very useful mechanism to invoke asynchronous operations over an eventbus.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {Promise<void|*|*[]>} A Promise returning any results.
+     */
+    triggerAsync(name: string, ...args: any[]): Promise<void | any | any[]>;
+    /**
+     * Defers invoking `trigger`. This is useful for triggering events in the next clock tick.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {EventbusProxy} This EventbusProxy.
+     */
+    triggerDefer(name: string, ...args: any[]): EventbusProxy;
+    /**
+     * Provides `trigger` functionality, but collects any returned result or results from invoked targets as a single
+     * value or in an array and passes it back to the callee in a synchronous manner.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {void|*|*[]} An Array of returned results.
+     */
+    triggerSync(name: string, ...args: any[]): void | any | any[];
+    #private;
+}
+
+/**
+ * EventbusSecure provides a secure wrapper around another Eventbus instance.
+ *
+ * The main use case of EventbusSecure is to provide a secure eventbus window for general public consumption. Only
+ * events can be triggered, but not registered / unregistered.
+ *
+ * You must use the initialize method passing in an existing Eventbus instance as the eventbus reference is private.
+ * In order to secure the eventbus from unwanted access there is no way to access the eventbus reference externally from
+ * the EventbusSecure instance. The initialize method returns an {@link EventbusSecureObj} object which
+ * contains two functions to control the secure eventbus externally; `destroy` and `setEventbus`. Expose to end
+ * consumers just the `eventbusSecure` instance.
+ */
+declare class EventbusSecure {
+    /**
+     * Creates the EventbusSecure instance with an existing instance of Eventbus. An object / EventbusSecureObj is
+     * returned with an EventbusSecure reference and two functions for controlling the underlying Eventbus reference.
+     *
+     * `destroy()` will destroy the underlying Eventbus reference.
+     * `setEventbus(<eventbus>)` will set the underlying reference.
+     *
+     * @param {Eventbus}   eventbus - The target eventbus instance.
+     *
+     * @param {string}     [name] - If a name is provided this will be used instead of eventbus name.
+     *
+     * @returns {EventbusSecureObj} The control object which contains an EventbusSecure reference and control functions.
+     */
+    static initialize(eventbus: any, name?: string): EventbusSecureObj;
+    /**
+     * Returns an iterable for the event names / keys of secured eventbus event listeners.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    keys(regex?: RegExp): Generator<any, void, unknown>;
+    /**
+     * Returns whether this instance has already been destroyed.
+     *
+     * @returns {boolean} Is destroyed state.
+     */
+    get isDestroyed(): boolean;
+    /**
+     * Returns the name associated with this instance.
+     *
+     * @returns {string} The target eventbus name.
+     */
+    get name(): string;
+    /**
+     * Trigger callbacks for the given event, or space-delimited list of events. Subsequent arguments to trigger will be
+     * passed along to the event callbacks.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {EventbusSecure} This instance.
+     */
+    trigger(name: string, ...args: any[]): EventbusSecure;
+    /**
+     * Provides `trigger` functionality, but collects any returned Promises from invoked targets and returns a
+     * single Promise generated by `Promise.resolve` for a single value or `Promise.all` for multiple results. This is
+     * a very useful mechanism to invoke asynchronous operations over an eventbus.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {Promise<void|*|*[]>} A Promise to returning any results.
+     */
+    triggerAsync(name: string, ...args: any[]): Promise<void | any | any[]>;
+    /**
+     * Defers invoking `trigger`. This is useful for triggering events in the next clock tick.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {EventbusSecure} This EventbusProxy.
+     */
+    triggerDefer(name: string, ...args: any[]): EventbusSecure;
+    /**
+     * Provides `trigger` functionality, but collects any returned result or results from invoked targets as a single
+     * value or in an array and passes it back to the callee in a synchronous manner.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {void|*|*[]} An Array of returned results.
+     */
+    triggerSync(name: string, ...args: any[]): void | any | any[];
+    #private;
+}
+
+/**
+ * `@typhonjs-plugin/eventbus` / Provides the ability to bind and trigger custom named events.
+ *
+ * This module is an evolution of Backbone Events. (http://backbonejs.org/#Events). Eventbus extends the
+ * functionality provided in Backbone Events with additional triggering methods to receive asynchronous and
+ * synchronous results.
+ *
+ * ---------------
+ */
+declare class Eventbus {
+    /**
+     * Provides a constructor which optionally takes the eventbus name.
+     *
+     * @param {string}   name - Optional eventbus name.
+     */
+    constructor(name?: string);
+    /**
+     * Just like `on`, but causes the bound callback to fire several times up to the count specified before being
+     * removed. When multiple events are passed in using the space separated syntax, the event
+     * will fire count times for every event you passed in, not once for a combination of all events.
+     *
+     * @param {number}            count - Number of times the function will fire before being removed.
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @param {object}            [context] - Event context
+     *
+     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    before(count: number, name: string | object, callback: Function | object, context?: object, guarded?: boolean): Eventbus;
+    /**
+     * Creates an EventbusProxy wrapping this Eventbus instance. An EventbusProxy proxies events allowing all listeners
+     * added to be easily removed from the wrapped Eventbus.
+     *
+     * @returns {EventbusProxy} A new EventbusProxy for this eventbus.
+     */
+    createProxy(): EventbusProxy;
+    /**
+     * Creates an EventbusSecure instance wrapping this Eventbus. An EventbusSecure instance provides a secure window to
+     * public consumers with only trigger dispatch available.
+     *
+     * @param {string}   [name] - Optional name for the EventbusSecure instance.
+     *
+     * @returns {EventbusSecureObj} An EventbusSecure control object for this eventbus.
+     */
+    createSecure(name?: string): EventbusSecureObj;
+    /**
+     * Returns an iterable for all stored events yielding an array with event name, callback function, and event context.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    entries(regex?: RegExp): Generator<any[], void, unknown>;
+    /**
+     * Returns the current event count.
+     *
+     * @returns {number} Returns the current event count.
+     */
+    get eventCount(): number;
+    /**
+     * Returns the current callback count.
+     *
+     * @returns {number} The current callback count.
+     */
+    get callbackCount(): number;
+    /**
+     * Returns whether an event name is guarded.
+     *
+     * @param {string|object}  name - Event name(s) or event map to verify.
+     *
+     * @param {object}         [data] - Stores the output of which names are guarded.
+     *
+     * @returns {boolean} Whether the given event name is guarded.
+     */
+    isGuarded(name: string | object, data?: object): boolean;
+    /**
+     * Returns an iterable for the event names / keys of registered event listeners.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    keys(regex?: RegExp): Generator<string, void, unknown>;
+    /**
+     * Returns the current eventbus name.
+     *
+     * @returns {string} The current eventbus name.
+     */
+    get name(): string;
+    /**
+     * Tell an object to listen to a particular event on an other object. The advantage of using this form, instead of
+     * other.on(event, callback, object), is that listenTo allows the object to keep track of the events, and they can
+     * be removed all at once later on. The callback will always be called with object as context.
+     *
+     * @example
+     * view.listenTo(model, 'change', view.render);
+     *
+     * @param {object}            obj - Event context
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    listenTo(obj: object, name: string | object, callback: Function | object): Eventbus;
+    _listeningTo: {};
+    _listenId: string;
+    /**
+     * Just like `listenTo`, but causes the bound callback to fire count times before being removed.
+     *
+     * @param {number}            count - Number of times the function will fire before being removed.
+     *
+     * @param {object}            obj - Target event context.
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    listenToBefore(count: number, obj: object, name: string | object, callback: Function | object): Eventbus;
+    /**
+     * Just like `listenTo`, but causes the bound callback to fire only once before being removed.
+     *
+     * @param {object}            obj - Target event context
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    listenToOnce(obj: object, name: string | object, callback: Function | object): Eventbus;
+    /**
+     * Remove a previously-bound callback function from an object. If no context is specified, all of the versions of
+     * the callback with different contexts will be removed. If no callback is specified, all callbacks for the event
+     * will be removed. If no event is specified, callbacks for all events will be removed.
+     *
+     * Note that calling model.off(), for example, will indeed remove all events on the model — including events that
+     * Backbone uses for internal bookkeeping.
+     *
+     * @example
+     * // Removes just the `onChange` callback.
+     * object.off("change", onChange);
+     *
+     * // Removes all "change" callbacks.
+     * object.off("change");
+     *
+     * // Removes the `onChange` callback for all events.
+     * object.off(null, onChange);
+     *
+     * // Removes all callbacks for `context` for all events.
+     * object.off(null, null, context);
+     *
+     * // Removes all callbacks on `object`.
+     * object.off();
+     *
+     * @param {string|object}  [name] - Event name(s) or event map.
+     *
+     * @param {Function}       [callback] - Event callback function
+     *
+     * @param {object}         [context] - Event context
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    off(name?: string | object, callback?: Function, context?: object): Eventbus;
+    /**
+     * Bind a callback function to an object. The callback will be invoked whenever the event is fired. If you have a
+     * large number of different events on a page, the convention is to use colons to namespace them: "poll:start", or
+     * "change:selection".
+     *
+     * To supply a context value for this when the callback is invoked, pass the optional last argument:
+     * model.on('change', this.render, this) or model.on({change: this.render}, this).
+     *
+     * @example
+     * The event string may also be a space-delimited list of several events...
+     * book.on("change:title change:author", ...);
+     *
+     * @example
+     * Callbacks bound to the special "all" event will be triggered when any event occurs, and are passed the name of
+     * the event as the first argument. For example, to proxy all events from one object to another:
+     * proxy.on("all", function(eventName) {
+     *    object.trigger(eventName);
+     * });
+     *
+     * @example
+     * All Backbone event methods also support an event map syntax, as an alternative to positional arguments:
+     * book.on({
+     *    "change:author": authorPane.update,
+     *    "change:title change:subtitle": titleView.update,
+     *    "destroy": bookView.remove
+     * });
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @param {object}            [context] - Event context
+     *
+     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    on(name: string | object, callback: Function | object, context?: object, guarded?: boolean): Eventbus;
+    _listeners: {};
+    /**
+     * Just like `on`, but causes the bound callback to fire only once before being removed. Handy for saying "the next
+     * time that X happens, do this". When multiple events are passed in using the space separated syntax, the event
+     * will fire once for every event you passed in, not once for a combination of all events
+     *
+     * @param {string|object}     name - Event name(s) or event map.
+     *
+     * @param {Function|object}   callback - Event callback function or context for event map.
+     *
+     * @param {object}            [context] - Event context
+     *
+     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    once(name: string | object, callback: Function | object, context?: object, guarded?: boolean): Eventbus;
+    /**
+     * Tell an object to stop listening to events. Either call stopListening with no arguments to have the object remove
+     * all of its registered callbacks ... or be more precise by telling it to remove just the events it's listening to
+     * on a specific object, or a specific event, or just a specific callback.
+     *
+     * @example
+     * view.stopListening();
+     *
+     * view.stopListening(model);
+     *
+     * @param {object}   obj - Event context
+     *
+     * @param {string}   [name] - Event name(s)
+     *
+     * @param {Function} [callback] - Event callback function
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    stopListening(obj: object, name?: string, callback?: Function): Eventbus;
+    /**
+     * Trigger callbacks for the given event, or space-delimited list of events. Subsequent arguments to trigger will be
+     * passed along to the event callbacks.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    trigger(name: string, ...args: any[]): Eventbus;
+    /**
+     * Provides `trigger` functionality, but collects any returned Promises from invoked targets and returns a
+     * single Promise generated by `Promise.resolve` for a single value or `Promise.all` for multiple results. This is
+     * a very useful mechanism to invoke asynchronous operations over an eventbus.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {Promise<void|*|*[]>} A Promise with any results.
+     */
+    triggerAsync(name: string, ...args: any[]): Promise<void | any | any[]>;
+    /**
+     * Defers invoking `trigger`. This is useful for triggering events in the next clock tick.
+     *
+     * @param {string}   name - Event name(s)
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {Eventbus} This Eventbus instance.
+     */
+    triggerDefer(name: string, ...args: any[]): Eventbus;
+    /**
+     * Provides `trigger` functionality, but collects any returned result or results from invoked targets as a single
+     * value or in an array and passes it back to the callee in a synchronous manner.
+     *
+     * @param {string}   name - Event name(s).
+     *
+     * @param {...*}     args - Additional arguments passed to the event function(s).
+     *
+     * @returns {void|*|*[]} The results of the event invocation.
+     */
+    triggerSync(name: string, ...args: any[]): void | any | any[];
+    #private;
+}
+
+/**
+ * Provides a main eventbus instance.
+ *
+ * @type {Eventbus}
+ */
+declare const eventbus: Eventbus;
+/**
+ * Provides an eventbus instance potentially for use with a plugin system.
+ *
+ * @type {Eventbus}
+ */
+declare const pluginEventbus: Eventbus;
+/**
+ * Provides an eventbus instance potentially for use for testing.
+ *
+ * @type {Eventbus}
+ */
+declare const testEventbus: Eventbus;
 
 /**
  * Defines a class holding the data associated with a plugin including its instance.
@@ -503,20 +1062,20 @@ declare class PluginEntry {
      *
      * @param {string}      name - The plugin name.
      *
-     * @param {type.PluginData}  data - Describes the plugin, manager, and optional module data.
+     * @param {PluginData}  data - Describes the plugin, manager, and optional module data.
      *
      * @param {object}      instance - The loaded plugin instance.
      *
      * @param {EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin wrapping the plugin manager
      *                                         eventbus.
      */
-    constructor(name: string, data: type.PluginData, instance: object, eventbusProxy?: any);
+    constructor(name: string, data: PluginData, instance: object, eventbusProxy?: any);
     /**
      * Get plugin data.
      *
-     * @returns {type.PluginData} The associated PluginData.
+     * @returns {PluginData} The associated PluginData.
      */
-    get data(): type.PluginData;
+    get data(): PluginData;
     /**
      * Set enabled.
      *
@@ -553,6 +1112,7 @@ declare class PluginEntry {
      * @returns {string} Plugin name.
      */
     get name(): string;
+    #private;
 }
 
 /**
@@ -678,17 +1238,17 @@ declare class PluginManager {
      * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
      *                                                     eventbus.
      *
-     * @param {type.PluginManagerOptions}  [options.manager] - The plugin manager options.
+     * @param {PluginManagerOptions}  [options.manager] - The plugin manager options.
      *
-     * @param {type.PluginSupportImpl|Iterable<type.PluginSupportImpl>} [options.PluginSupport] - Optional classes to
+     * @param {PluginSupportImpl|Iterable<PluginSupportImpl>} [options.PluginSupport] - Optional classes to
      *                                        pass in which extends the plugin manager. A default implementation is
-     *                                        available: {@link PluginSupport}
+     *                                        available: {@link PluginInvokeSupport}
      */
     constructor(options?: {
-        eventbus?: any;
+        eventbus?: Eventbus;
         eventPrepend?: string;
-        manager?: type.PluginManagerOptions;
-        PluginSupport?: type.PluginSupportImpl | Iterable<type.PluginSupportImpl>;
+        manager?: PluginManagerOptions;
+        PluginSupport?: any | Iterable<any>;
     });
     /**
      * Adds a plugin by the given configuration parameters. A plugin `name` is always required. If no other options
@@ -696,32 +1256,32 @@ declare class PluginManager {
      * existing `instance` to use as the plugin. Then the `target` is chosen as the NPM module / local file to load.
      * By passing in `options` this will be stored and accessible to the plugin during all callbacks.
      *
-     * @param {type.PluginConfig} pluginConfig - Defines the plugin to load.
+     * @param {PluginConfig} pluginConfig - Defines the plugin to load.
      *
      * @param {object}            [moduleData] - Optional object hash to associate with plugin.
      *
-     * @returns {Promise<type.PluginData>} The PluginData that represents the plugin added.
+     * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
      */
-    add(pluginConfig: type.PluginConfig, moduleData?: object): Promise<type.PluginData>;
+    add(pluginConfig: PluginConfig, moduleData?: object): Promise<PluginData>;
     /**
      * Initializes multiple plugins in a single call.
      *
-     * @param {Iterable<type.PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
+     * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
      *
      * @param {object}                        [moduleData] - Optional object hash to associate with all plugins.
      *
-     * @returns {Promise<type.PluginData[]>} An array of PluginData objects of all added plugins.
+     * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
      */
-    addAll(pluginConfigs?: Iterable<type.PluginConfig>, moduleData?: object): Promise<type.PluginData[]>;
+    addAll(pluginConfigs?: Iterable<PluginConfig>, moduleData?: object): Promise<PluginData[]>;
     /**
      * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
      * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
      *
-     * @param {type.PluginConfig} pluginConfig - Defines the plugin to load.
+     * @param {PluginConfig} pluginConfig - Defines the plugin to load.
      *
      * @param {object}            [moduleData] - Optional object hash to associate with all plugins.
      *
-     * @returns {Promise<type.PluginData>} The PluginData that represents the plugin added.
+     * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
      * @private
      */
     private _addEventbus;
@@ -729,11 +1289,11 @@ declare class PluginManager {
      * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
      * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
      *
-     * @param {Iterable<type.PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
+     * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
      *
      * @param {object}                        [moduleData] - Optional object hash to associate with all plugins.
      *
-     * @returns {Promise<type.PluginData[]>} An array of PluginData objects of all added plugins.
+     * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
      * @private
      */
     private _addAllEventbus;
@@ -743,7 +1303,7 @@ declare class PluginManager {
      *
      * @returns {EventbusProxy} A proxy for the currently set Eventbus.
      */
-    createEventbusProxy(): any;
+    createEventbusProxy(): EventbusProxy;
     /**
      * If an eventbus is assigned to this plugin manager then a new EventbusSecure wrapping this eventbus is returned.
      * It is added to `this.#eventbusSecure` so †hat the instances are destroyed when the plugin manager is destroyed.
@@ -754,16 +1314,16 @@ declare class PluginManager {
     /**
      * Destroys all managed plugins after unloading them.
      *
-     * @returns {Promise<type.DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+     * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
      */
-    destroy(): Promise<type.DataOutPluginRemoved[]>;
+    destroy(): Promise<DataOutPluginRemoved[]>;
     /**
      * Provides the eventbus callback which may prevent plugin manager destruction if optional `noEventDestroy` is
      * enabled. This disables the ability for the plugin manager to be destroyed via events preventing any external
      * code removing plugins in this manner.
      *
      * @private
-     * @returns {Promise<type.DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+     * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
      */
     private _destroyEventbus;
     /**
@@ -779,24 +1339,24 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get state.
      *
-     * @returns {boolean|type.DataOutPluginEnabled[]} Enabled state for single plugin or array of results for multiple
+     * @returns {boolean|DataOutPluginEnabled[]} Enabled state for single plugin or array of results for multiple
      *                                                plugins.
      */
     getEnabled({ plugins }?: {
         plugins?: string | Iterable<string>;
-    }): boolean | type.DataOutPluginEnabled[];
+    }): boolean | DataOutPluginEnabled[];
     /**
      * Returns any associated eventbus.
      *
      * @returns {Eventbus} The associated eventbus.
      */
-    getEventbus(): any;
+    getEventbus(): Eventbus;
     /**
      * Returns a copy of the plugin manager options.
      *
-     * @returns {type.PluginManagerOptions} A copy of the plugin manager options.
+     * @returns {PluginManagerOptions} A copy of the plugin manager options.
      */
-    getOptions(): type.PluginManagerOptions;
+    getOptions(): PluginManagerOptions;
     /**
      * Returns the event binding names registered on any associated plugin EventbusProxy.
      *
@@ -804,11 +1364,11 @@ declare class PluginManager {
      *
      * @param {string|RegExp}   opts.event - Event name or RegExp to match event names.
      *
-     * @returns {string[]|type.DataOutPluginEvents[]} Event binding names registered from the plugin.
+     * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
      */
     getPluginByEvent({ event }?: {
         event: string | RegExp;
-    }): string[] | type.DataOutPluginEvents[];
+    }): string[] | DataOutPluginEvents[];
     /**
      * Gets the plugin data for a plugin, list of plugins, or all plugins.
      *
@@ -816,11 +1376,11 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get plugin data.
      *
-     * @returns {type.PluginData|type.PluginData[]|undefined} The plugin data for a plugin or list of plugins.
+     * @returns {PluginData|PluginData[]|undefined} The plugin data for a plugin or list of plugins.
      */
     getPluginData({ plugins }?: {
         plugins?: string | Iterable<string>;
-    }): type.PluginData | type.PluginData[] | undefined;
+    }): PluginData | PluginData[] | undefined;
     /**
      * Gets a PluginEntry instance for the given plugin name.
      *
@@ -836,11 +1396,11 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get plugin data.
      *
-     * @returns {string[]|type.DataOutPluginEvents[]} Event binding names registered from the plugin.
+     * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
      */
     getPluginEvents({ plugins }?: {
         plugins?: string | Iterable<string>;
-    }): string[] | type.DataOutPluginEvents[];
+    }): string[] | DataOutPluginEvents[];
     /**
      * Returns an iterable of plugin map keys (plugin names).
      *
@@ -879,13 +1439,13 @@ declare class PluginManager {
         plugins?: string | Iterable<string>;
     }): boolean;
     /**
-     * Performs validation of a type.PluginConfig.
+     * Performs validation of a PluginConfig.
      *
-     * @param {type.PluginConfig}   pluginConfig - A PluginConfig to validate.
+     * @param {PluginConfig}   pluginConfig - A PluginConfig to validate.
      *
      * @returns {boolean} True if the given PluginConfig is valid.
      */
-    isValidConfig(pluginConfig: type.PluginConfig): boolean;
+    isValidConfig(pluginConfig: PluginConfig): boolean;
     /**
      * Removes a plugin by name or all names in an iterable list unloading them and clearing any event bindings
      * automatically.
@@ -894,17 +1454,17 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
      *
-     * @returns {Promise<type.DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+     * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
      */
     remove({ plugins }?: {
         plugins?: string | Iterable<string>;
-    }): Promise<type.DataOutPluginRemoved[]>;
+    }): Promise<DataOutPluginRemoved[]>;
     /**
      * Removes all plugins after unloading them and clearing any event bindings automatically.
      *
-     * @returns {Promise.<type.DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+     * @returns {Promise.<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
      */
-    removeAll(): Promise<type.DataOutPluginRemoved[]>;
+    removeAll(): Promise<DataOutPluginRemoved[]>;
     /**
      * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
      * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
@@ -913,7 +1473,7 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
      *
-     * @returns {Promise<type.DataOutPluginRemoved>} A list of plugin names and removal success state.
+     * @returns {Promise<DataOutPluginRemoved>} A list of plugin names and removal success state.
      * @private
      */
     private _removeEventbus;
@@ -921,7 +1481,7 @@ declare class PluginManager {
      * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
      * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
      *
-     * @returns {Promise.<type.DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+     * @returns {Promise.<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
      * @private
      */
     private _removeAllEventbus;
@@ -960,7 +1520,7 @@ declare class PluginManager {
      *                                                     binding targets.
      */
     setEventbus({ eventbus, eventPrepend }?: {
-        eventbus: any;
+        eventbus: Eventbus;
         eventPrepend?: string;
     }): Promise<void>;
     /**
@@ -973,20 +1533,21 @@ declare class PluginManager {
     /**
      * Set optional parameters.
      *
-     * @param {type.PluginManagerOptions} options - Defines optional parameters to set.
+     * @param {PluginManagerOptions} options - Defines optional parameters to set.
      */
-    setOptions(options?: type.PluginManagerOptions): void;
+    setOptions(options?: PluginManagerOptions): void;
     /**
      * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions` is
      * enabled. This disables the ability for the plugin manager options to be set via events preventing any external
      * code modifying options.
      *
-     * @param {type.PluginManagerOptions} options - Defines optional parameters to set.
+     * @param {PluginManagerOptions} options - Defines optional parameters to set.
      *
      * @private
      */
     private _setOptionsEventbus;
+    #private;
 }
 
 export default PluginManager;
-export { PluginInvokeSupport, escapeTarget, isValidConfig };
+export { Eventbus, EventbusProxy, EventbusSecure, PluginInvokeSupport, escapeTarget, eventbus, isValidConfig, pluginEventbus, testEventbus };
