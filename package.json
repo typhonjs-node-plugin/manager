@@ -1,7 +1,7 @@
 {
   "name": "@typhonjs-plugin/manager",
   "description": "Provides a plugin manager & eventbus for Node & browser (supports ESM & CJS).",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
   "main": "dist/node/PluginManager.js",
