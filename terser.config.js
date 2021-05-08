@@ -1,10 +1,8 @@
 export default {
-   compress: {
-      passes: 3
-   },
-
-   mangle: {
-      toplevel: true
+   compress: false,
+   mangle: false,
+   output: {
+      comments: false
    },
 
    ecma: 2020,
