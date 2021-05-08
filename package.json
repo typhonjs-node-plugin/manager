@@ -28,10 +28,12 @@
   "engines": {
     "node": ">=12.2"
   },
+  "types": "./src/index.d.ts",
   "files": [
     "/npm-shrinkwrap.json",
     "/dist",
-    "/src"
+    "/src",
+    "/types"
   ],
   "homepage": "https://github.com/typhonjs-node-plugin/manager",
   "keywords": [
