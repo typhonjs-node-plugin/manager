@@ -1,3 +1,5 @@
+import { type }   from '../../typedef.js';  // eslint-disable-line no-unused-vars
+
 /**
  * PluginEvent - Provides the data / event passed to all invoked methods in
  * {@link PluginInvokeSupport#invokeSyncEvent}. The `event.data` field is returned to the caller. Before returning
@@ -21,7 +23,7 @@ export default class PluginInvokeEvent
        * Provides the unified event data assigning any pass through data to the copied data supplied. Invoked functions
        * may add to or modify this data.
        *
-       * @type {PluginEventData}
+       * @type {type.PluginEventData}
        */
       this.data = Object.assign(JSON.parse(JSON.stringify(copyProps)), passthruProps);
 

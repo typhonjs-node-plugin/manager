@@ -1,6 +1,8 @@
 import { isIterable }      from '@typhonjs-utils/object';
 
-import PluginInvokeEvent from './PluginInvokeEvent.js';
+import PluginInvokeEvent   from './PluginInvokeEvent.js';
+
+import { type }            from '../../typedef.js';  // eslint-disable-line no-unused-vars
 
 /**
  * Private implementation to invoke asynchronous events. This allows internal calls in PluginManager for
@@ -25,7 +27,7 @@ import PluginInvokeEvent from './PluginInvokeEvent.js';
  *
  * @param {boolean}                    [opts.errorCheck=true] - If false optional error checking is disabled.
  *
- * @returns {Promise<PluginEventData>} The PluginEvent data.
+ * @returns {Promise<type.PluginEventData>} The PluginEvent data.
  */
 export default async function invokeAsyncEvent({ method, manager, copyProps = {}, passthruProps = {}, plugins = void 0,
  options = void 0, errorCheck = true } = {})

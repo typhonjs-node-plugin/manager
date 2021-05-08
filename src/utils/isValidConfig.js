@@ -1,7 +1,9 @@
+import { type }   from '../typedef.js';  // eslint-disable-line no-unused-vars
+
 /**
  * Performs validation of a PluginConfig.
  *
- * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
+ * @param {type.PluginConfig}   pluginConfig A PluginConfig to validate.
  *
  * @returns {boolean} True if the given PluginConfig is valid.
  */

@@ -3,6 +3,8 @@ import { isIterable }   from "@typhonjs-utils/object";
 import invokeAsyncEvent from './invokeAsyncEvent.js';
 import invokeSyncEvent  from './invokeSyncEvent.js';
 
+import { type }         from '../../typedef.js';  // eslint-disable-line no-unused-vars
+
 /**
  * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
  *
@@ -18,7 +20,7 @@ import invokeSyncEvent  from './invokeSyncEvent.js';
  *
  * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
  *
- * @implements {PluginSupportImpl}
+ * @implements {type.PluginSupportImpl}
  */
 export default class PluginInvokeSupport
 {
@@ -37,11 +39,21 @@ export default class PluginInvokeSupport
       this.#pluginManager = pluginManager;
    }
 
+   /**
+    * Returns whether the associated plugin manager has been destroyed.
+    *
+    * @returns {boolean} Returns whether the plugin manager has been destroyed.
+    */
    get isDestroyed()
    {
       return this.#pluginManager === null || this.#pluginManager.isDestroyed;
    }
 
+   /**
+    * Returns the associated plugin manager options.
+    *
+    * @returns {type.PluginManagerOptions} The associated plugin manager options.
+    */
    get options()
    {
       /* c8 ignore next 1 */
@@ -50,6 +62,11 @@ export default class PluginInvokeSupport
       return this.#pluginManager.getOptions();
    }
 
+   /**
+    * Gets the associated plugin manager.
+    *
+    * @returns {PluginManager} The associated plugin manager
+    */
    get pluginManager()
    {
       /* c8 ignore next 1 */
@@ -98,8 +115,7 @@ export default class PluginInvokeSupport
     */
    getMethodNames({ enabled = void 0, plugins = [] } = {})
    {
-      if (this.isDestroyed)
-      { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
+      if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
       if (enabled !== void 0 && typeof enabled !== 'boolean')
       {
@@ -410,7 +426,7 @@ export default class PluginInvokeSupport
     *
     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {Promise<PluginEventData>} The PluginEvent data.
+    * @returns {Promise<type.PluginEventData>} The PluginEvent data.
     */
    async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -528,7 +544,7 @@ export default class PluginInvokeSupport
     *
     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {PluginEventData} The PluginEvent data.
+    * @returns {type.PluginEventData} The PluginEvent data.
     */
    invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
    {
@@ -583,7 +599,7 @@ export default class PluginInvokeSupport
    /**
     * Set optional parameters.
     *
-    * @param {PluginManagerOptions} options Defines optional parameters to set.
+    * @param {type.PluginManagerOptions} options Defines optional parameters to set.
     */
    setOptions(options = {})
    {
