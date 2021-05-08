@@ -661,7 +661,7 @@ export default class PluginManager
     *
     * @param {object}          opts - Options object.
     *
-    * @param {string|RegExp}   [opts.event] - Event name or RegExp to match event names.
+    * @param {string|RegExp}   opts.event - Event name or RegExp to match event names.
     *
     * @returns {string[]|type.DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
