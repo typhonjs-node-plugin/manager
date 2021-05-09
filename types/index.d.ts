@@ -1,3 +1,6 @@
+/**
+ * - PluginManager 'getEnabled' return object format.
+ */
 type DataOutPluginEnabled = {
     /**
      * - The plugin name.
@@ -12,6 +15,9 @@ type DataOutPluginEnabled = {
      */
     loaded: boolean;
 };
+/**
+ * - PluginManager 'getPluginEvents' / 'getPluginByEvent' return object format.
+ */
 type DataOutPluginEvents = {
     /**
      * - The plugin name.
@@ -22,6 +28,9 @@ type DataOutPluginEvents = {
      */
     events: string[];
 };
+/**
+ * - PluginManager 'remove' return object format.
+ */
 type DataOutPluginRemoved = {
     /**
      * - The plugin name.
@@ -36,16 +45,18 @@ type DataOutPluginRemoved = {
      */
     errors: Error[];
 };
+/**
+ * - PluginManager 'add' / 'isValidConfig' plugin configuration.
+ */
 type PluginConfig = {
     /**
-     * - Defines the name of the plugin; if no `target` entry is present the name
-     *   doubles as the target (please see target).
+     * - Defines the name of the plugin; if no `target` entry is present the name doubles
+     * as the target (please see target).
      */
     name: string;
     /**
-     * - Defines the target Node module to load or defines a local file (full
-     *    path or relative to current working directory to load. Target may also be a file
-     *    URL / string or in the browser a web URL.
+     * - Defines the target Node module to load or defines a local file (full path or
+     * relative to current working directory to load. Target may also be a file URL / string or in the browser a web URL.
      */
     target?: string | URL;
     /**
@@ -57,12 +68,16 @@ type PluginConfig = {
      */
     options?: object;
 };
+/**
+ * - PluginManager plugin data object describes a loaded plugin.
+ */
 type PluginData = {
     /**
      * - Data about the plugin manager.
      */
     manager: {
         eventPrepend: string;
+        scopedName: string;
     };
     /**
      * - Optional object hash to associate with plugin.
@@ -73,7 +88,6 @@ type PluginData = {
      */
     plugin: {
         name: string;
-        scopedName: string;
         target: string;
         targetEscaped: string;
         type: string;
@@ -82,48 +96,53 @@ type PluginData = {
 };
 /**
  * - Provides the unified event data including any pass through data to the
- *                                          copied data supplied. Invoked functions may add to or modify this data.
+ * copied data supplied. Invoked functions may add to or modify this data.
  */
 type PluginEventData = object;
+/**
+ * - PluginManager options.
+ */
 type PluginManagerOptions = {
     /**
      * - If true this prevents plugins from being added by `plugins:add` and
-     *    `plugins:add:all` events forcing direct method invocation for addition.
+     * `plugins:add:all` events forcing direct method invocation for addition.
      */
     noEventAdd?: boolean;
     /**
      * - If true this prevents the plugin manager from being destroyed by
-     *   `plugins:destroy:manager` forcing direct method invocation for destruction.
+     * `plugins:destroy:manager` forcing direct method invocation for destruction.
      */
     noEventDestroy?: boolean;
     /**
      * - If true this prevents plugins from being removed by `plugins:remove` and
-     *    `plugins:remove:all` events forcing direct method invocation for removal.
+     * `plugins:remove:all` events forcing direct method invocation for removal.
      */
     noEventRemoval?: boolean;
     /**
      * - If true this prevents the plugins from being enabled / disabled
-     *    from the eventbus via `plugins:set:enabled`.
+     * from the eventbus via `plugins:set:enabled`.
      */
     noEventSetEnabled?: boolean;
     /**
      * - If true this prevents setting options for the plugin manager by
-     *    `plugins:set:options` forcing direct method invocation for setting
-     *    options.
+     * `plugins:set:options` forcing direct method invocation for setting options.
      */
     noEventSetOptions?: boolean;
     /**
      * - If true then when a method fails to be invoked by any plugin an exception
-     *    will be thrown.
+     * will be thrown.
      */
     throwNoMethod?: boolean;
     /**
      * - If true then when no plugin is matched to be invoked an exception will be
-     *    thrown.
+     * thrown.
      */
     throwNoPlugin?: boolean;
 };
 
+/**
+ * Describes the interface that all PluginSupport classes must implement.
+ */
 export interface PluginSupportImpl {
     /**
      * Destroys all managed plugins after unloading them.
