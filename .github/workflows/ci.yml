@@ -50,7 +50,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [12.17.0, 12.x, 14.0.0, 14.x, 15.0.0, 15.x]
+        node-version: [12.17.0, 12.x, 14.0.0, 14.x, 16.0.0, 16.x]
 
     runs-on: ${{ matrix.os }}
 
