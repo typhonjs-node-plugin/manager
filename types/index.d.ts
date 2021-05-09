@@ -153,7 +153,7 @@ export interface PluginSupportImpl {
      *
      * @param {string}     opts.eventPrepend - The current event prepend.
      */
-    destroy({ eventbus, eventPrepend }?: {
+    destroy({ eventbus, eventPrepend }: {
         eventbus: any;
         eventPrepend: string;
     }): Promise<void>;
@@ -173,7 +173,7 @@ export interface PluginSupportImpl {
      *
      * @param {string}     opts.newPrepend - The new event prepend.
      */
-    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }?: {
+    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
         oldEventbus: any;
         newEventbus: any;
         oldPrepend: string;
@@ -185,7 +185,7 @@ export interface PluginSupportImpl {
      *
      * @param {PluginManagerOptions} options Defines optional parameters to set.
      */
-    setOptions(options?: PluginManagerOptions): void;
+    setOptions(options: PluginManagerOptions): void;
 }
 
 /**
@@ -239,7 +239,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @param {string}     opts.eventPrepend - The current event prepend.
      */
-    destroy({ eventbus, eventPrepend }?: {
+    destroy({ eventbus, eventPrepend }: {
         eventbus: any;
         eventPrepend: string;
     }): Promise<void>;
@@ -272,7 +272,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @returns {boolean} - True method is found.
      */
-    hasMethod({ method, plugins }?: {
+    hasMethod({ method, plugins }: {
         method: string;
         plugins?: string | Iterable<string>;
     }): boolean;
@@ -287,7 +287,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
      */
-    invoke({ method, args, plugins }?: {
+    invoke({ method, args, plugins }: {
         method: string;
         args?: any[];
         plugins?: string | Iterable<string>;
@@ -306,7 +306,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @returns {Promise<*|*[]>} A single result or array of results.
      */
-    invokeAsync({ method, args, plugins }?: {
+    invokeAsync({ method, args, plugins }: {
         method: string;
         args?: any[];
         plugins?: string | Iterable<string>;
@@ -326,7 +326,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @returns {Promise<PluginEventData>} The PluginEvent data.
      */
-    invokeAsyncEvent({ method, copyProps, passthruProps, plugins }?: {
+    invokeAsyncEvent({ method, copyProps, passthruProps, plugins }: {
         method: string;
         copyProps?: object;
         passthruProps?: object;
@@ -346,7 +346,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @returns {*|*[]} A single result or array of results.
      */
-    invokeSync({ method, args, plugins }?: {
+    invokeSync({ method, args, plugins }: {
         method: string;
         args?: any[];
         plugins?: string | Iterable<string>;
@@ -366,7 +366,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @returns {PluginEventData} The PluginEvent data.
      */
-    invokeSyncEvent({ method, copyProps, passthruProps, plugins }?: {
+    invokeSyncEvent({ method, copyProps, passthruProps, plugins }: {
         method: string;
         copyProps?: object;
         passthruProps?: object;
@@ -387,7 +387,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @param {string}     opts.newPrepend - The new event prepend.
      */
-    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }?: {
+    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
         oldEventbus: any;
         newEventbus: any;
         oldPrepend: string;
@@ -398,7 +398,7 @@ declare class PluginInvokeSupport implements PluginSupportImpl {
      *
      * @param {PluginManagerOptions} options Defines optional parameters to set.
      */
-    setOptions(options?: PluginManagerOptions): void;
+    setOptions(options: PluginManagerOptions): void;
     #private;
 }
 
@@ -1283,9 +1283,9 @@ declare class PluginManager {
      * existing `instance` to use as the plugin. Then the `target` is chosen as the NPM module / local file to load.
      * By passing in `options` this will be stored and accessible to the plugin during all callbacks.
      *
-     * @param {PluginConfig} pluginConfig - Defines the plugin to load.
+     * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
      *
-     * @param {object}            [moduleData] - Optional object hash to associate with plugin.
+     * @param {object}         [moduleData] - Optional object hash to associate with plugin.
      *
      * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
      */
@@ -1295,18 +1295,18 @@ declare class PluginManager {
      *
      * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
      *
-     * @param {object}                        [moduleData] - Optional object hash to associate with all plugins.
+     * @param {object}                   [moduleData] - Optional object hash to associate with all plugins.
      *
      * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
      */
-    addAll(pluginConfigs?: Iterable<PluginConfig>, moduleData?: object): Promise<PluginData[]>;
+    addAll(pluginConfigs: Iterable<PluginConfig>, moduleData?: object): Promise<PluginData[]>;
     /**
      * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
      * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
      *
-     * @param {PluginConfig} pluginConfig - Defines the plugin to load.
+     * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
      *
-     * @param {object}            [moduleData] - Optional object hash to associate with all plugins.
+     * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
      *
      * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
      * @private
@@ -1316,9 +1316,9 @@ declare class PluginManager {
      * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
      * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
      *
-     * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
+     * @param {Iterable<PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
      *
-     * @param {object}                        [moduleData] - Optional object hash to associate with all plugins.
+     * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
      *
      * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
      * @private
@@ -1335,9 +1335,11 @@ declare class PluginManager {
      * If an eventbus is assigned to this plugin manager then a new EventbusSecure wrapping this eventbus is returned.
      * It is added to `this.#eventbusSecure` so †hat the instances are destroyed when the plugin manager is destroyed.
      *
+     * @param {string}   [name] - Optional name for the EventbusSecure instance.
+     *
      * @returns {EventbusSecure} A secure wrapper for the currently set Eventbus.
      */
-    createEventbusSecure(name?: any): any;
+    createEventbusSecure(name?: string): any;
     /**
      * Destroys all managed plugins after unloading them.
      *
@@ -1393,7 +1395,7 @@ declare class PluginManager {
      *
      * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
      */
-    getPluginByEvent({ event }?: {
+    getPluginByEvent({ event }: {
         event: string | RegExp;
     }): string[] | DataOutPluginEvents[];
     /**
@@ -1409,7 +1411,8 @@ declare class PluginManager {
         plugins?: string | Iterable<string>;
     }): PluginData | PluginData[] | undefined;
     /**
-     * Gets a PluginEntry instance for the given plugin name.
+     * Gets a PluginEntry instance for the given plugin name. This method is primarily for {@link PluginSupportImpl}
+     * classes.
      *
      * @param {string} plugin - The plugin name to get.
      *
@@ -1429,13 +1432,15 @@ declare class PluginManager {
         plugins?: string | Iterable<string>;
     }): string[] | DataOutPluginEvents[];
     /**
-     * Returns an iterable of plugin map keys (plugin names).
+     * Returns an iterable of plugin map keys (plugin names). This method is primarily for {@link PluginSupportImpl}
+     * classes.
      *
      * @returns {Iterable<string>} An iterable of plugin map keys.
      */
     getPluginMapKeys(): Iterable<string>;
     /**
-     * Returns an iterable of plugin map keys (plugin names).
+     * Returns an iterable of plugin map keys (plugin names). This method is primarily for {@link PluginSupportImpl}
+     * classes.
      *
      * @returns {Iterable<PluginEntry>} An iterable of plugin map keys.
      */
@@ -1443,7 +1448,7 @@ declare class PluginManager {
     /**
      * Returns all plugin names or if enabled is set then return plugins matching the enabled state.
      *
-     * @param {object}  [opts] - Options object.
+     * @param {object}  [opts] - Options object. If undefined all plugin names are returned regardless of enabled state.
      *
      * @param {boolean} [opts.enabled] - If enabled is a boolean it will return plugins given their enabled state.
      *
@@ -1460,7 +1465,7 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to check existence.
      *
-     * @returns {boolean} True if a plugin exists.
+     * @returns {boolean} True if given plugin(s) exist.
      */
     hasPlugins({ plugins }?: {
         plugins?: string | Iterable<string>;
@@ -1479,12 +1484,12 @@ declare class PluginManager {
      *
      * @param {object}                  opts - Options object
      *
-     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
+     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
      *
      * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
      */
-    remove({ plugins }?: {
-        plugins?: string | Iterable<string>;
+    remove({ plugins }: {
+        plugins: string | Iterable<string>;
     }): Promise<DataOutPluginRemoved[]>;
     /**
      * Removes all plugins after unloading them and clearing any event bindings automatically.
@@ -1498,7 +1503,7 @@ declare class PluginManager {
      *
      * @param {object}                  opts - Options object
      *
-     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
+     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
      *
      * @returns {Promise<DataOutPluginRemoved>} A list of plugin names and removal success state.
      * @private
@@ -1521,7 +1526,7 @@ declare class PluginManager {
      *
      * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to set state.
      */
-    setEnabled({ enabled, plugins }?: {
+    setEnabled({ enabled, plugins }: {
         enabled: boolean;
         plugins?: string | Iterable<string>;
     }): void;
@@ -1546,7 +1551,7 @@ declare class PluginManager {
      * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
      *                                                     binding targets.
      */
-    setEventbus({ eventbus, eventPrepend }?: {
+    setEventbus({ eventbus, eventPrepend }: {
         eventbus: Eventbus;
         eventPrepend?: string;
     }): Promise<void>;
@@ -1562,7 +1567,7 @@ declare class PluginManager {
      *
      * @param {PluginManagerOptions} options - Defines optional parameters to set.
      */
-    setOptions(options?: PluginManagerOptions): void;
+    setOptions(options: PluginManagerOptions): void;
     /**
      * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions` is
      * enabled. This disables the ability for the plugin manager options to be set via events preventing any external
