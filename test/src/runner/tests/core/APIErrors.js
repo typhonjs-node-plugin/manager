@@ -172,17 +172,15 @@ export default class APIErrors
 
          it('pluginManager - missing object parameter - TypeError', async () =>
          {
-            expect(() => pluginManager.getPluginByEvent()).to.throw(TypeError,
-             `Cannot destructure property 'event' of 'undefined' as it is undefined.`);
+            // Can't check actual error message as it is just slightly different on Node 12.2.0
 
-            await expect(pluginManager.remove()).to.be.rejectedWith(TypeError,
-             `Cannot destructure property 'plugins' of 'undefined' as it is undefined.`);
+            expect(() => pluginManager.getPluginByEvent()).to.throw(TypeError);
 
-            expect(() => pluginManager.setEnabled()).to.throw(TypeError,
-             `Cannot destructure property 'enabled' of 'undefined' as it is undefined.`);
+            await expect(pluginManager.remove()).to.be.rejectedWith(TypeError);
 
-            await expect(pluginManager.setEventbus()).to.be.rejectedWith(TypeError,
-             `Cannot destructure property 'eventbus' of 'undefined' as it is undefined.`);
+            expect(() => pluginManager.setEnabled()).to.throw(TypeError);
+
+            await expect(pluginManager.setEventbus()).to.be.rejectedWith(TypeError);
          });
 
          it('getEnabled - throws w/ options.plugins not a string or iterable', () =>

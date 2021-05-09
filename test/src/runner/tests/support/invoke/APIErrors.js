@@ -63,26 +63,21 @@ export default class APIErrors
 
          it('throws - TypeError', async () =>
          {
-            expect(() => invokeSupport.hasMethod()).to.throw(TypeError,
-             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+            // Can't check actual error message as it is just slightly different on Node 12.2.0
 
-            expect(() => invokeSupport.invoke()).to.throw(TypeError,
-             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+            expect(() => invokeSupport.hasMethod()).to.throw(TypeError);
 
-            await expect(invokeSupport.invokeAsync()).to.be.rejectedWith(TypeError,
-             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+            expect(() => invokeSupport.invoke()).to.throw(TypeError);
 
-            await expect(invokeSupport.invokeAsyncEvent()).to.be.rejectedWith(TypeError,
-             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+            await expect(invokeSupport.invokeAsync()).to.be.rejectedWith(TypeError);
 
-            expect(() => invokeSupport.invokeSync()).to.throw(TypeError,
-             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+            await expect(invokeSupport.invokeAsyncEvent()).to.be.rejectedWith(TypeError);
 
-            expect(() => invokeSupport.invokeSyncEvent()).to.throw(TypeError,
-             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+            expect(() => invokeSupport.invokeSync()).to.throw(TypeError);
 
-            expect(() => invokeSupport.setEventbus()).to.throw(TypeError,
-             `Cannot destructure property 'oldEventbus' of 'undefined' as it is undefined.`);
+            expect(() => invokeSupport.invokeSyncEvent()).to.throw(TypeError);
+
+            expect(() => invokeSupport.setEventbus()).to.throw(TypeError);
          });
       });
 
