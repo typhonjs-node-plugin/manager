@@ -130,7 +130,7 @@ export default class APIErrors
             expect(() => pluginManager.getOptions()).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => pluginManager.getPluginByEvent()).to.throw(ReferenceError,
+            expect(() => pluginManager.getPluginByEvent({ event: 'foobar' })).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
             expect(() => pluginManager.getPluginData()).to.throw(ReferenceError,
@@ -154,20 +154,35 @@ export default class APIErrors
             expect(() => pluginManager.hasPlugins()).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            await expect(pluginManager.remove()).to.be.rejectedWith(ReferenceError,
+            await expect(pluginManager.remove({ plugins: 'foobar' })).to.be.rejectedWith(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
             await expect(pluginManager.removeAll()).to.be.rejectedWith(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => pluginManager.setEnabled()).to.throw(ReferenceError,
+            expect(() => pluginManager.setEnabled({ enabled: true })).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            await expect(pluginManager.setEventbus()).to.be.rejectedWith(ReferenceError,
+            await expect(pluginManager.setEventbus({ eventbus: null })).to.be.rejectedWith(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
             expect(() => pluginManager.setOptions()).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
+         });
+
+         it('pluginManager - missing object parameter - TypeError', async () =>
+         {
+            expect(() => pluginManager.getPluginByEvent()).to.throw(TypeError,
+             `Cannot destructure property 'event' of 'undefined' as it is undefined.`);
+
+            await expect(pluginManager.remove()).to.be.rejectedWith(TypeError,
+             `Cannot destructure property 'plugins' of 'undefined' as it is undefined.`);
+
+            expect(() => pluginManager.setEnabled()).to.throw(TypeError,
+             `Cannot destructure property 'enabled' of 'undefined' as it is undefined.`);
+
+            await expect(pluginManager.setEventbus()).to.be.rejectedWith(TypeError,
+             `Cannot destructure property 'eventbus' of 'undefined' as it is undefined.`);
          });
 
          it('getEnabled - throws w/ options.plugins not a string or iterable', () =>

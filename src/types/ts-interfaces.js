@@ -13,7 +13,7 @@ export interface PluginSupportImpl {
      *
      * @param {string}     opts.eventPrepend - The current event prepend.
      */
-    destroy({ eventbus, eventPrepend }?: {
+    destroy({ eventbus, eventPrepend }: {
         eventbus: any;
         eventPrepend: string;
     }): Promise<void>;
@@ -33,7 +33,7 @@ export interface PluginSupportImpl {
      *
      * @param {string}     opts.newPrepend - The new event prepend.
      */
-    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }?: {
+    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
         oldEventbus: any;
         newEventbus: any;
         oldPrepend: string;
@@ -45,7 +45,7 @@ export interface PluginSupportImpl {
      *
      * @param {PluginManagerOptions} options Defines optional parameters to set.
      */
-    setOptions(options?: PluginManagerOptions): void;
+    setOptions(options: PluginManagerOptions): void;
 }
 `;
 

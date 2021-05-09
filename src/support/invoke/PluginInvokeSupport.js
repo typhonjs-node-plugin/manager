@@ -82,7 +82,7 @@ export default class PluginInvokeSupport
     *
     * @param {string}     opts.eventPrepend - The current event prepend.
     */
-   async destroy({ eventbus, eventPrepend } = {})
+   async destroy({ eventbus, eventPrepend })
    {
       if (eventbus !== null && eventbus !== void 0)
       {
@@ -184,7 +184,7 @@ export default class PluginInvokeSupport
     *
     * @returns {boolean} - True method is found.
     */
-   hasMethod({ method, plugins = [] } = {})
+   hasMethod({ method, plugins = [] })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -239,7 +239,7 @@ export default class PluginInvokeSupport
     *
     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     */
-   invoke({ method, args = void 0, plugins = void 0 } = {})
+   invoke({ method, args = void 0, plugins = void 0 })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -321,7 +321,7 @@ export default class PluginInvokeSupport
     *
     * @returns {Promise<*|*[]>} A single result or array of results.
     */
-   async invokeAsync({ method, args = void 0, plugins = void 0 } = {})
+   async invokeAsync({ method, args = void 0, plugins = void 0 })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -426,7 +426,7 @@ export default class PluginInvokeSupport
     *
     * @returns {Promise<PluginEventData>} The PluginEvent data.
     */
-   async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
+   async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -448,7 +448,7 @@ export default class PluginInvokeSupport
     *
     * @returns {*|*[]} A single result or array of results.
     */
-   invokeSync({ method, args = void 0, plugins = void 0 } = {})
+   invokeSync({ method, args = void 0, plugins = void 0 })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -544,7 +544,7 @@ export default class PluginInvokeSupport
     *
     * @returns {PluginEventData} The PluginEvent data.
     */
-   invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 } = {})
+   invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -567,7 +567,7 @@ export default class PluginInvokeSupport
     *
     * @param {string}     opts.newPrepend - The new event prepend.
     */
-   setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend } = {})
+   setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -599,7 +599,7 @@ export default class PluginInvokeSupport
     *
     * @param {PluginManagerOptions} options Defines optional parameters to set.
     */
-   setOptions(options = {})
+   setOptions(options)
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
    }

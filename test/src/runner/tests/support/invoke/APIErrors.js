@@ -21,29 +21,68 @@ export default class APIErrors
             expect(() => invokeSupport.getMethodNames()).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => invokeSupport.hasMethod()).to.throw(ReferenceError,
+            expect(() => invokeSupport.hasMethod({ method: 'foobar' })).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => invokeSupport.invoke()).to.throw(ReferenceError,
+            expect(() => invokeSupport.invoke({ method: 'foobar' })).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            await expect(invokeSupport.invokeAsync()).to.be.rejectedWith(ReferenceError,
+            await expect(invokeSupport.invokeAsync({ method: 'foobar' })).to.be.rejectedWith(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            await expect(invokeSupport.invokeAsyncEvent()).to.be.rejectedWith(ReferenceError,
+            await expect(invokeSupport.invokeAsyncEvent({ method: 'foobar' })).to.be.rejectedWith(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => invokeSupport.invokeSync()).to.throw(ReferenceError,
+            expect(() => invokeSupport.invokeSync({ method: 'foobar' })).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => invokeSupport.invokeSyncEvent()).to.throw(ReferenceError,
+            expect(() => invokeSupport.invokeSyncEvent({ method: 'foobar' })).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
 
-            expect(() => invokeSupport.setEventbus()).to.throw(ReferenceError,
-             'This PluginManager instance has been destroyed.');
+            expect(() => invokeSupport.setEventbus({
+               oldEventbus: null,
+               newEventbus: null,
+               oldPrepend: '',
+               newPrepend: ''
+            })).to.throw(ReferenceError, 'This PluginManager instance has been destroyed.');
 
             expect(() => invokeSupport.setOptions()).to.throw(ReferenceError,
              'This PluginManager instance has been destroyed.');
+         });
+      });
+
+      describe('PluginInvokeSupport - missing object parameter:', () =>
+      {
+         let invokeSupport, pluginManager;
+
+         beforeEach(() =>
+         {
+            pluginManager = new PluginManager();
+            invokeSupport = new PluginInvokeSupport(pluginManager);
+         });
+
+         it('throws - TypeError', async () =>
+         {
+            expect(() => invokeSupport.hasMethod()).to.throw(TypeError,
+             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+
+            expect(() => invokeSupport.invoke()).to.throw(TypeError,
+             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+
+            await expect(invokeSupport.invokeAsync()).to.be.rejectedWith(TypeError,
+             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+
+            await expect(invokeSupport.invokeAsyncEvent()).to.be.rejectedWith(TypeError,
+             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+
+            expect(() => invokeSupport.invokeSync()).to.throw(TypeError,
+             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+
+            expect(() => invokeSupport.invokeSyncEvent()).to.throw(TypeError,
+             `Cannot destructure property 'method' of 'undefined' as it is undefined.`);
+
+            expect(() => invokeSupport.setEventbus()).to.throw(TypeError,
+             `Cannot destructure property 'oldEventbus' of 'undefined' as it is undefined.`);
          });
       });
 

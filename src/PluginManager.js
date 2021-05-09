@@ -241,7 +241,7 @@ export default class PluginManager
          this.#pluginSupport.push(new options.PluginSupport(this));
       }
 
-      this.setOptions(options.manager);
+      this.setOptions(options.manager || {});
 
       this.setEventbus({
          eventbus: options.eventbus !== void 0 ? options.eventbus : new Eventbus(),
@@ -255,9 +255,9 @@ export default class PluginManager
     * existing `instance` to use as the plugin. Then the `target` is chosen as the NPM module / local file to load.
     * By passing in `options` this will be stored and accessible to the plugin during all callbacks.
     *
-    * @param {PluginConfig} pluginConfig - Defines the plugin to load.
+    * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
     *
-    * @param {object}            [moduleData] - Optional object hash to associate with plugin.
+    * @param {object}         [moduleData] - Optional object hash to associate with plugin.
     *
     * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
     */
@@ -392,11 +392,11 @@ export default class PluginManager
     *
     * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
     *
-    * @param {object}                        [moduleData] - Optional object hash to associate with all plugins.
+    * @param {object}                   [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
     */
-   async addAll(pluginConfigs = [], moduleData)
+   async addAll(pluginConfigs, moduleData)
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -418,9 +418,9 @@ export default class PluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {PluginConfig} pluginConfig - Defines the plugin to load.
+    * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
     *
-    * @param {object}            [moduleData] - Optional object hash to associate with all plugins.
+    * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
     * @private
@@ -437,9 +437,9 @@ export default class PluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
+    * @param {Iterable<PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
     *
-    * @param {object}                        [moduleData] - Optional object hash to associate with all plugins.
+    * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
     * @private
@@ -476,6 +476,8 @@ export default class PluginManager
    /**
     * If an eventbus is assigned to this plugin manager then a new EventbusSecure wrapping this eventbus is returned.
     * It is added to `this.#eventbusSecure` so †hat the instances are destroyed when the plugin manager is destroyed.
+    *
+    * @param {string}   [name] - Optional name for the EventbusSecure instance.
     *
     * @returns {EventbusSecure} A secure wrapper for the currently set Eventbus.
     */
@@ -663,7 +665,7 @@ export default class PluginManager
     *
     * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
-   getPluginByEvent({ event = void 0 } = {})
+   getPluginByEvent({ event })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -757,7 +759,8 @@ export default class PluginManager
    }
 
    /**
-    * Gets a PluginEntry instance for the given plugin name.
+    * Gets a PluginEntry instance for the given plugin name. This method is primarily for {@link PluginSupportImpl}
+    * classes.
     *
     * @param {string} plugin - The plugin name to get.
     *
@@ -835,7 +838,8 @@ export default class PluginManager
    }
 
    /**
-    * Returns an iterable of plugin map keys (plugin names).
+    * Returns an iterable of plugin map keys (plugin names). This method is primarily for {@link PluginSupportImpl}
+    * classes.
     *
     * @returns {Iterable<string>} An iterable of plugin map keys.
     */
@@ -847,7 +851,8 @@ export default class PluginManager
    }
 
    /**
-    * Returns an iterable of plugin map keys (plugin names).
+    * Returns an iterable of plugin map keys (plugin names). This method is primarily for {@link PluginSupportImpl}
+    * classes.
     *
     * @returns {Iterable<PluginEntry>} An iterable of plugin map keys.
     */
@@ -861,7 +866,7 @@ export default class PluginManager
    /**
     * Returns all plugin names or if enabled is set then return plugins matching the enabled state.
     *
-    * @param {object}  [opts] - Options object.
+    * @param {object}  [opts] - Options object. If undefined all plugin names are returned regardless of enabled state.
     *
     * @param {boolean} [opts.enabled] - If enabled is a boolean it will return plugins given their enabled state.
     *
@@ -896,7 +901,7 @@ export default class PluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to check existence.
     *
-    * @returns {boolean} True if a plugin exists.
+    * @returns {boolean} True if given plugin(s) exist.
     */
    hasPlugins({ plugins = [] } = {})
    {
@@ -950,11 +955,11 @@ export default class PluginManager
     *
     * @param {object}                  opts - Options object
     *
-    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
+    * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
     *
     * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
-   async remove({ plugins = [] } = {})
+   async remove({ plugins })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1053,7 +1058,7 @@ export default class PluginManager
     *
     * @param {object}                  opts - Options object
     *
-    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to remove.
+    * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
     *
     * @returns {Promise<DataOutPluginRemoved>} A list of plugin names and removal success state.
     * @private
@@ -1090,7 +1095,7 @@ export default class PluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to set state.
     */
-   setEnabled({ enabled, plugins = [] } = {})
+   setEnabled({ enabled, plugins = [] })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1170,7 +1175,7 @@ export default class PluginManager
     * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                     binding targets.
     */
-   async setEventbus({ eventbus, eventPrepend = 'plugins' } = {})
+   async setEventbus({ eventbus, eventPrepend = 'plugins' })
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1277,7 +1282,7 @@ export default class PluginManager
     *
     * @param {PluginManagerOptions} options - Defines optional parameters to set.
     */
-   setOptions(options = {})
+   setOptions(options)
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
@@ -1318,7 +1323,7 @@ export default class PluginManager
     *
     * @private
     */
-   _setOptionsEventbus(options = {})
+   _setOptionsEventbus(options)
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }

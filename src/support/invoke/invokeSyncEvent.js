@@ -27,7 +27,7 @@ import PluginInvokeEvent   from './PluginInvokeEvent.js';
  * @returns {PluginEventData} The PluginEvent data.
  */
 export default function invokeSyncEvent({ method, manager, copyProps = {}, passthruProps = {}, plugins = void 0,
- options = void 0, errorCheck = true } = {})
+ options = void 0, errorCheck = true })
 {
    if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }
    if (typeof passthruProps !== 'object') { throw new TypeError(`'passthruProps' is not an object.`); }
