@@ -4,6 +4,17 @@ import invokeAsyncEvent from './invokeAsyncEvent.js';
 import invokeSyncEvent  from './invokeSyncEvent.js';
 
 /**
+ * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
+ * a wrapped instance of PluginManager depending on the use case.
+ *
+ * There are two types of invocation methods the first spreads an array of arguments to the invoked method. The second
+ * constructs a {@link PluginInvokeEvent} to pass to the method with a single parameter.
+ *
+ * TODO: more info and wiki link
+ *
+ * When added to a PluginManager through constructor initialization the following events are registered on the plugin
+ * manager eventbus:
+ *
  * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
  *
  * `plugins:async:invoke:event` - {@link PluginInvokeSupport#invokeAsyncEvent}
@@ -17,6 +28,20 @@ import invokeSyncEvent  from './invokeSyncEvent.js';
  * `plugins:sync:invoke` - {@link PluginInvokeSupport#invokeSync}
  *
  * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
+ *
+ * @example
+ * // One can also indirectly invoke any method of the plugin.
+ * // Any plugin with a method named `aCoolMethod` is invoked.
+ * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
+ *
+ * // A specific invocation just for the 'an-npm-plugin-enabled-module'
+ * eventbus.triggerSync('plugins:invoke:sync:event', {
+ *    method: 'aCoolMethod',
+ *    plugins: 'an-npm-plugin-enabled-module'
+ * });
+ *
+ * // There are two other properties `copyProps` and `passthruProps` which can be set with object data to _copy_ or
+ * // _pass through_ to the invoked method.
  *
  * @implements {PluginSupportImpl}
  */

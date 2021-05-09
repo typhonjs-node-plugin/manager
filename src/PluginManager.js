@@ -65,11 +65,34 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * It is recommended to interact with the plugin manager eventbus through an eventbus proxy. The
  * `createEventbusProxy` method will return a proxy to the default or currently set eventbus.
  *
- * If eventbus functionality is enabled it is important especially if using a process / global level eventbus such as
- * `@typhonjs-plugin/eventbus/instances` to call {@link PluginManager#destroy} to clean up all plugin eventbus
- * resources and the plugin manager event bindings; this is primarily a testing concern.
+ * It should be noted that this module reexports `@typhonjs-plugin/eventbus` which are available as named exports on
+ * this module:
+ * import {
+ *   Eventbus,
+ *   EventbusProxy,
+ *   EventbusSecure,
+ *   eventbus,
+ *   pluginEventbus,
+ *   testEventbus
+ * } from '@typhonjs-plugin/manager';
  *
+ * This reexport is for convenience as it provides one single distribution for Node & browser usage.
+ *
+ * If external eventbus functionality is enabled by passing in an eventbus in the constructor of PluginManager it is
+ * important especially if using an existing process / global level eventbus instance from either this module or
+ * `@typhonjs-plugin/eventbus` to call {@link PluginManager#destroy} to clean up all plugin eventbus resources and the
+ * plugin manager event bindings; this is primarily a testing concern when running repeated tests over a reused
+ * eventbus.
+ *
+ * For more information on Eventbus functionality please see:
  * @see https://www.npmjs.com/package/@typhonjs-plugin/eventbus
+ *
+ * The PluginManager instance can be extended through runtime composition by passing in _classes_ that implement
+ * {@link PluginSupportImpl}. One such implementation is available {@link PluginInvokeSupport} which enables directly
+ * invoking methods of all or specific plugins. Please see the documentation for PluginInvokeSupport for more details.
+ *
+ * Several abbreviated examples follow. Please see the wiki for more details:
+ * TODO: add wiki link
  *
  * @example
  * import PluginManager from '@typhonjs-plugin/manager';
@@ -90,38 +113,6 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * assert(eventbus.triggerSync('cool:event') === true);
  * assert(eventbus.triggerSync('hot:event') === false);
  *
- * // One can also indirectly invoke any method of the plugin.
- * // Any plugin with a method named `aCoolMethod` is invoked.
- * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
- *
- * // A specific invocation just for the 'an-npm-plugin-enabled-module'
- * eventbus.triggerSync('plugins:invoke:sync:event', {
- *    method: 'aCoolMethod',
- *    plugins: 'an-npm-plugin-enabled-module'
- * });
- *
- * // The 3rd parameter will make a copy of the hash and the 4th defines a pass through object hash sending a single
- * // event / object hash to the invoked method.
- *
- * // -----------------------
- *
- * // Given that `@typhonjs-plugin/eventbus/instances` defines a global / process level eventbus you can import it in
- * // an entirely different file or even NPM module and invoke methods of loaded plugins like this:
- *
- * import eventbus from '@typhonjs-plugin/eventbus/instances';
- *
- * // Any plugin with a method named `aCoolMethod` is invoked.
- * eventbus.triggerSync('plugins:invoke', 'aCoolMethod');
- *
- * assert(eventbus.triggerSync('cool:event') === true);
- *
- * // Removes the plugin and unregisters events.
- * await eventbus.triggerAsync('plugins:remove', 'an-npm-plugin-enabled-module');
- *s
- * assert(eventbus.triggerSync('cool:event') === true); // Will now fail!
- *
- * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the
- * // main thread of execution scope to remove all plugins and the plugin manager event bindings!
  */
 export default class PluginManager
 {
