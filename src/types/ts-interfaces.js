@@ -1,5 +1,9 @@
 const interfaces =
-`export interface PluginSupportImpl {
+`
+/**
+ * Describes the interface that all PluginSupport classes must implement.
+ */
+export interface PluginSupportImpl {
     /**
      * Destroys all managed plugins after unloading them.
      *

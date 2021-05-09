@@ -7,9 +7,11 @@ import interfaces from './src/types/ts-interfaces.js';
 
 let banner = fs.readFileSync('./lib/types/typedef.d.ts', 'utf-8');
 
-banner += `\n${interfaces}`;
+banner += interfaces;
 
-// Rollup the TS definitions generated in ./lib and add separate typedef.d.ts as a banner.
+// Rollup the TS definitions generated in ./lib and add separate typedef.d.ts and interfaces as a banner.
+
+// Use plugin-alias to replace @typhonjs-plugin/eventbus exports with reference to the local TS definitions.
 
 export default [
    {
@@ -18,7 +20,10 @@ export default [
       plugins: [
          alias({
             entries: [
-               { find: '@typhonjs-plugin/eventbus', replacement: '../node_modules/@typhonjs-plugin/eventbus/types/index.d.ts' }
+               {
+                  find: '@typhonjs-plugin/eventbus',
+                  replacement: '../node_modules/@typhonjs-plugin/eventbus/types/index.d.ts'
+               }
             ]
          }),
          dts()
