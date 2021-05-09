@@ -52,7 +52,7 @@
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "npm run bundle-browser",
     "pretest-node": "npm run bundle",
-    "prepublishOnly": "npm run types && git diff-index --quiet HEAD -- && npm run test-node && npm run test-browser",
+    "prepublishOnly": "npm run types && npm run test-node && npm run test-browser",
     "test-browser": "node ./test/src/browser/run.js",
     "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000",
     "types": "npx -p typescript tsc --project tsconfig.types.json && rollup --config rollup.config.types.js"
