@@ -62,7 +62,7 @@ type PluginConfig = {
     /**
      * - Defines an existing object instance to use as the plugin.
      */
-    instance?: string;
+    instance?: object;
     /**
      * - Defines an object of options for the plugin.
      */

@@ -35,7 +35,7 @@
  * @property {string|URL}  [target] - Defines the target Node module to load or defines a local file (full path or
  * relative to current working directory to load. Target may also be a file URL / string or in the browser a web URL.
  *
- * @property {string}      [instance] - Defines an existing object instance to use as the plugin.
+ * @property {object}      [instance] - Defines an existing object instance to use as the plugin.
  *
  * @property {object}      [options] - Defines an object of options for the plugin.
  */
