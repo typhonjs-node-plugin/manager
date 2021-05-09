@@ -100,32 +100,3 @@
  * @property {boolean}   [throwNoPlugin] - If true then when no plugin is matched to be invoked an exception will be
  *                                         thrown.
  */
-
-// TODO THIS NEEDS REFINEMENT
-// /**
-//  * Interface for PluginSupport implementation classes.
-//  *
-//  * @interface PluginSupportImpl
-//  */
-//
-// /**
-//  * A method to invoke when the plugin manager is destroyed.
-//  *
-//  * @function
-//  * @async
-//  * @name PluginSupportImpl#destroy
-//  */
-//
-// /**
-//  * A method to invoke when the plugin manager eventbus is set.
-//  *
-//  * @function
-//  * @name PluginSupportImpl#setEventbus
-//  */
-//
-// /**
-//  * A method to invoke when the plugin manager options are set.
-//  *
-//  * @function
-//  * @name PluginSupportImpl#setOptions
-//  */
