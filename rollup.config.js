@@ -1,11 +1,15 @@
+import fs            from 'fs';
 import path          from 'path';
 
 import { babel }     from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
 import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
-// Import config files for Terser and Postcss; refer to respective documentation for more information.
+// Import config file for Terser
 import terserConfig from './terser.config';
+
+// Add local typedefs.js file to the end of the bundles as a footer.
+const footer = fs.readFileSync('./src/types/typedef.js', 'utf-8');
 
 // The deploy path for the distribution for browser & Node.
 const s_DIST_PATH_BROWSER = './dist/browser';
@@ -14,13 +18,11 @@ const s_DIST_PATH_NODE = './dist/node';
 // Produce sourcemaps or not.
 const s_SOURCEMAP = true;
 
-// Adds Terser to the output plugins for server bundle if true.
+// Adds Terser to the output plugins for server bundle if true; testing on Node 12.2.0 w/ ESM will set this to false.
 const s_MINIFY = typeof process.env.ROLLUP_MINIFY === 'string' ? process.env.ROLLUP_MINIFY === 'true' : true;
 
 export default () =>
 {
-   // Defines potential output plugins to use conditionally if the .env file indicates the bundles should be
-   // minified / mangled.
    const outputPlugins = [];
    if (s_MINIFY)
    {
@@ -36,6 +38,7 @@ export default () =>
          input: ['src/index.js'],
          output: [{
             file: `${s_DIST_PATH_NODE}${path.sep}PluginManager.js`,
+            footer,
             format: 'es',
             plugins: outputPlugins,
             preferConst: true,
@@ -52,6 +55,7 @@ export default () =>
          input: ['src/index.js'],
          output: [{
             file: `${s_DIST_PATH_BROWSER}${path.sep}PluginManager.js`,
+            footer,
             format: 'es',
             plugins: outputPlugins,
             preferConst: true,
