@@ -189,6 +189,17 @@ export interface PluginSupportImpl {
 }
 
 /**
+ * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
+ * a wrapped instance of PluginManager depending on the use case.
+ *
+ * There are two types of invocation methods the first spreads an array of arguments to the invoked method. The second
+ * constructs a {@link PluginInvokeEvent} to pass to the method with a single parameter.
+ *
+ * TODO: more info and wiki link
+ *
+ * When added to a PluginManager through constructor initialization the following events are registered on the plugin
+ * manager eventbus:
+ *
  * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
  *
  * `plugins:async:invoke:event` - {@link PluginInvokeSupport#invokeAsyncEvent}
@@ -202,6 +213,20 @@ export interface PluginSupportImpl {
  * `plugins:sync:invoke` - {@link PluginInvokeSupport#invokeSync}
  *
  * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
+ *
+ * @example
+ * // One can also indirectly invoke any method of the plugin.
+ * // Any plugin with a method named `aCoolMethod` is invoked.
+ * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
+ *
+ * // A specific invocation just for the 'an-npm-plugin-enabled-module'
+ * eventbus.triggerSync('plugins:invoke:sync:event', {
+ *    method: 'aCoolMethod',
+ *    plugins: 'an-npm-plugin-enabled-module'
+ * });
+ *
+ * // There are two other properties `copyProps` and `passthruProps` which can be set with object data to _copy_ or
+ * // _pass through_ to the invoked method.
  *
  * @implements {PluginSupportImpl}
  */
@@ -1116,6 +1141,18 @@ declare class PluginEntry {
      */
     get enabled(): boolean;
     /**
+     * Set any associated import.meta data.
+     *
+     * @param {object} importmeta - import.meta data.
+     */
+    set importmeta(arg: any);
+    /**
+     * Get any stored import.meta object.
+     *
+     * @returns {undefined|object} Any set import.meta info.
+     */
+    get importmeta(): any;
+    /**
      * Set associated EventbusProxy.
      *
      * @param {EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
@@ -1127,6 +1164,12 @@ declare class PluginEntry {
      * @returns {EventbusProxy} Associated EventbusProxy.
      */
     get eventbusProxy(): any;
+    /**
+     * Set plugin instance.
+     *
+     * @param {object} instance - The plugin instance.
+     */
+    set instance(arg: any);
     /**
      * Get plugin instance.
      *
@@ -1195,11 +1238,34 @@ declare class PluginEntry {
  * It is recommended to interact with the plugin manager eventbus through an eventbus proxy. The
  * `createEventbusProxy` method will return a proxy to the default or currently set eventbus.
  *
- * If eventbus functionality is enabled it is important especially if using a process / global level eventbus such as
- * `@typhonjs-plugin/eventbus/instances` to call {@link PluginManager#destroy} to clean up all plugin eventbus
- * resources and the plugin manager event bindings; this is primarily a testing concern.
+ * It should be noted that this module reexports `@typhonjs-plugin/eventbus` which are available as named exports on
+ * this module:
+ * import {
+ *   Eventbus,
+ *   EventbusProxy,
+ *   EventbusSecure,
+ *   eventbus,
+ *   pluginEventbus,
+ *   testEventbus
+ * } from '@typhonjs-plugin/manager';
  *
+ * This reexport is for convenience as it provides one single distribution for Node & browser usage.
+ *
+ * If external eventbus functionality is enabled by passing in an eventbus in the constructor of PluginManager it is
+ * important especially if using an existing process / global level eventbus instance from either this module or
+ * `@typhonjs-plugin/eventbus` to call {@link PluginManager#destroy} to clean up all plugin eventbus resources and the
+ * plugin manager event bindings; this is primarily a testing concern when running repeated tests over a reused
+ * eventbus.
+ *
+ * For more information on Eventbus functionality please see:
  * @see https://www.npmjs.com/package/@typhonjs-plugin/eventbus
+ *
+ * The PluginManager instance can be extended through runtime composition by passing in _classes_ that implement
+ * {@link PluginSupportImpl}. One such implementation is available {@link PluginInvokeSupport} which enables directly
+ * invoking methods of all or specific plugins. Please see the documentation for PluginInvokeSupport for more details.
+ *
+ * Several abbreviated examples follow. Please see the wiki for more details:
+ * TODO: add wiki link
  *
  * @example
  * import PluginManager from '@typhonjs-plugin/manager';
@@ -1220,38 +1286,6 @@ declare class PluginEntry {
  * assert(eventbus.triggerSync('cool:event') === true);
  * assert(eventbus.triggerSync('hot:event') === false);
  *
- * // One can also indirectly invoke any method of the plugin.
- * // Any plugin with a method named `aCoolMethod` is invoked.
- * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
- *
- * // A specific invocation just for the 'an-npm-plugin-enabled-module'
- * eventbus.triggerSync('plugins:invoke:sync:event', {
- *    method: 'aCoolMethod',
- *    plugins: 'an-npm-plugin-enabled-module'
- * });
- *
- * // The 3rd parameter will make a copy of the hash and the 4th defines a pass through object hash sending a single
- * // event / object hash to the invoked method.
- *
- * // -----------------------
- *
- * // Given that `@typhonjs-plugin/eventbus/instances` defines a global / process level eventbus you can import it in
- * // an entirely different file or even NPM module and invoke methods of loaded plugins like this:
- *
- * import eventbus from '@typhonjs-plugin/eventbus/instances';
- *
- * // Any plugin with a method named `aCoolMethod` is invoked.
- * eventbus.triggerSync('plugins:invoke', 'aCoolMethod');
- *
- * assert(eventbus.triggerSync('cool:event') === true);
- *
- * // Removes the plugin and unregisters events.
- * await eventbus.triggerAsync('plugins:remove', 'an-npm-plugin-enabled-module');
- *s
- * assert(eventbus.triggerSync('cool:event') === true); // Will now fail!
- *
- * // In this case though when using the global eventbus be mindful to always call `pluginManager.destroy()` in the
- * // main thread of execution scope to remove all plugins and the plugin manager event bindings!
  */
 declare class PluginManager {
     /**
@@ -1479,10 +1513,28 @@ declare class PluginManager {
      */
     isValidConfig(pluginConfig: PluginConfig): boolean;
     /**
+     * Unloads / reloads the plugin invoking `onPluginUnload` / then `onPluginReload`
+     *
+     * @param {object}   opts - Options object.
+     *
+     * @param {string}   opts.plugin - Plugin name to reload.
+     *
+     * @param {object}   [opts.instance] - Optional instance to replace.
+     *
+     * @param {boolean}  [opts.silent] - Does not trigger any reload notification on the eventbus.
+     *
+     * @returns {Promise<boolean>} Result of reload attempt.
+     */
+    reload({ plugin, instance, silent }: {
+        plugin: string;
+        instance?: object;
+        silent?: boolean;
+    }): Promise<boolean>;
+    /**
      * Removes a plugin by name or all names in an iterable list unloading them and clearing any event bindings
      * automatically.
      *
-     * @param {object}                  opts - Options object
+     * @param {object}                  opts - Options object.
      *
      * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
      *
@@ -1569,8 +1621,8 @@ declare class PluginManager {
      */
     setOptions(options: PluginManagerOptions): void;
     /**
-     * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions` is
-     * enabled. This disables the ability for the plugin manager options to be set via events preventing any external
+     * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions`
+     * is enabled. This disables the ability for the plugin manager options to be set via events preventing any external
      * code modifying options.
      *
      * @param {PluginManagerOptions} options - Defines optional parameters to set.
