@@ -176,6 +176,8 @@ export default class APIErrors
 
             expect(() => pluginManager.getPluginByEvent()).to.throw(TypeError);
 
+            await expect(pluginManager.reload()).to.be.rejectedWith(TypeError);
+
             await expect(pluginManager.remove()).to.be.rejectedWith(TypeError);
 
             expect(() => pluginManager.setEnabled()).to.throw(TypeError);
@@ -217,6 +219,24 @@ export default class APIErrors
          {
             expect(() => pluginManager.hasPlugins({ plugins: false })).to.throw(TypeError,
              `'plugins' is not a string or iterable.`);
+         });
+
+         it('reload - throws w/ options.plugin not a string', async () =>
+         {
+            await expect(pluginManager.reload({ plugin: false })).to.be.rejectedWith(TypeError,
+             `'plugin' is not a string.`);
+         });
+
+         it('reload - throws w/ options.instance not an object', async () =>
+         {
+            await expect(pluginManager.reload({ plugin: 'foobar', instance: false })).to.be.rejectedWith(TypeError,
+             `'instance' is not an object.`);
+         });
+
+         it('reload - throws w/ options.silent not a boolean', async () =>
+         {
+            await expect(pluginManager.reload({ plugin: 'foobar', silent: 0 })).to.be.rejectedWith(TypeError,
+             `'silent' is not a boolean.`);
          });
 
          it('remove - throws w/ options.plugins not a string or iterable', async () =>

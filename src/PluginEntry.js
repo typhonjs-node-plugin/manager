@@ -28,6 +28,14 @@ export default class PluginEntry
    #name;
 
    /**
+    * Any stored import.meta data.
+    *
+    * @type {object}
+    * @private
+    */
+   #importmeta;
+
+   /**
     * The loaded plugin instance.
     *
     * @type {object}
@@ -91,6 +99,13 @@ export default class PluginEntry
    get enabled() { return this.#enabled; }
 
    /**
+    * Get any stored import.meta object.
+    *
+    * @returns {undefined|object} Any set import.meta info.
+    */
+   get importmeta() { return this.#importmeta }
+
+   /**
     * Set enabled.
     *
     * @param {boolean} enabled - New enabled state.
@@ -150,4 +165,18 @@ export default class PluginEntry
     * @param {EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
     */
    set eventbusProxy(eventbusProxy) { this.#eventbusProxy = eventbusProxy; }
+
+   /**
+    * Set any associated import.meta data.
+    *
+    * @param {object} importmeta - import.meta data.
+    */
+   set importmeta(importmeta) { this.#importmeta = importmeta; }
+
+   /**
+    * Set plugin instance.
+    *
+    * @param {object} instance - The plugin instance.
+    */
+   set instance(instance) { this.#instance = instance; }
 }

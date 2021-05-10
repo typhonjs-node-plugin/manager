@@ -367,7 +367,27 @@ export default class PluginManager
       this.#pluginMap.set(pluginConfig.name, entry);
 
       // Invokes the private internal async events method which allows skipping of error checking.
-      await invokeAsyncEvent({ method: 'onPluginLoad', manager: this, plugins: pluginConfig.name, errorCheck: false });
+      const invokeData = await invokeAsyncEvent({
+         method: 'onPluginLoad',
+         manager: this,
+         plugins: pluginConfig.name,
+         errorCheck: false
+      });
+
+      if (typeof invokeData.importmeta === 'object')
+      {
+         entry.importmeta = invokeData.importmeta;
+
+         // Until we get a Snowpack HMR spec environment for testing ignore this block.
+         /* c8 ignore next 7 */
+         if (typeof invokeData.importmeta.hot === 'object' && typeof invokeData.importmeta.hot.accept === 'function')
+         {
+            invokeData.importmeta.hot.accept(({ module }) =>
+            {
+               this.reload({ plugin: pluginConfig.name, instance: resolveModule(module) });
+            });
+         }
+      }
 
       // Invoke `typhonjs:plugin:manager:plugin:added` allowing external code to react to plugin addition.
       if (this.#eventbus)
@@ -941,10 +961,117 @@ export default class PluginManager
    }
 
    /**
+    * Unloads / reloads the plugin invoking `onPluginUnload` / then `onPluginReload`
+    *
+    * @param {object}   opts - Options object.
+    *
+    * @param {string}   opts.plugin - Plugin name to reload.
+    *
+    * @param {object}   [opts.instance] - Optional instance to replace.
+    *
+    * @param {boolean}  [opts.silent] - Does not trigger any reload notification on the eventbus.
+    *
+    * @returns {Promise<boolean>} Result of reload attempt.
+    */
+   async reload({ plugin, instance = void 0, silent = false })
+   {
+      if (typeof plugin !== 'string') { throw new TypeError(`'plugin' is not a string.`); }
+      if (instance !== void 0 && typeof instance !== 'object') { throw new TypeError(`'instance' is not an object.`); }
+      if (typeof silent !== 'boolean') { throw new TypeError(`'silent' is not a boolean.`); }
+
+      const entry = this.#pluginMap.get(plugin);
+
+      if (entry === void 0) { return false; }
+
+      // Store any state to load into new plugin instance.
+      let state = void 0;
+
+      let error = void 0;
+
+      try
+      {
+         // Invokes the private internal async events method which allows skipping of error checking.
+         const unloadData = await invokeAsyncEvent({
+            method: 'onPluginUnload',
+            manager: this,
+            plugins: plugin,
+            errorCheck: false
+         });
+
+         state = unloadData.state;
+      }
+      catch (err)
+      {
+         error = err;
+      }
+
+      try
+      {
+         entry.importmeta = void 0;
+
+         // Automatically remove any potential reference to a stored event proxy instance.
+         entry.instance._eventbus = void 0;
+      }
+      catch (err) { /* noop */ }
+
+      if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.off(); }
+
+      if (typeof instance === 'object')
+      {
+         entry.instance = instance;
+      }
+
+      // Invokes the private internal async events method which allows skipping of error checking.
+      const invokeData = await invokeAsyncEvent({
+         method: 'onPluginLoad',
+         manager: this,
+         plugins: plugin,
+         passthruProps: { state },
+         errorCheck: false
+      });
+
+      // Invoke `typhonjs:plugin:manager:plugin:reloaded` allowing external code to react to plugin reload.
+      try
+      {
+         if (this.#eventbus && !silent)
+         {
+            await this.#eventbus.triggerAsync(`typhonjs:plugin:manager:plugin:reloaded`,
+             JSON.parse(JSON.stringify(entry.data)));
+         }
+      }
+      catch (err)
+      {
+         // Only track this error if no previous error exists from onPluginUnload invocation.
+         if (error === void 0) { error = err; }
+      }
+
+      if (typeof invokeData.importmeta === 'object')
+      {
+         entry.importmeta = invokeData.importmeta;
+
+         // Until we get a Snowpack HMR spec environment for testing ignore this block.
+         /* c8 ignore next 7 */
+         if (typeof invokeData.importmeta.hot === 'object' && typeof invokeData.importmeta.hot.accept === 'function')
+         {
+            invokeData.importmeta.hot.accept(({ module }) =>
+            {
+               this.reload({ plugin, instance: resolveModule(module) });
+            });
+         }
+      }
+
+      // Throw any error raised first from any onPluginUnload invocation then the
+      // `typhonjs:plugin:manager:plugin:reloaded` event.
+      if (error) { throw error; }
+
+      return true;
+  }
+
+   /**
     * Removes a plugin by name or all names in an iterable list unloading them and clearing any event bindings
     * automatically.
     *
-    * @param {object}                  opts - Options object
+    * @param {object}                  opts - Options object.
     *
     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
     *
@@ -983,6 +1110,8 @@ export default class PluginManager
          catch (err) { /* noop */ }
 
          if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.destroy(); }
+
+         entry.importmeta = void 0;
 
          this.#pluginMap.delete(pluginName);
 
@@ -1306,8 +1435,8 @@ export default class PluginManager
    }
 
    /**
-    * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions` is
-    * enabled. This disables the ability for the plugin manager options to be set via events preventing any external
+    * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions`
+    * is enabled. This disables the ability for the plugin manager options to be set via events preventing any external
     * code modifying options.
     *
     * @param {PluginManagerOptions} options - Defines optional parameters to set.

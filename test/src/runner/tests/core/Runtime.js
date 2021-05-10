@@ -233,10 +233,116 @@ export default class Runtime
                assert.isBoolean(results);
                assert.isFalse(results);
 
+               results = eventbus.triggerSync('plugins:has:plugin', { plugins: ['PluginTestSync'] });
+
+               assert.isBoolean(results);
+               assert.isTrue(results);
+
                results = eventbus.triggerSync('plugins:has:plugin');
 
                assert.isBoolean(results);
                assert.isTrue(results);
+            });
+
+            it('reload', async () =>
+            {
+               await pluginManager.add({
+                  name: 'PluginObject',
+                  instance: {
+                     onPluginLoad: (ev) =>
+                     {
+                        ev.eventbus.on('test:trigger', () => 5);
+                        ev.data.importmeta = import.meta;
+                     }
+                  }
+               });
+
+               let result = eventbus.triggerSync('test:trigger');
+
+               assert.strictEqual(result, 5);
+
+               await pluginManager.reload({
+                  plugin: 'PluginObject',
+                  instance: {
+                     onPluginLoad: (ev) =>
+                     {
+                        ev.eventbus.on('test:trigger', () => 10);
+                        ev.data.importmeta = import.meta;
+                     }
+                  }
+               });
+
+               result = eventbus.triggerSync('test:trigger');
+
+               assert.strictEqual(result, 10);
+            });
+
+            it('reload - throw on onPluginUnload', async () =>
+            {
+               await pluginManager.add({
+                  name: 'PluginObject',
+                  instance: {
+                     onPluginUnload: () => { throw new Error('UNLOAD_ERROR'); }
+                  }
+               });
+
+               await expect(pluginManager.reload({ plugin: 'PluginObject' })).to.be.rejectedWith(Error, 'UNLOAD_ERROR');
+            });
+
+            it('reload - throw on `typhonjs:plugin:manager:plugin:reloaded` event error', async () =>
+            {
+               await pluginManager.add({ name: 'PluginObject', instance: {} });
+
+               eventbus.on('typhonjs:plugin:manager:plugin:reloaded', () => { throw new Error('RELOAD_EVENT'); });
+
+               await expect(pluginManager.reload({ plugin: 'PluginObject' })).to.be.rejectedWith(Error, 'RELOAD_EVENT');
+            });
+
+            it('reload - get PluginEntry import.meta data', async () =>
+            {
+               await pluginManager.add({
+                  name: 'PluginObject',
+                  instance: {
+                     onPluginLoad(ev) { ev.data.importmeta = import.meta; }
+                  }
+               });
+
+               assert.isDefined(pluginManager.getPluginEntry('PluginObject').importmeta.url);
+            });
+
+            it('reload - object freeze - noop', async () =>
+            {
+               const instance = {
+                  _eventbus: true,
+                  onPluginLoad: (ev) =>
+                  {
+                     ev.eventbus.on('test:trigger', () => 5);
+                     ev.data.importmeta = import.meta;
+                  }
+               };
+
+               Object.freeze(instance);
+
+               await pluginManager.add({
+                  name: 'PluginObject',
+                  instance
+               });
+
+               await pluginManager.reload({
+                  plugin: 'PluginObject',
+                  instance
+               });
+
+               assert.isBoolean(instance._eventbus);
+               assert.isTrue(instance._eventbus);
+            });
+
+            it('reload - no plugin', async () =>
+            {
+               const result = await pluginManager.reload({ plugin: 'No Plugin', });
+
+               assert.isBoolean(result);
+               assert.isFalse(result);
             });
 
             it('setEnabled (false / true) - event bindings release / register', async () =>
