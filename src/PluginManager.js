@@ -161,6 +161,15 @@ export default class PluginManager
    };
 
    /**
+    * Stores the plugins currently being loaded by plugin name. During the add process this is important to track
+    * in cases when PluginManager is being used incorrectly in a non-async / await manner.
+    *
+    * @type {Set<string>}
+    * @private
+    */
+   #pluginAddSet = new Set();
+
+   /**
     * Stores the plugins by name with an associated PluginEntry.
     *
     * @type {Map<string, PluginEntry>}
@@ -289,6 +298,16 @@ export default class PluginManager
           JSON.stringify(pluginConfig, null, 3)}`);
       }
 
+      // If a plugin with the same name is also being currently loaded post a warning and exit early. This is the case
+      // when add is used without await and multiple plugins w/ the same name are being dynamically imported.
+      if (this.#pluginAddSet.has(pluginConfig.name))
+      {
+         throw new Error(`A plugin is already being loaded with name: ${pluginConfig.name} for entry:\n${
+          JSON.stringify(pluginConfig, null, 3)}`);
+      }
+
+      this.#pluginAddSet.add(pluginConfig.name);
+
       let instance, target, type;
 
       // Use an existing instance of a plugin; a static class is assumed when instance is a function.
@@ -321,6 +340,9 @@ export default class PluginManager
          }
          catch (err)
          {
+            // Remove tracking of given plugin config name.
+            this.#pluginAddSet.delete(pluginConfig.name);
+
             throw new Error(`@typhonjs-plugin/manager - Could not load target: ${target}\n\nPluginConfig:\n`
              + `${JSON.stringify(pluginConfig, null, 3)}\n\n${err}`);
          }
@@ -365,6 +387,7 @@ export default class PluginManager
       const entry = new PluginEntry(pluginConfig.name, pluginData, instance, eventbusProxy);
 
       this.#pluginMap.set(pluginConfig.name, entry);
+      this.#pluginAddSet.delete(pluginConfig.name);
 
       // Invokes the private internal async events method which allows skipping of error checking.
       const invokeData = await invokeAsyncEvent({
