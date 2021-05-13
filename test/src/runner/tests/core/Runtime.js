@@ -53,6 +53,54 @@ export default class Runtime
                eventbus = pluginManager.createEventbusProxy();
             });
 
+            it('add - already has a plugin with same name', async () =>
+            {
+               const pluginConfig = { name: 'NAME', instance: {} };
+               await pluginManager.add(pluginConfig);
+
+               await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(Error,
+                `A plugin already exists with name: NAME for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
+            });
+
+            it('add - already loading a plugin with same name - no await used in add', (done) =>
+            {
+               const pluginConfig = { name: 'NAME', target: './test/fixture/plugins/StaticPluginTest.js' };
+
+               (async () =>
+               {
+                  // No await added for dynamic import of plugin.
+                  const promise = pluginManager.add(pluginConfig);
+
+                  await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(Error,
+                   `A plugin is already being loaded with name: NAME for entry:\n${
+                     JSON.stringify(pluginConfig, null, 3)}`);
+
+                  // Await the initial promise from initial faulty add. Check after the above add completes whether it
+                  // can't be added again.
+                  await promise;
+
+                  await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(Error,
+                   `A plugin already exists with name: NAME for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
+
+                  done();
+               })();
+            });
+
+            it('add - multiple non awaiting duplicate add calls - make sure one plugin added', (done) =>
+            {
+               const pluginConfig = { name: 'NAME', target: './test/fixture/plugins/StaticPluginTest.js' };
+
+               pluginManager.add(pluginConfig);
+               pluginManager.add(pluginConfig);
+               pluginManager.add(pluginConfig);
+               pluginManager.add(pluginConfig);
+
+               setTimeout(() => {
+                  assert.strictEqual(pluginManager.getPluginNames().length, 1);
+                  done();
+               }, 3000);
+            });
+
             it('destroy', async () =>
             {
                const eventbusSecure = pluginManager.createEventbusSecure('secure');

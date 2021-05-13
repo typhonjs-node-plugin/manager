@@ -81,15 +81,6 @@ export default class APIErrors
              `'moduleData' is not an object for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
          });
 
-         it('add - already has a plugin with same name', async () =>
-         {
-            const pluginConfig = { name: 'NAME', instance: {} };
-            await pluginManager.add(pluginConfig);
-
-            await expect(pluginManager.add(pluginConfig)).to.be.rejectedWith(Error,
-             `A plugin already exists with name: NAME for entry:\n${JSON.stringify(pluginConfig, null, 3)}`);
-         });
-
          it('add - throws w/ bad module path', async () =>
          {
             const pluginConfig = { name: 'bad-module', target: 'bad-path.js' };
