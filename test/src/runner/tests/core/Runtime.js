@@ -95,7 +95,8 @@ export default class Runtime
                pluginManager.add(pluginConfig);
                pluginManager.add(pluginConfig);
 
-               setTimeout(() => {
+               setTimeout(() =>
+               {
                   assert.strictEqual(pluginManager.getPluginNames().length, 1);
                   done();
                }, 3000);
