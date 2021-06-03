@@ -1385,21 +1385,21 @@ export default class PluginManager
          this.#eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
       }
 
-      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this, true);
-      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this, true);
-      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this, true);
-      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this, true);
-      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this, true);
-      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this, true);
-      eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this, true);
-      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this, true);
-      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this, true);
-      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this, true);
-      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, true);
-      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugins, this, true);
-      eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, true);
-      eventbus.on(`${eventPrepend}:set:enabled`, this._setEnabledEventbus, this, true);
-      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, true);
+      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this, { guard: true });
+      eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this, { guard: true });
+      eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this, { guard: true });
+      eventbus.on(`${eventPrepend}:get:plugin:data`, this.getPluginData, this, { guard: true });
+      eventbus.on(`${eventPrepend}:get:plugin:events`, this.getPluginEvents, this, { guard: true });
+      eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, { guard: true });
+      eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugins, this, { guard: true });
+      eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, { guard: true });
+      eventbus.on(`${eventPrepend}:set:enabled`, this._setEnabledEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, { guard: true });
 
       for (const pluginSupport of this.#pluginSupport)
       {
