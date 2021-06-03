@@ -10,7 +10,7 @@ npm-debug.log
 /.nyc_output
 /coverage
 /coverage-browser
-/test/live-server/test
-/test/live-server/PluginManager.js
-/test/live-server/PluginManager.js.map
-/test/live-server/TestSuiteRunner.js
+/test/public/test
+/test/public/PluginManager.js
+/test/public/PluginManager.js.map
+/test/public/TestsuiteRunner.js
