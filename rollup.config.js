@@ -46,7 +46,7 @@ export default () =>
             // sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeDistNodePath, `.`)
          }],
          plugins: [
-            resolve(),
+            resolve({ exportConditions: ['node'] }),
          ]
       },
 
