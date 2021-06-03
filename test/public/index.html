@@ -4,29 +4,20 @@
     <meta charset="utf-8" />
     <title>Mocha Tests</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="lib/mocha.css" />
+    <link rel="stylesheet" href="mocha.css" />
 </head>
 <body>
 <div id="mocha"></div>
 
-<script src="lib/mocha.js"></script>
-
 <script type="module">
-   import chai              from './lib/chai.js';
-   import chaiAsPromised    from './lib/chai-as-promised.js';
-
    import * as Module       from './PluginManager.js';
 
-   import TestSuiteRunner   from './TestSuiteRunner.js';
-
-   import mochaConsoleLog   from './lib/mochaConsoleLog.js';
+   import TestsuiteRunner   from './TestsuiteRunner.js';
 
    import PluginTest          from './test/fixture/plugins/PluginTest.js';
    import PluginTestNoName2   from './test/fixture/plugins/PluginTestNoName2.js';
    import PluginTestAsync     from './test/fixture/plugins/PluginTestAsync.js';
    import PluginTestSync      from './test/fixture/plugins/PluginTestSync.js';
-
-   chai.use(chaiAsPromised);
 
    const port = window.location.port;
 
@@ -36,7 +27,6 @@
    const moduleURLString = moduleURL.toString();
 
    const data = {
-      suitePrefix: 'browser/PluginManager',
       moduleURL,
       moduleURLString,
       isBrowser: true,
@@ -58,16 +48,7 @@
       ]
    };
 
-   mocha.setup({
-      timeout: '10000',
-      ui: 'bdd'
-   });
-
-   mocha.checkLeaks();
-
-   TestSuiteRunner.run(Module, data, chai);
-
-   mochaConsoleLog(mocha.run());
+   TestsuiteRunner.run({ Module, data });
 </script>
 </body>
 </html>

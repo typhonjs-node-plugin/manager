@@ -2,19 +2,14 @@ import fs                  from 'fs-extra';
 import path                from 'path';
 import url                 from 'url';
 
-import chai                from 'chai';
-import chaiAsPromised      from 'chai-as-promised';
-
 import * as Module         from '../../../dist/node/PluginManager.js';
 
-import TestSuiteRunner     from '../runner/TestSuiteRunner.js';
+import TestsuiteRunner     from '../runner/TestsuiteRunner.js';
 
 import PluginTest          from '../../fixture/plugins/PluginTest.js';
 import PluginTestNoName2   from '../../fixture/plugins/PluginTestNoName2.js';
 import PluginTestAsync     from '../../fixture/plugins/PluginTestAsync.js';
 import PluginTestSync      from '../../fixture/plugins/PluginTestSync.js';
-
-chai.use(chaiAsPromised);
 
 fs.ensureDirSync('./.nyc_output');
 fs.emptyDirSync('./.nyc_output');
@@ -29,7 +24,6 @@ const moduleURLString = moduleURL.toString();
 const moduleExports = '@typhonjs-utils/object/plugin';
 
 const data = {
-   suitePrefix: 'node/PluginManager',
    moduleURL,
    moduleURLString,
    moduleExports,
@@ -56,4 +50,4 @@ const data = {
    ]
 };
 
-TestSuiteRunner.run(Module, data, chai);
+TestsuiteRunner.run({ Module, data });
