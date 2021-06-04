@@ -9,12 +9,16 @@ export function run({ Module, data, chai })
    const { assert, expect } = chai;
 
    const PluginManager = Module.default;
+
    const { Eventbus, EventbusProxy } = Module;
 
    describe(`Core Runtime (${data.scopedName}):`, () =>
    {
       describe('Type checks:', () =>
       {
+         /**
+          * @type {import('../../../../../types').PluginManager}
+          */
          let pluginManager;
 
          beforeEach(() =>
@@ -666,6 +670,114 @@ export function run({ Module, data, chai })
                assert.strictEqual(entry.success, true);
             }
          });
+
+         it('deleted _eventbus', async () =>
+         {
+            const pluginObject = { _eventbus: true };
+
+            await pluginManager.add({ name: 'pluginObject', instance: pluginObject });
+            await pluginManager.remove({ plugins: 'pluginObject' });
+
+            assert.isUndefined(pluginObject._eventbus);
+         });
+
+         it('not deleted _eventbus - (frozen plugin)', async () =>
+         {
+            const pluginObject = { _eventbus: true };
+
+            Object.freeze(pluginObject);
+
+            await pluginManager.add({ name: 'pluginObject', instance: pluginObject });
+            await pluginManager.remove({ plugins: 'pluginObject' });
+
+            assert.isTrue(pluginObject._eventbus);
+         });
+
+         it('setEnabled (false) / make no events trigger', async () =>
+         {
+            let condition = 0;
+
+            const pluginObject = {
+               onPluginLoad: (ev) =>
+               {
+                  ev.eventbus.on('test', () => { condition++; })
+               }
+            };
+
+            const eventbus = pluginManager.getEventbus();
+
+            await pluginManager.add({ name: 'pluginObject', instance: pluginObject });
+            pluginManager.setEnabled({ enabled: false, plugins: 'pluginObject' });
+
+            eventbus.trigger('test');
+
+            assert.strictEqual(condition, 0);
+
+            pluginManager.setEnabled({ enabled: true, plugins: 'pluginObject' });
+
+            eventbus.trigger('test');
+
+            assert.strictEqual(condition, 1);
+         });
+
+         it('switch eventbus / event triggers', async () =>
+         {
+            let condition = 0;
+            let count = 0;
+
+            const pluginObject = {
+               onPluginLoad: (ev) =>
+               {
+                  count++;
+                  ev.eventbus.on('test', () => { condition++; })
+               }
+            };
+
+            await pluginManager.add({ name: 'pluginObject', instance: pluginObject });
+
+            const eventbus = new Eventbus();
+
+            await pluginManager.setEventbus({ eventbus });
+
+            eventbus.trigger('test');
+
+            assert.strictEqual(condition, 1);
+            assert.strictEqual(count, 2);
+         });
+
+         it('setEnabled (false) / switch eventbus / setEnabled(true) / event triggers', async () =>
+         {
+            let condition = 0;
+            let count = 0;
+
+            const pluginObject = {
+               onPluginLoad: (ev) =>
+               {
+                  count++;
+                  ev.eventbus.on('test', () => { condition++; })
+               }
+            };
+
+            let eventbus = pluginManager.getEventbus();
+
+            await pluginManager.add({ name: 'pluginObject', instance: pluginObject });
+            pluginManager.setEnabled({ enabled: false, plugins: 'pluginObject' });
+
+            eventbus.trigger('test');
+            assert.strictEqual(condition, 0);
+
+            eventbus = new Eventbus();
+
+            await pluginManager.setEventbus({ eventbus });
+
+            pluginManager.setEnabled({ enabled: true, plugins: 'pluginObject' });
+
+            eventbus.trigger('test');
+
+            assert.strictEqual(condition, 1);
+            assert.strictEqual(count, 1);
+         });
+
 
          // Only test package.json exports plugin on Node 12.17+
          if (!data.isNode12_2 && !data.isBrowser)

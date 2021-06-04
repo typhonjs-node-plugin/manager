@@ -1,14 +1,14 @@
-import Eventbus            from '@typhonjs-plugin/eventbus';
-import { EventbusProxy }   from '@typhonjs-plugin/eventbus';
-import ModuleLoader        from '@typhonjs-utils/loader-module';
+import Eventbus                           from '@typhonjs-plugin/eventbus';
+import { EventbusProxy, EventbusSecure }  from '@typhonjs-plugin/eventbus';
+import ModuleLoader                       from '@typhonjs-utils/loader-module';
 
-import PluginEntry         from './PluginEntry.js';
+import PluginEntry                        from './PluginEntry.js';
 
-import invokeAsyncEvent    from './support/invoke/invokeAsyncEvent.js';
+import invokeAsyncEvent                   from './support/invoke/invokeAsyncEvent.js';
 
-import escapeTarget        from './utils/escapeTarget.js';
-import isValidConfig       from './utils/isValidConfig.js';
-import resolveModule       from './utils/resolveModule.js';
+import escapeTarget                       from './utils/escapeTarget.js';
+import isValidConfig                      from './utils/isValidConfig.js';
+import resolveModule                      from './utils/resolveModule.js';
 
 import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
 
@@ -522,7 +522,7 @@ export default class PluginManager
       /* c8 ignore next */
       if (this.#eventbus === null) { throw new ReferenceError('No eventbus assigned to plugin manager.'); }
 
-      const eventbusSecureObj = this.#eventbus.createSecure(name);
+      const eventbusSecureObj = EventbusSecure.initialize(this.#eventbus, name);
 
       // Store EventbusSecure object to make sure it is destroyed when the plugin manager is destroyed.
       this.#eventbusSecure.push(eventbusSecureObj);
@@ -539,6 +539,9 @@ export default class PluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
+      // Remove all plugins; this will invoke onPluginUnload.
+      const results = await this.removeAll();
+
       // Destroy any EventbusSecure instances created.
       for (const eventbusSecureObj of this.#eventbusSecure)
       {
@@ -554,9 +557,6 @@ export default class PluginManager
       }
 
       this.#eventbusProxies = [];
-
-      // Remove all plugins; this will invoke onPluginUnload.
-      const results = await this.removeAll();
 
       if (this.#eventbus !== null && this.#eventbus !== void 0)
       {
@@ -1028,14 +1028,8 @@ export default class PluginManager
          error = err;
       }
 
-      try
-      {
-         entry.importmeta = void 0;
-
-         // Automatically remove any potential reference to a stored event proxy instance.
-         entry.instance._eventbus = void 0;
-      }
-      catch (err) { /* noop */ }
+      // Automatically clean up most resources.
+      entry.reset();
 
       if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.off(); }
 
@@ -1125,16 +1119,9 @@ export default class PluginManager
             errors.push(err);
          }
 
-         try
-         {
-            // Automatically remove any potential reference to a stored event proxy instance.
-            entry.instance._eventbus = void 0;
-         }
-         catch (err) { /* noop */ }
+         entry.reset();
 
          if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.destroy(); }
-
-         entry.importmeta = void 0;
 
          this.#pluginMap.delete(pluginName);
 
@@ -1346,10 +1333,10 @@ export default class PluginManager
 
          for (const entry of this.#pluginMap.values())
          {
-            // Automatically remove any potential reference to a stored event proxy instance.
             try
             {
-               entry.instance._eventbus = void 0;
+               // Automatically remove any potential reference to a stored event proxy instance.
+               delete entry.instance._eventbus;
             }
             /* c8 ignore next */
             catch (err) { /* nop */ }
@@ -1360,10 +1347,18 @@ export default class PluginManager
             if (entry.eventbusProxy instanceof EventbusProxy) { entry.eventbusProxy.destroy(); }
 
             entry.eventbusProxy = new EventbusProxy(eventbus);
-         }
 
-         // Invokes the private internal async events method which allows skipping of error checking.
-         await invokeAsyncEvent({ method: 'onPluginLoad', manager: this, errorCheck: false });
+            // Invokes the private internal async events method which allows skipping of error checking.
+            if (entry.enabled)
+            {
+               await invokeAsyncEvent({
+                  method: 'onPluginLoad',
+                  manager: this,
+                  plugins: entry.name,
+                  errorCheck: false
+               });
+            }
+         }
       }
 
       if (this.#eventbus !== null)

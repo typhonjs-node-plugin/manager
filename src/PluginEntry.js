@@ -106,6 +106,22 @@ export default class PluginEntry
    get importmeta() { return this.#importmeta }
 
    /**
+    * Reset will cleanup most resources for remove / reload. 'remove' should manually destroy #eventbusProxy.
+    */
+   reset()
+   {
+      try
+      {
+         this.#events = void 0;
+         this.#importmeta = void 0;
+
+         // Automatically remove any potential reference to a stored event proxy instance.
+         delete this.#instance._eventbus;
+      }
+      catch (err) { /* noop */ }
+   }
+
+   /**
     * Set enabled.
     *
     * @param {boolean} enabled - New enabled state.
