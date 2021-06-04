@@ -1,7 +1,10 @@
 /**
  * @param {object}                           opts - Test options
+ *
  * @param {import('../../../../../types')}   opts.Module - Module to test
+ *
  * @param {object}                           opts.data - Extra test data.
+ *
  * @param {object}                           opts.chai - Chai
  */
 export function run({ Module, data, chai })
@@ -700,7 +703,7 @@ export function run({ Module, data, chai })
             const pluginObject = {
                onPluginLoad: (ev) =>
                {
-                  ev.eventbus.on('test', () => { condition++; })
+                  ev.eventbus.on('test', () => { condition++; });
                }
             };
 
@@ -729,7 +732,7 @@ export function run({ Module, data, chai })
                onPluginLoad: (ev) =>
                {
                   count++;
-                  ev.eventbus.on('test', () => { condition++; })
+                  ev.eventbus.on('test', () => { condition++; });
                }
             };
 
@@ -754,7 +757,7 @@ export function run({ Module, data, chai })
                onPluginLoad: (ev) =>
                {
                   count++;
-                  ev.eventbus.on('test', () => { condition++; })
+                  ev.eventbus.on('test', () => { condition++; });
                }
             };
 

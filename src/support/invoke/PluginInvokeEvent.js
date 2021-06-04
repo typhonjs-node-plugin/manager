@@ -13,6 +13,7 @@ export default class PluginInvokeEvent
     * Initializes PluginEvent.
     *
     * @param {object} copyProps - Event data to copy.
+    *
     * @param {object} passthruProps - Event data to pass through.
     */
    constructor(copyProps = {}, passthruProps = {})
