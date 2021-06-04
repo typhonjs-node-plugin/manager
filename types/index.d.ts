@@ -465,6 +465,29 @@ type EventbusSecureObj = {
      */
     setEventbus: Function;
 };
+/**
+ * - Event registration options for Eventbus.
+ */
+type OnOptions = {
+    /**
+     * - When set to true this registration is guarded. Further attempts to register an event by
+     *  the same name will not be possible as long as a guarded event exists.
+     */
+    guard?: boolean;
+};
+/**
+ * - Event registration options.
+ */
+type ProxyOnOptionsBase = {
+    /**
+     * -
+     */
+    private?: boolean;
+};
+/**
+ * - Event registration options for EventbusProxy.
+ */
+type ProxyOnOptions = OnOptions & ProxyOnOptionsBase;
 
 /**
  * EventbusProxy provides a protected proxy of another Eventbus instance.
@@ -505,20 +528,11 @@ declare class EventbusProxy {
      *
      * @param {object}            [context] - Event context
      *
-     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     * @param {ProxyOnOptions}    [options] - Event registration options.
      *
      * @returns {EventbusProxy} This EventbusProxy instance.
      */
-    before(count: number, name: string | object, callback: Function | object, context?: object, guarded?: boolean): EventbusProxy;
-    /**
-     * Creates an EventbusSecure instance wrapping the proxied Eventbus reference. An EventbusSecure instance provides a
-     * secure window to public consumers with only trigger dispatch available.
-     *
-     * @param {string}   [name] - Optional name for the EventbusSecure instance.
-     *
-     * @returns {EventbusSecureObj} An EventbusSecure control object for this eventbus.
-     */
-    createSecure(name?: string): EventbusSecureObj;
+    before(count: number, name: string | object, callback: Function | object, context?: object, options?: ProxyOnOptions): EventbusProxy;
     /**
      * Unregisters all proxied events from the target eventbus and removes any local references. All subsequent calls
      * after `destroy` has been called result in a ReferenceError thrown.
@@ -612,13 +626,13 @@ declare class EventbusProxy {
      *
      * @param {Function|object}   callback - Event callback function or context for event map.
      *
-     * @param {object}            [context] - Event context
+     * @param {object}            [context] - Event context.
      *
-     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     * @param {ProxyOnOptions}    [options] - Event registration options.
      *
      * @returns {EventbusProxy} This EventbusProxy
      */
-    on(name: string | object, callback: Function | object, context?: object, guarded?: boolean): EventbusProxy;
+    on(name: string | object, callback: Function | object, context?: object, options?: ProxyOnOptions): EventbusProxy;
     /**
      * Just like `on`, but causes the bound callback to fire only once before being removed. Handy for saying "the next
      * time that X happens, do this". When multiple events are passed in using the space separated syntax, the event
@@ -630,11 +644,11 @@ declare class EventbusProxy {
      *
      * @param {object}            context - Event context
      *
-     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     * @param {ProxyOnOptions}    [options] - Event registration options.
      *
      * @returns {EventbusProxy} This EventbusProxy instance.
      */
-    once(name: string | object, callback: Function | object, context?: object, guarded?: boolean): EventbusProxy;
+    once(name: string | object, callback: Function | object, context?: object, options?: ProxyOnOptions): EventbusProxy;
     /**
      * Returns an iterable for all stored locally proxied events yielding an array with event name, callback
      * function, and event context.
@@ -719,13 +733,13 @@ declare class EventbusSecure {
      * `destroy()` will destroy the underlying Eventbus reference.
      * `setEventbus(<eventbus>)` will set the underlying reference.
      *
-     * @param {Eventbus}   eventbus - The target eventbus instance.
+     * @param {Eventbus|EventbusProxy}  eventbus - The target eventbus instance.
      *
-     * @param {string}     [name] - If a name is provided this will be used instead of eventbus name.
+     * @param {string}                  [name] - If a name is provided this will be used instead of eventbus name.
      *
      * @returns {EventbusSecureObj} The control object which contains an EventbusSecure reference and control functions.
      */
-    static initialize(eventbus: any, name?: string): EventbusSecureObj;
+    static initialize(eventbus: any | any, name?: string): EventbusSecureObj;
     /**
      * Returns an iterable for the event names / keys of secured eventbus event listeners.
      *
@@ -822,27 +836,11 @@ declare class Eventbus {
      *
      * @param {object}            [context] - Event context
      *
-     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     * @param {OnOptions}         [options] - Event registration options.
      *
      * @returns {Eventbus} This Eventbus instance.
      */
-    before(count: number, name: string | object, callback: Function | object, context?: object, guarded?: boolean): Eventbus;
-    /**
-     * Creates an EventbusProxy wrapping this Eventbus instance. An EventbusProxy proxies events allowing all listeners
-     * added to be easily removed from the wrapped Eventbus.
-     *
-     * @returns {EventbusProxy} A new EventbusProxy for this eventbus.
-     */
-    createProxy(): EventbusProxy;
-    /**
-     * Creates an EventbusSecure instance wrapping this Eventbus. An EventbusSecure instance provides a secure window to
-     * public consumers with only trigger dispatch available.
-     *
-     * @param {string}   [name] - Optional name for the EventbusSecure instance.
-     *
-     * @returns {EventbusSecureObj} An EventbusSecure control object for this eventbus.
-     */
-    createSecure(name?: string): EventbusSecureObj;
+    before(count: number, name: string | object, callback: Function | object, context?: object, options?: OnOptions): Eventbus;
     /**
      * Returns an iterable for all stored events yielding an array with event name, callback function, and event context.
      *
@@ -998,11 +996,11 @@ declare class Eventbus {
      *
      * @param {object}            [context] - Event context
      *
-     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     * @param {OnOptions}         [options] - Event registration options.
      *
      * @returns {Eventbus} This Eventbus instance.
      */
-    on(name: string | object, callback: Function | object, context?: object, guarded?: boolean): Eventbus;
+    on(name: string | object, callback: Function | object, context?: object, options?: OnOptions): Eventbus;
     _listeners: {};
     /**
      * Just like `on`, but causes the bound callback to fire only once before being removed. Handy for saying "the next
@@ -1013,13 +1011,13 @@ declare class Eventbus {
      *
      * @param {Function|object}   callback - Event callback function or context for event map.
      *
-     * @param {object}            [context] - Event context
+     * @param {object}            [context] - Event context.
      *
-     * @param {boolean}           [guarded=false] - When set to true this registration is guarded.
+     * @param {OnOptions}         [options] - Event registration options.
      *
      * @returns {Eventbus} This Eventbus instance.
      */
-    once(name: string | object, callback: Function | object, context?: object, guarded?: boolean): Eventbus;
+    once(name: string | object, callback: Function | object, context?: object, options?: OnOptions): Eventbus;
     /**
      * Tell an object to stop listening to events. Either call stopListening with no arguments to have the object remove
      * all of its registered callbacks ... or be more precise by telling it to remove just the events it's listening to
@@ -1152,6 +1150,10 @@ declare class PluginEntry {
      * @returns {undefined|object} Any set import.meta info.
      */
     get importmeta(): any;
+    /**
+     * Reset will cleanup most resources for remove / reload. 'remove' should manually destroy #eventbusProxy.
+     */
+    reset(): void;
     /**
      * Set associated EventbusProxy.
      *
@@ -1373,7 +1375,7 @@ declare class PluginManager {
      *
      * @returns {EventbusSecure} A secure wrapper for the currently set Eventbus.
      */
-    createEventbusSecure(name?: string): any;
+    createEventbusSecure(name?: string): EventbusSecure;
     /**
      * Destroys all managed plugins after unloading them.
      *
