@@ -3,6 +3,7 @@ import path          from 'path';
 
 import { babel }     from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
 import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import sourcemaps    from 'rollup-plugin-sourcemaps';
 import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
 
 // Import config file for Terser
@@ -47,6 +48,7 @@ export default () =>
          }],
          plugins: [
             resolve({ exportConditions: ['node'] }),
+            sourcemaps(),
          ]
       },
 
@@ -64,8 +66,10 @@ export default () =>
          }],
          plugins: [
             resolve({ browser: true }),
+            sourcemaps(),
             babel({
                babelHelpers: 'bundled',
+               inputSourceMap: false,
                presets: [
                   ['@babel/preset-env', {
                      bugfixes: true,
