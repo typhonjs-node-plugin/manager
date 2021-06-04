@@ -1,6 +1,0 @@
-/**
- * Provide an override to set to typescript JSDoc parsing
- */
-{
-  "settings": { "jsdoc": { "mode": "typescript" } }
-}
