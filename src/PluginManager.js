@@ -85,6 +85,7 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * eventbus.
  *
  * For more information on Eventbus functionality please see:
+ *
  * @see https://www.npmjs.com/package/@typhonjs-plugin/eventbus
  *
  * The PluginManager instance can be extended through runtime composition by passing in _classes_ that implement
@@ -326,7 +327,7 @@ export default class PluginManager
 
          try
          {
-            const result = await ModuleLoader.load({ modulepath: target, resolveModule })
+            const result = await ModuleLoader.load({ modulepath: target, resolveModule });
 
             // Please note that a plugin or other logger must be setup on the associated eventbus.
             if (this.#eventbus !== null)
@@ -343,8 +344,8 @@ export default class PluginManager
             // Remove tracking of given plugin config name.
             this.#pluginAddSet.delete(pluginConfig.name);
 
-            throw new Error(`@typhonjs-plugin/manager - Could not load target: ${target}\n\nPluginConfig:\n`
-             + `${JSON.stringify(pluginConfig, null, 3)}\n\n${err}`);
+            throw new Error(`@typhonjs-plugin/manager - Could not load target: ${target}\n\nPluginConfig:\n` +
+             `${JSON.stringify(pluginConfig, null, 3)}\n\n${err}`);
          }
       }
 
@@ -804,7 +805,7 @@ export default class PluginManager
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
 
-      return this.#pluginMap.get(plugin)
+      return this.#pluginMap.get(plugin);
    }
 
    /**
@@ -929,7 +930,7 @@ export default class PluginManager
 
    /**
     * Returns true if there is a plugin loaded with the given plugin name(s). If no options are provided then
-     * the result will be if any plugins are loaded.
+    * the result will be if any plugins are loaded.
     *
     * @param {object}                  [opts] - Options object. If undefined returns whether there are any plugins.
     *

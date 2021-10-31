@@ -103,7 +103,7 @@ export default class PluginEntry
     *
     * @returns {undefined|object} Any set import.meta info.
     */
-   get importmeta() { return this.#importmeta }
+   get importmeta() { return this.#importmeta; }
 
    /**
     * Reset will cleanup most resources for remove / reload. 'remove' should manually destroy #eventbusProxy.

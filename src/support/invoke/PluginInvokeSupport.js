@@ -624,7 +624,7 @@ export default class PluginInvokeSupport
     *
     * @param {PluginManagerOptions} options Defines optional parameters to set.
     */
-   setOptions(options)
+   setOptions(options)  // eslint-disable-line no-unused-vars
    {
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
    }
