@@ -189,265 +189,18 @@ export interface PluginSupportImpl {
 }
 
 /**
- * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
- * a wrapped instance of PluginManager depending on the use case.
- *
- * There are two types of invocation methods the first spreads an array of arguments to the invoked method. The second
- * constructs a {@link PluginInvokeEvent} to pass to the method with a single parameter.
- *
- * TODO: more info and wiki link
- *
- * When added to a PluginManager through constructor initialization the following events are registered on the plugin
- * manager eventbus:
- *
- * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
- *
- * `plugins:async:invoke:event` - {@link PluginInvokeSupport#invokeAsyncEvent}
- *
- * `plugins:get:method:names` - {@link PluginInvokeSupport#getMethodNames}
- *
- * `plugins:has:method` - {@link PluginInvokeSupport#hasMethod}
- *
- * `plugins:invoke` - {@link PluginInvokeSupport#invoke}
- *
- * `plugins:sync:invoke` - {@link PluginInvokeSupport#invokeSync}
- *
- * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
- *
- * @example
- * // One can also indirectly invoke any method of the plugin.
- * // Any plugin with a method named `aCoolMethod` is invoked.
- * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
- *
- * // A specific invocation just for the 'an-npm-plugin-enabled-module'
- * eventbus.triggerSync('plugins:invoke:sync:event', {
- *    method: 'aCoolMethod',
- *    plugins: 'an-npm-plugin-enabled-module'
- * });
- *
- * // There are two other properties `copyProps` and `passthruProps` which can be set with object data to _copy_ or
- * // _pass through_ to the invoked method.
- *
- * @implements {PluginSupportImpl}
+ * The complete options for an event name.
  */
-declare class PluginInvokeSupport implements PluginSupportImpl {
+type DataOutOptions = {
     /**
-     * Create PluginInvokeSupport
-     *
-     * @param {PluginManager} pluginManager - The plugin manager to associate.
+     * - The guarded option.
      */
-    constructor(pluginManager: any);
+    guard: boolean;
     /**
-     * Returns whether the associated plugin manager has been destroyed.
-     *
-     * @returns {boolean} Returns whether the plugin manager has been destroyed.
+     * - The type option.
      */
-    get isDestroyed(): boolean;
-    /**
-     * Returns the associated plugin manager options.
-     *
-     * @returns {PluginManagerOptions} The associated plugin manager options.
-     */
-    get options(): PluginManagerOptions;
-    /**
-     * Gets the associated plugin manager.
-     *
-     * @returns {PluginManager} The associated plugin manager
-     */
-    get pluginManager(): any;
-    /**
-     * Destroys all managed plugins after unloading them.
-     *
-     * @param {object}     opts - An options object.
-     *
-     * @param {Eventbus}   opts.eventbus - The eventbus to disassociate.
-     *
-     * @param {string}     opts.eventPrepend - The current event prepend.
-     */
-    destroy({ eventbus, eventPrepend }: {
-        eventbus: any;
-        eventPrepend: string;
-    }): Promise<void>;
-    /**
-     * Returns method names for a specific plugin, list of plugins, or all plugins. The enabled state can be specified
-     * along with sorting methods by plugin name.
-     *
-     * @param {object}                  [opts] - Options object. If undefined all plugin data is returned.
-     *
-     * @param {boolean}                 [opts.enabled] - If enabled is a boolean it will return plugin methods names
-     *                                                   given the respective enabled state.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names.
-     *
-     * @returns {string[]} A list of method names
-     */
-    getMethodNames({ enabled, plugins }?: {
-        enabled?: boolean;
-        plugins?: string | Iterable<string>;
-    }): string[];
-    /**
-     * Checks if the provided method name exists across all plugins or specific plugins if defined.
-     *
-     * @param {object}                  opts - Options object.
-     *
-     * @param {string}                  opts.method - Method name to test.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to check for method. If
-     *                                                   undefined all plugins must contain the method.
-     *
-     * @returns {boolean} - True method is found.
-     */
-    hasMethod({ method, plugins }: {
-        method: string;
-        plugins?: string | Iterable<string>;
-    }): boolean;
-    /**
-     * This dispatch method simply invokes any plugin targets for the given method name.
-     *
-     * @param {object}   opts - Options object.
-     *
-     * @param {string}   opts.method - Method name to invoke.
-     *
-     * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
-     */
-    invoke({ method, args, plugins }: {
-        method: string;
-        args?: any[];
-        plugins?: string | Iterable<string>;
-    }): void;
-    /**
-     * This dispatch method is asynchronous and adds any returned results to an array which is resolved via Promise.all
-     * Any target invoked may return a Promise or any result.
-     *
-     * @param {object}   opts - Options object.
-     *
-     * @param {string}   opts.method - Method name to invoke.
-     *
-     * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
-     *
-     * @returns {Promise<*|*[]>} A single result or array of results.
-     */
-    invokeAsync({ method, args, plugins }: {
-        method: string;
-        args?: any[];
-        plugins?: string | Iterable<string>;
-    }): Promise<any | any[]>;
-    /**
-     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
-     *
-     * @param {object}   opts - Options object.
-     *
-     * @param {string}   opts.method - Method name to invoke.
-     *
-     * @param {object}   [opts.copyProps] - Properties that are copied.
-     *
-     * @param {object}   [opts.passthruProps] - Properties that are passed through.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
-     *
-     * @returns {Promise<PluginEventData>} The PluginEvent data.
-     */
-    invokeAsyncEvent({ method, copyProps, passthruProps, plugins }: {
-        method: string;
-        copyProps?: object;
-        passthruProps?: object;
-        plugins?: string | Iterable<string>;
-    }): Promise<PluginEventData>;
-    /**
-     * This dispatch method synchronously passes back a single value or an array with all results returned by any
-     * invoked targets.
-     *
-     * @param {object}   opts - Options object.
-     *
-     * @param {string}   opts.method - Method name to invoke.
-     *
-     * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
-     *
-     * @returns {*|*[]} A single result or array of results.
-     */
-    invokeSync({ method, args, plugins }: {
-        method: string;
-        args?: any[];
-        plugins?: string | Iterable<string>;
-    }): any | any[];
-    /**
-     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
-     *
-     * @param {object}            opts - Options object.
-     *
-     * @param {string}            opts.method - Method name to invoke.
-     *
-     * @param {object}            [opts.copyProps] - Properties that are copied.
-     *
-     * @param {object}            [opts.passthruProps] - Properties that are passed through.
-     *
-     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
-     *
-     * @returns {PluginEventData} The PluginEvent data.
-     */
-    invokeSyncEvent({ method, copyProps, passthruProps, plugins }: {
-        method: string;
-        copyProps?: object;
-        passthruProps?: object;
-        plugins?: string | Iterable<string>;
-    }): PluginEventData;
-    /**
-     * Sets the eventbus associated with this plugin manager. If any previous eventbus was associated all plugin manager
-     * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
-     * events will be removed from the old eventbus and then `onPluginLoad` will be called with the new eventbus.
-     *
-     * @param {object}     opts - An options object.
-     *
-     * @param {Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
-     *
-     * @param {Eventbus}   opts.newEventbus - The new eventbus to associate.
-     *
-     * @param {string}     opts.oldPrepend - The old event prepend.
-     *
-     * @param {string}     opts.newPrepend - The new event prepend.
-     */
-    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
-        oldEventbus: any;
-        newEventbus: any;
-        oldPrepend: string;
-        newPrepend: string;
-    }): void;
-    /**
-     * Set optional parameters.
-     *
-     * @param {PluginManagerOptions} options Defines optional parameters to set.
-     */
-    setOptions(options: PluginManagerOptions): void;
-    #private;
-}
-
-/**
- * Creates an escaped path which is suitable for use in RegExp construction.
- *
- * Note: This function will throw if a malformed URL string is the target. In AbstractPluginManager this function
- * is used after the module has been loaded / is a good target.
- *
- * @param {string|URL}  target - Target full / relative path or URL to escape.
- *
- * @returns {string} The escaped target.
- */
-declare function escapeTarget(target: string | URL): string;
-
-/**
- * Performs validation of a PluginConfig.
- *
- * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
- *
- * @returns {boolean} True if the given PluginConfig is valid.
- */
-declare function isValidConfig(pluginConfig: PluginConfig): boolean;
-
+    type: string;
+};
 /**
  * - The control object returned by `EventbusSecure.initialize`.
  */
@@ -470,10 +223,16 @@ type EventbusSecureObj = {
  */
 type OnOptions = {
     /**
-     * - When set to true this registration is guarded. Further attempts to register an event by
-     *  the same name will not be possible as long as a guarded event exists.
+     * - When set to true this registration is guarded. Further attempts to register an
+     *    event by the same name will not be possible as long as a guarded event exists.
      */
     guard?: boolean;
+    /**
+     * - Provides a hint on the trigger type. May be a string or number 'sync' / 1 or
+     *    'async' / 2. Any other value is not recognized and internally type will be
+     *    set to undefined / 0.
+     */
+    type?: string | number;
 };
 /**
  * - Event registration options.
@@ -534,6 +293,13 @@ declare class EventbusProxy {
      */
     before(count: number, name: string | object, callback: Function | object, context?: object, options?: ProxyOnOptions): EventbusProxy;
     /**
+     * Creates an EventbusProxy wrapping the backing Eventbus instance. An EventbusProxy proxies events allowing all
+     * listeners added to be easily removed from the wrapped Eventbus.
+     *
+     * @returns {EventbusProxy} A new EventbusProxy for this eventbus.
+     */
+    createProxy(): EventbusProxy;
+    /**
      * Unregisters all proxied events from the target eventbus and removes any local references. All subsequent calls
      * after `destroy` has been called result in a ReferenceError thrown.
      */
@@ -568,6 +334,14 @@ declare class EventbusProxy {
      */
     keys(regex?: RegExp): Generator<any, void, unknown>;
     /**
+     * Returns an iterable for the event names / keys of registered event listeners along with event options.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    keysWithOptions(regex?: RegExp): Generator<any, void, unknown>;
+    /**
      * Returns whether this EventbusProxy has already been destroyed.
      *
      * @returns {boolean} Is destroyed state.
@@ -591,6 +365,23 @@ declare class EventbusProxy {
      * @returns {number} Returns the current proxied callback count.
      */
     get proxyCallbackCount(): number;
+    /**
+     * Returns the options of an event name.
+     *
+     * @param {string}   name - Event name(s) to verify.
+     *
+     * @returns {DataOutOptions} The event options.
+     */
+    getOptions(name: string): DataOutOptions;
+    /**
+     * Returns the trigger type of an event name.
+     * Note: if trigger type is not set then undefined is returned for type otherwise 'sync' or 'async' is returned.
+     *
+     * @param {string}   name - Event name(s) to verify.
+     *
+     * @returns {string|undefined} The trigger type.
+     */
+    getType(name: string): string | undefined;
     /**
      * Returns whether an event name is guarded.
      *
@@ -666,6 +457,17 @@ declare class EventbusProxy {
      * @yields
      */
     proxyKeys(regex?: RegExp): Generator<string, void, unknown>;
+    /**
+     * Returns an iterable for the event names / keys of the locally proxied event names with event options.
+     *
+     * Note: The event options returned will respect all of the event options from a registered event event on the main
+     * eventbus if applicable.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    proxyKeysWithOptions(regex?: RegExp): Generator<any[], void, unknown>;
     /**
      * Trigger callbacks for the given event, or space-delimited list of events. Subsequent arguments to trigger will be
      * passed along to the event callbacks.
@@ -749,6 +551,14 @@ declare class EventbusSecure {
      */
     keys(regex?: RegExp): Generator<any, void, unknown>;
     /**
+     * Returns an iterable for the event names / keys of registered event listeners along with event options.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    keysWithOptions(regex?: RegExp): Generator<any, void, unknown>;
+    /**
      * Returns whether this instance has already been destroyed.
      *
      * @returns {boolean} Is destroyed state.
@@ -760,6 +570,23 @@ declare class EventbusSecure {
      * @returns {string} The target eventbus name.
      */
     get name(): string;
+    /**
+     * Returns the options of an event name.
+     *
+     * @param {string}   name - Event name(s) to verify.
+     *
+     * @returns {DataOutOptions} The event options.
+     */
+    getOptions(name: string): DataOutOptions;
+    /**
+     * Returns the trigger type of an event name.
+     * Note: if trigger type is not set then undefined is returned for type otherwise 'sync' or 'async' is returned.
+     *
+     * @param {string}   name - Event name(s) to verify.
+     *
+     * @returns {string|undefined} The trigger type.
+     */
+    getType(name: string): string | undefined;
     /**
      * Trigger callbacks for the given event, or space-delimited list of events. Subsequent arguments to trigger will be
      * passed along to the event callbacks.
@@ -862,6 +689,23 @@ declare class Eventbus {
      */
     get callbackCount(): number;
     /**
+     * Returns the options of an event name.
+     *
+     * @param {string}   name - Event name(s) to verify.
+     *
+     * @returns {DataOutOptions} The event options.
+     */
+    getOptions(name: string): DataOutOptions;
+    /**
+     * Returns the trigger type of an event name.
+     * Note: if trigger type is not set then undefined is returned for type otherwise 'sync' or 'async' is returned.
+     *
+     * @param {string}   name - Event name(s) to verify.
+     *
+     * @returns {string|undefined} The trigger type.
+     */
+    getType(name: string): string | undefined;
+    /**
      * Returns whether an event name is guarded.
      *
      * @param {string|object}  name - Event name(s) or event map to verify.
@@ -879,6 +723,14 @@ declare class Eventbus {
      * @yields
      */
     keys(regex?: RegExp): Generator<string, void, unknown>;
+    /**
+     * Returns an iterable for the event names / keys of registered event listeners along with event options.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter event names.
+     *
+     * @yields
+     */
+    keysWithOptions(regex?: RegExp): Generator<(string | DataOutOptions)[], void, unknown>;
     /**
      * Returns the current eventbus name.
      *
@@ -1260,6 +1112,7 @@ declare class PluginEntry {
  * eventbus.
  *
  * For more information on Eventbus functionality please see:
+ *
  * @see https://www.npmjs.com/package/@typhonjs-plugin/eventbus
  *
  * The PluginManager instance can be extended through runtime composition by passing in _classes_ that implement
@@ -1495,7 +1348,7 @@ declare class PluginManager {
     }): string[];
     /**
      * Returns true if there is a plugin loaded with the given plugin name(s). If no options are provided then
-      * the result will be if any plugins are loaded.
+     * the result will be if any plugins are loaded.
      *
      * @param {object}                  [opts] - Options object. If undefined returns whether there are any plugins.
      *
@@ -1635,5 +1488,264 @@ declare class PluginManager {
     #private;
 }
 
-export default PluginManager;
-export { Eventbus, EventbusProxy, EventbusSecure, PluginInvokeSupport, escapeTarget, eventbus, isValidConfig, pluginEventbus, testEventbus };
+/**
+ * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
+ * a wrapped instance of PluginManager depending on the use case.
+ *
+ * There are two types of invocation methods the first spreads an array of arguments to the invoked method. The second
+ * constructs a {@link PluginInvokeEvent} to pass to the method with a single parameter.
+ *
+ * TODO: more info and wiki link
+ *
+ * When added to a PluginManager through constructor initialization the following events are registered on the plugin
+ * manager eventbus:
+ *
+ * `plugins:async:invoke` - {@link PluginInvokeSupport#invokeAsync}
+ *
+ * `plugins:async:invoke:event` - {@link PluginInvokeSupport#invokeAsyncEvent}
+ *
+ * `plugins:get:method:names` - {@link PluginInvokeSupport#getMethodNames}
+ *
+ * `plugins:has:method` - {@link PluginInvokeSupport#hasMethod}
+ *
+ * `plugins:invoke` - {@link PluginInvokeSupport#invoke}
+ *
+ * `plugins:sync:invoke` - {@link PluginInvokeSupport#invokeSync}
+ *
+ * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
+ *
+ * @example
+ * // One can also indirectly invoke any method of the plugin.
+ * // Any plugin with a method named `aCoolMethod` is invoked.
+ * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
+ *
+ * // A specific invocation just for the 'an-npm-plugin-enabled-module'
+ * eventbus.triggerSync('plugins:invoke:sync:event', {
+ *    method: 'aCoolMethod',
+ *    plugins: 'an-npm-plugin-enabled-module'
+ * });
+ *
+ * // There are two other properties `copyProps` and `passthruProps` which can be set with object data to _copy_ or
+ * // _pass through_ to the invoked method.
+ *
+ * @implements {PluginSupportImpl}
+ */
+declare class PluginInvokeSupport implements PluginSupportImpl {
+    /**
+     * Create PluginInvokeSupport
+     *
+     * @param {PluginManager} pluginManager - The plugin manager to associate.
+     */
+    constructor(pluginManager: any);
+    /**
+     * Returns whether the associated plugin manager has been destroyed.
+     *
+     * @returns {boolean} Returns whether the plugin manager has been destroyed.
+     */
+    get isDestroyed(): boolean;
+    /**
+     * Returns the associated plugin manager options.
+     *
+     * @returns {PluginManagerOptions} The associated plugin manager options.
+     */
+    get options(): PluginManagerOptions;
+    /**
+     * Gets the associated plugin manager.
+     *
+     * @returns {PluginManager} The associated plugin manager
+     */
+    get pluginManager(): any;
+    /**
+     * Destroys all managed plugins after unloading them.
+     *
+     * @param {object}     opts - An options object.
+     *
+     * @param {Eventbus}   opts.eventbus - The eventbus to disassociate.
+     *
+     * @param {string}     opts.eventPrepend - The current event prepend.
+     */
+    destroy({ eventbus, eventPrepend }: {
+        eventbus: any;
+        eventPrepend: string;
+    }): Promise<void>;
+    /**
+     * Returns method names for a specific plugin, list of plugins, or all plugins. The enabled state can be specified
+     * along with sorting methods by plugin name.
+     *
+     * @param {object}                  [opts] - Options object. If undefined all plugin data is returned.
+     *
+     * @param {boolean}                 [opts.enabled] - If enabled is a boolean it will return plugin methods names
+     *                                                   given the respective enabled state.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names.
+     *
+     * @returns {string[]} A list of method names
+     */
+    getMethodNames({ enabled, plugins }?: {
+        enabled?: boolean;
+        plugins?: string | Iterable<string>;
+    }): string[];
+    /**
+     * Checks if the provided method name exists across all plugins or specific plugins if defined.
+     *
+     * @param {object}                  opts - Options object.
+     *
+     * @param {string}                  opts.method - Method name to test.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to check for method. If
+     *                                                   undefined all plugins must contain the method.
+     *
+     * @returns {boolean} - True method is found.
+     */
+    hasMethod({ method, plugins }: {
+        method: string;
+        plugins?: string | Iterable<string>;
+    }): boolean;
+    /**
+     * This dispatch method simply invokes any plugin targets for the given method name.
+     *
+     * @param {object}   opts - Options object.
+     *
+     * @param {string}   opts.method - Method name to invoke.
+     *
+     * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
+     */
+    invoke({ method, args, plugins }: {
+        method: string;
+        args?: any[];
+        plugins?: string | Iterable<string>;
+    }): void;
+    /**
+     * This dispatch method is asynchronous and adds any returned results to an array which is resolved via Promise.all
+     * Any target invoked may return a Promise or any result.
+     *
+     * @param {object}   opts - Options object.
+     *
+     * @param {string}   opts.method - Method name to invoke.
+     *
+     * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
+     *
+     * @returns {Promise<*|*[]>} A single result or array of results.
+     */
+    invokeAsync({ method, args, plugins }: {
+        method: string;
+        args?: any[];
+        plugins?: string | Iterable<string>;
+    }): Promise<any | any[]>;
+    /**
+     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
+     *
+     * @param {object}   opts - Options object.
+     *
+     * @param {string}   opts.method - Method name to invoke.
+     *
+     * @param {object}   [opts.copyProps] - Properties that are copied.
+     *
+     * @param {object}   [opts.passthruProps] - Properties that are passed through.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
+     *
+     * @returns {Promise<PluginEventData>} The PluginEvent data.
+     */
+    invokeAsyncEvent({ method, copyProps, passthruProps, plugins }: {
+        method: string;
+        copyProps?: object;
+        passthruProps?: object;
+        plugins?: string | Iterable<string>;
+    }): Promise<PluginEventData>;
+    /**
+     * This dispatch method synchronously passes back a single value or an array with all results returned by any
+     * invoked targets.
+     *
+     * @param {object}   opts - Options object.
+     *
+     * @param {string}   opts.method - Method name to invoke.
+     *
+     * @param {*[]}      [opts.args] - Method arguments. This array will be spread as multiple arguments.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
+     *
+     * @returns {*|*[]} A single result or array of results.
+     */
+    invokeSync({ method, args, plugins }: {
+        method: string;
+        args?: any[];
+        plugins?: string | Iterable<string>;
+    }): any | any[];
+    /**
+     * This dispatch method synchronously passes to and returns from any invoked targets a PluginEvent.
+     *
+     * @param {object}            opts - Options object.
+     *
+     * @param {string}            opts.method - Method name to invoke.
+     *
+     * @param {object}            [opts.copyProps] - Properties that are copied.
+     *
+     * @param {object}            [opts.passthruProps] - Properties that are passed through.
+     *
+     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
+     *
+     * @returns {PluginEventData} The PluginEvent data.
+     */
+    invokeSyncEvent({ method, copyProps, passthruProps, plugins }: {
+        method: string;
+        copyProps?: object;
+        passthruProps?: object;
+        plugins?: string | Iterable<string>;
+    }): PluginEventData;
+    /**
+     * Sets the eventbus associated with this plugin manager. If any previous eventbus was associated all plugin manager
+     * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
+     * events will be removed from the old eventbus and then `onPluginLoad` will be called with the new eventbus.
+     *
+     * @param {object}     opts - An options object.
+     *
+     * @param {Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+     *
+     * @param {Eventbus}   opts.newEventbus - The new eventbus to associate.
+     *
+     * @param {string}     opts.oldPrepend - The old event prepend.
+     *
+     * @param {string}     opts.newPrepend - The new event prepend.
+     */
+    setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
+        oldEventbus: any;
+        newEventbus: any;
+        oldPrepend: string;
+        newPrepend: string;
+    }): void;
+    /**
+     * Set optional parameters.
+     *
+     * @param {PluginManagerOptions} options Defines optional parameters to set.
+     */
+    setOptions(options: PluginManagerOptions): void;
+    #private;
+}
+
+/**
+ * Creates an escaped path which is suitable for use in RegExp construction.
+ *
+ * Note: This function will throw if a malformed URL string is the target. In AbstractPluginManager this function
+ * is used after the module has been loaded / is a good target.
+ *
+ * @param {string|URL}  target - Target full / relative path or URL to escape.
+ *
+ * @returns {string} The escaped target.
+ */
+declare function escapeTarget(target: string | URL): string;
+
+/**
+ * Performs validation of a PluginConfig.
+ *
+ * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
+ *
+ * @returns {boolean} True if the given PluginConfig is valid.
+ */
+declare function isValidConfig(pluginConfig: PluginConfig): boolean;
+
+export { Eventbus, EventbusProxy, EventbusSecure, PluginInvokeSupport, PluginManager as default, escapeTarget, eventbus, isValidConfig, pluginEventbus, testEventbus };

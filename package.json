@@ -1,7 +1,7 @@
 {
   "name": "@typhonjs-plugin/manager",
   "description": "Provides a plugin manager & eventbus for Node & browser (supports ESM & CJS).",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
   "main": "dist/node/PluginManager.js",
@@ -9,12 +9,14 @@
   "browser": "dist/browser/PluginManager.js",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "node": "./dist/node/PluginManager.js",
       "browser": "./dist/browser/PluginManager.js"
     },
     "./package.json": "./package.json",
     "./types": "./types/index.d.ts"
   },
+  "types": "./types/index.d.ts",
   "contributors": [
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
@@ -24,13 +26,13 @@
     "@rollup/plugin-alias": "^3.0.0",
     "@rollup/plugin-babel": "^5.0.0",
     "@rollup/plugin-node-resolve": "^13",
-    "@typhonjs-plugin/eventbus": "^0.0.9",
+    "@typhonjs-build-test/esm-d-ts": "^0.0.0",
+    "@typhonjs-plugin/eventbus": "^0.0.11",
     "@typhonjs-utils/build-test": "^0.2.0",
     "@typhonjs-utils/build-test-browser": "^0.0.12",
     "@typhonjs-utils/loader-module": "^0.0.1",
     "@typhonjs-utils/object": "^0.0.2",
     "rollup": "^2",
-    "rollup-plugin-dts": "^4.0.0",
     "rollup-plugin-istanbul": "^3.0.0",
     "rollup-plugin-sourcemaps": "^0.6.0",
     "rollup-plugin-terser": "^7"
@@ -38,7 +40,6 @@
   "engines": {
     "node": ">=12.2"
   },
-  "types": "./types/index.d.ts",
   "files": [
     "/npm-shrinkwrap.json",
     "/dist",
@@ -60,9 +61,8 @@
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "rollup --config rollup.config.browser-test.js",
     "pretest-node": "npm run bundle",
-    "prepublishOnly": "npm run types && npm run test-node && npm run test-browser",
+    "prepublishOnly": "npm run test-node && npm run test-browser",
     "test-browser": "node ./test/src/browser/run.js",
-    "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000",
-    "types": "npx -p typescript tsc --project tsconfig.types.json && rollup --config rollup.config.types.js"
+    "test-node": "c8 --exclude-after-remap=true --reporter=lcov --reporter=text-summary mocha -colors \"test/src/node/**/*.test.js\" --timeout 10000"
   }
 }

@@ -1,13 +1,25 @@
-import fs            from 'fs';
-import path          from 'path';
+import fs                  from 'fs';
+import path                from 'path';
 
-import { babel }     from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
-import resolve       from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
-import sourcemaps    from 'rollup-plugin-sourcemaps';
-import { terser }    from 'rollup-plugin-terser';        // Terser is used for minification / mangling
+import { babel }           from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
+import resolve             from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import sourcemaps          from 'rollup-plugin-sourcemaps';
+import { terser }          from 'rollup-plugin-terser';        // Terser is used for minification / mangling
+import { generateTSDef }   from '@typhonjs-build-test/esm-d-ts';
 
 // Import config file for Terser
-import terserConfig from './terser.config';
+import terserConfig from './terser.config.js';
+
+// Extra TS explicit interface as a string.
+import interfaces from './src/types/ts-interfaces.js';
+
+await generateTSDef({
+   main: './src/index.js',
+   output: './types/index.d.ts',
+   prependGen: ['./src/types/typedef.js'],
+   prependString: [interfaces],
+   exportCondition: { browser: true }
+});
 
 // Add local typedefs.js file to the end of the bundles as a footer.
 const footer = fs.readFileSync('./src/types/typedef.js', 'utf-8');
