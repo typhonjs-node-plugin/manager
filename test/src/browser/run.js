@@ -1,6 +1,6 @@
-import fs         from 'fs-extra';
+import fs                  from 'fs-extra';
 
-import TestRunner from '@typhonjs-utils/build-test-browser';
+import { BrowserRunner }   from '@typhonjs-build-test/node-browser';
 
 // Empty / copy test fixtures to web server root.
 fs.ensureDirSync('./test/public/test/fixture');
@@ -14,7 +14,7 @@ fs.copySync('./test/fixture', './test/public/test/fixture');
  */
 async function main()
 {
-   await TestRunner.runServerAndTestSuite({
+   await BrowserRunner.runServerAndTestSuite({
       reportDir: './coverage-browser',
       // keepAlive: true   // Uncomment to keep HTTP server alive / useful for testing other browsers.
    });

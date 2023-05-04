@@ -7,59 +7,22 @@ on:
     branches: [ main ]
 
 jobs:
-  # Builds on versions of Node that require --experimental-modules w/ `esm` added for ESM tests in Mocha
-  build-exp:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [12.2.0]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm install
-
-      # Specifically load `esm` separately to run ESM Mocha tests for 12.2.0
-      - name: Install esm
-        run: npm install esm
-
-      # `esm` has problems with loading a minified bundle so optionally set it to not minify the bundle.
-      - name: Set ROLLUP_MINIFY environment variable to false so `esm` works with non-minified source.
-        id: step_one
-        run: |
-            echo "ROLLUP_MINIFY=false" >> $GITHUB_ENV
-            echo "ROLLUP_MINIFY=false" >> $env:GITHUB_ENV
-
-      # Note: `-- --require esm` only adds `esm` to mocha in the GH Action.
-      - name: Run the tests
-        run: npm run test-node -- --require esm
-
   # builds on versions of Node that don't require --experimental-modules nor `esm` to run ESM mocha tests.
   build-node:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [12.17.0, 12.x, 14.0.0, 14.x, 16.0.0, 16.x]
+        node-version: [14.18.0, 14.x, 16.0.0, 16.x, 18.0.0, 18.x, 20.0.0, 20.x]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -70,4 +33,4 @@ jobs:
         run: npm run test-node
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
