@@ -1,8 +1,6 @@
 import path       from 'path';
 
-import { babel }  from '@rollup/plugin-babel';        // Babel is used for private class fields for browser usage.
 import istanbul   from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
-import sourcemaps from 'rollup-plugin-sourcemaps';
 import resolve    from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 
 // The test browser distribution is bundled to `./test/public`.
@@ -20,24 +18,12 @@ export default () =>
          output: [{
             file: `${s_TEST_BROWSER_PATH}/PluginManager.js`,
             format: 'es',
-            preferConst: true,
+            generatedCode: { constBindings: true },
             sourcemap: s_SOURCEMAP,
             sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeTestBrowserPath, `.`)
          }],
          plugins: [
             resolve({ browser: true }),
-            sourcemaps(),
-            babel({
-               babelHelpers: 'bundled',
-               inputSourceMap: false,
-               presets: [
-                  ['@babel/preset-env', {
-                     bugfixes: true,
-                     shippedProposals: true,
-                     targets: { esmodules: true }
-                  }]
-               ]
-            }),
             istanbul()
          ]
       },
@@ -48,7 +34,7 @@ export default () =>
          output: [{
             file: `${s_TEST_BROWSER_PATH}/TestsuiteRunner.js`,
             format: 'es',
-            preferConst: true
+            generatedCode: { constBindings: true },
          }],
          plugins: [
             resolve({ browser: true })
