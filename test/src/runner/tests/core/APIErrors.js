@@ -11,7 +11,7 @@ export function run({ Module, data, chai })
 {
    const { expect } = chai;
 
-   const PluginManager = Module.default;
+   const { PluginManager } = Module;
 
    describe(`Core API Errors (${data.scopedName}):`, () =>
    {

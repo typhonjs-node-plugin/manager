@@ -1,7 +1,7 @@
-import { isIterable }   from "@typhonjs-utils/object";
+import { isIterable }         from '@typhonjs-utils/object';
 
-import invokeAsyncEvent from './invokeAsyncEvent.js';
-import invokeSyncEvent  from './invokeSyncEvent.js';
+import { invokeAsyncEvent }   from './invokeAsyncEvent.js';
+import { invokeSyncEvent }    from './invokeSyncEvent.js';
 
 /**
  * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
@@ -45,7 +45,7 @@ import invokeSyncEvent  from './invokeSyncEvent.js';
  *
  * @implements {PluginSupportImpl}
  */
-export default class PluginInvokeSupport
+export class PluginInvokeSupport
 {
    /**
     * @type {PluginManager}

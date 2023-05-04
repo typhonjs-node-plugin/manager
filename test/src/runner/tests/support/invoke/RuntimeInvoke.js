@@ -9,7 +9,7 @@ export function run({ Module, chai })
 {
    const { assert, expect } = chai;
 
-   const PluginManager = Module.default;
+   const { PluginManager } = Module;
    const { PluginInvokeSupport } = Module;
 
    describe(`PluginInvokeSupport Runtime (invoke):`, () =>

@@ -12,7 +12,7 @@ export function run({ Module, data, chai })
    const { assert } = chai;
 
    const { isValidConfig } = Module;
-   const PluginManager = Module.default;
+   const { PluginManager } = Module;
 
    describe('Utility (PluginConfig):', () =>
    {

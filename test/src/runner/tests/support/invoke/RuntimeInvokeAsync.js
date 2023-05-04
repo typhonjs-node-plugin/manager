@@ -11,7 +11,7 @@ export function run({ Module, data, chai })
 {
    const { assert, expect } = chai;
 
-   const PluginManager = Module.default;
+   const { PluginManager } = Module;
    const { PluginInvokeSupport } = Module;
 
    describe(`PluginInvokeSupport Runtime (invoke async):`, () =>

@@ -1,6 +1,6 @@
-import { isIterable }      from '@typhonjs-utils/object';
+import { isIterable }         from '@typhonjs-utils/object';
 
-import PluginInvokeEvent   from './PluginInvokeEvent.js';
+import { PluginInvokeEvent }  from './PluginInvokeEvent.js';
 
 /**
  * Private implementation to invoke synchronous events. This allows internal calls in PluginManager for
@@ -26,7 +26,7 @@ import PluginInvokeEvent   from './PluginInvokeEvent.js';
  *
  * @returns {PluginEventData} The PluginEvent data.
  */
-export default function invokeSyncEvent({ method, manager, copyProps = {}, passthruProps = {}, plugins = void 0,
+export function invokeSyncEvent({ method, manager, copyProps = {}, passthruProps = {}, plugins = void 0,
  options = void 0, errorCheck = true })
 {
    if (typeof method !== 'string') { throw new TypeError(`'method' is not a string.`); }

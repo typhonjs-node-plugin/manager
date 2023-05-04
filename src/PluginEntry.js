@@ -1,7 +1,7 @@
 /**
  * Defines a class holding the data associated with a plugin including its instance.
  */
-export default class PluginEntry
+export class PluginEntry
 {
    /**
     * Data describing the plugin, manager, and optional module data.

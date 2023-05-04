@@ -5,7 +5,7 @@
  *
  * @returns {boolean} True if the given PluginConfig is valid.
  */
-export default function isValidConfig(pluginConfig)
+export function isValidConfig(pluginConfig)
 {
    if (typeof pluginConfig !== 'object') { return false; }
 

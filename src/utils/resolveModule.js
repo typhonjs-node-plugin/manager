@@ -5,7 +5,7 @@
  *
  * @returns {*} The export most likely to match a valid plugin.
  */
-export default function(module)
+export function resolveModule(module)
 {
    // If the module has a named export for `onPluginLoad` then take the module.
    if (typeof module.onPluginLoad === 'function')

@@ -12,7 +12,7 @@ const s_REGEX_STRING_URL = /^(https?|file):/g;
  *
  * @returns {string} The escaped target.
  */
-export default function escapeTarget(target)
+export function escapeTarget(target)
 {
    let targetEscaped = target;
 

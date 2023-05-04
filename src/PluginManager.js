@@ -1,16 +1,23 @@
-import Eventbus                           from '@typhonjs-plugin/eventbus';
-import { EventbusProxy, EventbusSecure }  from '@typhonjs-plugin/eventbus';
-import { ModuleLoader }                   from '@typhonjs-utils/loader-module';
+import {
+   Eventbus,
+   EventbusProxy,
+   EventbusSecure }           from '@typhonjs-plugin/eventbus';
 
-import PluginEntry                        from './PluginEntry.js';
+import { ModuleLoader }       from '@typhonjs-utils/loader-module';
 
-import invokeAsyncEvent                   from './support/invoke/invokeAsyncEvent.js';
+import { PluginEntry }        from './PluginEntry.js';
 
-import escapeTarget                       from './utils/escapeTarget.js';
-import isValidConfig                      from './utils/isValidConfig.js';
-import resolveModule                      from './utils/resolveModule.js';
+import { invokeAsyncEvent }   from './support/invoke/index.js';
 
-import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
+import {
+   escapeTarget,
+   isValidConfig,
+   resolveModule }            from './utils/index.js';
+
+import {
+   deepFreeze,
+   isIterable,
+   isObject }                 from '@typhonjs-utils/object';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -113,9 +120,8 @@ import { deepFreeze, isIterable, isObject }  from '@typhonjs-utils/object';
  * // One can then use the eventbus functionality to invoke associated module / plugin methods even retrieving results.
  * assert(eventbus.triggerSync('cool:event') === true);
  * assert(eventbus.triggerSync('hot:event') === false);
- *
  */
-export default class PluginManager
+export class PluginManager
 {
    /**
     * Stores the associated eventbus.

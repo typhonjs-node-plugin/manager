@@ -7,7 +7,7 @@
  *
  * (string[])  `$$plugin_invoke_names` - The names of plugins invoked.
  */
-export default class PluginInvokeEvent
+export class PluginInvokeEvent
 {
    /**
     * Initializes PluginEvent.
