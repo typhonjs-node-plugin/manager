@@ -1,6 +1,6 @@
 import Eventbus                           from '@typhonjs-plugin/eventbus';
 import { EventbusProxy, EventbusSecure }  from '@typhonjs-plugin/eventbus';
-import ModuleLoader                       from '@typhonjs-utils/loader-module';
+import { ModuleLoader }                   from '@typhonjs-utils/loader-module';
 
 import PluginEntry                        from './PluginEntry.js';
 
