@@ -12,6 +12,8 @@ npm-debug.log
 /coverage
 /coverage-browser
 /test/public/test
+/test/public/Eventbus.js
+/test/public/Eventbus.js.map
 /test/public/PluginManager.js
 /test/public/PluginManager.js.map
 /test/public/TestsuiteRunner.js
