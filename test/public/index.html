@@ -8,16 +8,25 @@
 </head>
 <body>
 <div id="mocha"></div>
+<!-- This import map redirects the `imports` for the `eventbus` subpath export to the local testing bundle`. -->
+<script type="importmap">
+  {
+    "imports": {
+      "#eventbus": "./Eventbus.js"
+    }
+  }
+</script>
 
 <script type="module">
+   import * as ModuleEB     from './Eventbus.js';
    import * as Module       from './PluginManager.js';
 
    import TestsuiteRunner   from './TestsuiteRunner.js';
 
-   import PluginTest          from './test/fixture/plugins/PluginTest.js';
-   import PluginTestNoName2   from './test/fixture/plugins/PluginTestNoName2.js';
-   import PluginTestAsync     from './test/fixture/plugins/PluginTestAsync.js';
-   import PluginTestSync      from './test/fixture/plugins/PluginTestSync.js';
+   import PluginTest        from './test/fixture/plugins/PluginTest.js';
+   import PluginTestNoName2 from './test/fixture/plugins/PluginTestNoName2.js';
+   import PluginTestAsync   from './test/fixture/plugins/PluginTestAsync.js';
+   import PluginTestSync    from './test/fixture/plugins/PluginTestSync.js';
 
    const port = window.location.port;
 
@@ -30,7 +39,6 @@
       moduleURL,
       moduleURLString,
       isBrowser: true,
-      isNode12_2_0: false,
 
       plugins: {
          PluginTest,
@@ -48,7 +56,7 @@
       ]
    };
 
-   TestsuiteRunner.run({ Module, data });
+   TestsuiteRunner.run({ Module, ModuleEB, data });
 </script>
 </body>
 </html>

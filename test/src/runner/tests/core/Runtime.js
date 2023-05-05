@@ -7,13 +7,13 @@
  *
  * @param {object}                           opts.chai - Chai
  */
-export function run({ Module, data, chai })
+export function run({ Module, ModuleEB, data, chai })
 {
    const { assert, expect } = chai;
 
    const { PluginManager } = Module;
 
-   const { Eventbus, EventbusProxy } = Module;
+   const { Eventbus, EventbusProxy } = ModuleEB;
 
    describe(`Core Runtime (${data.scopedName}):`, () =>
    {

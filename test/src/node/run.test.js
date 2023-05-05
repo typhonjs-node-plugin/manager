@@ -2,6 +2,7 @@ import fs                  from 'fs-extra';
 import path                from 'path';
 import url                 from 'url';
 
+import * as ModuleEB       from '../../../dist/eventbus/index.js';
 import * as Module         from '../../../dist/node/PluginManager.js';
 
 import TestsuiteRunner     from '../runner/TestsuiteRunner.js';
@@ -50,4 +51,4 @@ const data = {
    ]
 };
 
-TestsuiteRunner.run({ Module, data });
+TestsuiteRunner.run({ Module, ModuleEB, data });

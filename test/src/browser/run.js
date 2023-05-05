@@ -16,6 +16,7 @@ async function main()
 {
    await BrowserRunner.runServerAndTestSuite({
       reportDir: './coverage-browser',
+      headless: false,
       // keepAlive: true   // Uncomment to keep HTTP server alive / useful for testing other browsers.
    });
 }

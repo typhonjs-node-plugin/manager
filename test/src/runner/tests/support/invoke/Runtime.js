@@ -7,12 +7,12 @@
  *
  * @param {object}                              opts.chai - Chai
  */
-export function run({ Module, data, chai })
+export function run({ Module, ModuleEB, data, chai })
 {
    const { assert } = chai;
 
-   const { PluginManager } = Module;
-   const { Eventbus, PluginInvokeSupport } = Module;
+   const { PluginManager, PluginInvokeSupport } = Module;
+   const { Eventbus } = ModuleEB;
 
    describe('PluginInvokeSupport Runtime:', () =>
    {
