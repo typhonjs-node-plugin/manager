@@ -34,6 +34,7 @@ import { invokeSyncEvent }    from './invokeSyncEvent.js';
  * `plugins:sync:invoke:event` - {@link PluginInvokeSupport#invokeSyncEvent}
  *
  * @example
+ * ```js
  * // One can also indirectly invoke any method of the plugin.
  * // Any plugin with a method named `aCoolMethod` is invoked.
  * eventbus.triggerSync('plugins:invoke:sync:event', { method: 'aCoolMethod' });
@@ -46,6 +47,7 @@ import { invokeSyncEvent }    from './invokeSyncEvent.js';
  *
  * // There are two other properties `copyProps` and `passthruProps` which can be set with object data to _copy_ or
  * // _pass through_ to the invoked method.
+ * ```
  *
  * @implements {MyInterface}
  */

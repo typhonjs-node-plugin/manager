@@ -1,14 +1,16 @@
-import { Eventbus } from '@typhonjs-plugin/manager/eventbus';
+import type { Eventbus }      from '#manager/eventbus';
 
-export interface PluginSupportConstructor
+import type { PluginManager } from './PluginManager.js';
+
+declare interface PluginSupportConstructor
 {
-   new (pluginManager: import('.').PluginManager): PluginSupportImpl;
+   new (pluginManager: PluginManager): PluginSupportImpl;
 }
 
 /**
  * Describes the interface that all PluginSupport classes must implement.
  */
-export interface PluginSupportImpl
+declare interface PluginSupportImpl
 {
    /**
     * Destroys all managed plugins after unloading them.
@@ -51,5 +53,7 @@ export interface PluginSupportImpl
     *
     * @param {import('.').PluginManagerOptions} options Defines optional parameters to set.
     */
-   setOptions(options: import('./index.js').PluginManagerOptions): void;
+   setOptions(options: import('.').PluginManagerOptions): void;
 }
+
+export type { PluginSupportConstructor, PluginSupportImpl };

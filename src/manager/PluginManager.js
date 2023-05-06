@@ -1,7 +1,7 @@
 import {
    Eventbus,
    EventbusProxy,
-   EventbusSecure }           from '#eventbus';
+   EventbusSecure }           from '#manager/eventbus';
 
 import { ModuleLoader }       from '@typhonjs-utils/loader-module';
 
@@ -72,16 +72,15 @@ import {
  * It is recommended to interact with the plugin manager eventbus through an eventbus proxy. The
  * `createEventbusProxy` method will return a proxy to the default or currently set eventbus.
  *
- * It should be noted that this module reexports `@typhonjs-plugin/eventbus` which are available as named exports on
- * this module:
- * import {
- *   Eventbus,
- *   EventbusProxy,
- *   EventbusSecure,
- *   eventbus,
- *   pluginEventbus,
- *   testEventbus
- * } from '@typhonjs-plugin/manager';
+ * It should be noted that this module re-exports `@typhonjs-plugin/eventbus` which is available as named exports via
+ * the `eventbus` subpath export:
+ * ```js
+ * // Main Eventbus implementations:
+ * import { Eventbus, EventbusProxy, EventbusSecure } from '@typhonjs-plugin/manager/eventbus';
+ *
+ * // Consistent bus instances useful for testing and broad accessibility:
+ * import { mainEventbus, pluginEventbus, testEventbus } from '@typhonjs-plugin/manager/eventbus/buses';
+ * ```
  *
  * This reexport is for convenience as it provides one single distribution for Node & browser usage.
  *
