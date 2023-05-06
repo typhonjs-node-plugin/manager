@@ -1,3 +1,4 @@
+*.d.ts
 /.dts
 /dist
 /test/fixture
