@@ -9,10 +9,10 @@
  * `Module` and the `Eventbus.js` file as `ModuleEB`.
  */
 
-import path                from 'node:path';
+import path       from 'node:path';
 
-import istanbul            from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
-import resolve             from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import istanbul   from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
+import resolve    from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
 
 // The test browser distribution is bundled to `./test/public`.
 const s_TEST_BROWSER_PATH = './test/public';
@@ -40,7 +40,7 @@ export default () =>
       },
 
       { // This bundle is the main package export and includes Istanbul instrumentation for coverage.
-         input: './src/index.js',
+         input: './src/manager/index.js',
          external: ['#eventbus'],
          output: [{
             file: `${s_TEST_BROWSER_PATH}/PluginManager.js`,
