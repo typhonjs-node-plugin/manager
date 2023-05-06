@@ -2,17 +2,19 @@
  * ATTENTION: This Rollup configuration file bundles up the separate subpath exports for the main package and the
  * `eventbus` subpath export. The main package is bundled to `./test/public/PluginManager.js` and the `eventbus`
  * subpath export is bundled to `./test/public/Eventbus.js`. There is an import map in `./test/public/index.html` that
- * redirects `#eventbus` to the `Eventbus.js` bundle. `#eventbus` is marked as an external in the main
- * `PluginManager.js` bundle.
+ * redirects `@typhonjs-plugin/manager/eventbus` to the `Eventbus.js` bundle. `@typhonjs-plugin/manager/eventbus` is
+ * marked as an external in the main `PluginManager.js` bundle.
  *
  * In `test/public/index.html` the script section imports both `PluginManager.js` passing that on to the tests as
  * `Module` and the `Eventbus.js` file as `ModuleEB`.
  */
 
-import path       from 'node:path';
+import path                from 'node:path';
 
-import istanbul   from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
-import resolve    from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import resolve             from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import { importsExternal } from "@typhonjs-build-test/rollup-external-imports";
+
+import istanbul            from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
 
 // The test browser distribution is bundled to `./test/public`.
 const s_TEST_BROWSER_PATH = './test/public';
@@ -35,13 +37,14 @@ export default () =>
             sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeTestBrowserPath, `.`)
          }],
          plugins: [
+            importsExternal(),
             resolve()
          ]
       },
 
       { // This bundle is the main package export and includes Istanbul instrumentation for coverage.
          input: './src/manager/index.js',
-         external: ['#eventbus'],
+         external: ['@typhonjs-plugin/manager/eventbus'],
          output: [{
             file: `${s_TEST_BROWSER_PATH}/PluginManager.js`,
             format: 'es',
@@ -50,6 +53,7 @@ export default () =>
             sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeTestBrowserPath, `.`)
          }],
          plugins: [
+            importsExternal(),
             resolve({ browser: true }),
             istanbul()
          ]
