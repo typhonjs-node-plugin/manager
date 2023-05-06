@@ -1,11 +1,11 @@
 {
   "name": "@typhonjs-plugin/manager",
   "description": "Provides a plugin manager & eventbus for Node & browser (supports ESM & CJS).",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
   "imports": {
-    "#eventbus": "@typhonjs-plugin/manager/eventbus"
+    "#manager/*": "@typhonjs-plugin/manager/*"
   },
   "exports": {
     ".": {
@@ -17,6 +17,10 @@
       "types": "./dist/eventbus/index.d.ts",
       "import": "./dist/eventbus/index.js"
     },
+    "./eventbus/buses": {
+      "types": "./dist/eventbus/buses/index.d.ts",
+      "import": "./dist/eventbus/buses/index.js"
+    },
     "./package.json": "./package.json",
     "./types": "./dist/manager/node/index.d.ts"
   },
@@ -24,9 +28,9 @@
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
   "devDependencies": {
-    "@typhonjs-build-test/node-browser": "^0.0.1",
+    "@typhonjs-build-test/node-browser": "^0.0.3",
     "@typhonjs-build-test/rollup-external-imports": "^0.0.1",
-    "@typhonjs-plugin/eventbus": "^0.0.16",
+    "@typhonjs-plugin/eventbus": "^0.0.19",
     "@typhonjs-utils/loader-module": "^0.0.5",
     "@typhonjs-utils/object": "^0.0.12",
     "rollup": "^3"
