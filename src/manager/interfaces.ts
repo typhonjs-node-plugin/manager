@@ -53,7 +53,8 @@ declare interface PluginSupportImpl
     *
     * @param {import('.').PluginManagerOptions} options Defines optional parameters to set.
     */
-   setOptions(options: import('.').PluginManagerOptions): void;
+   // @ts-ignore
+   setOptions(options: import('.').PluginManagerOptions): void; // @ts-ignore
 }
 
 export type { PluginSupportConstructor, PluginSupportImpl };
