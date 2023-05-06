@@ -1,7 +1,7 @@
 import {
    Eventbus,
    EventbusProxy,
-   EventbusSecure }           from '@typhonjs-plugin/eventbus';
+   EventbusSecure }           from '#eventbus';
 
 import { ModuleLoader }       from '@typhonjs-utils/loader-module';
 
@@ -127,23 +127,20 @@ export class PluginManager
     * Stores the associated eventbus.
     *
     * @type {Eventbus}
-    * @private
     */
    #eventbus = null;
 
    /**
     * Stores any EventbusProxy instances created, so that they may be automatically destroyed.
     *
-    * @type {EventbusProxy[]}
-    * @private
+    * @type {import('#eventbus').EventbusProxy[]}
     */
    #eventbusProxies = [];
 
    /**
     * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
     *
-    * @type {EventbusSecureObj[]}
-    * @private
+    * @type {import('#eventbus').EventbusSecureObj[]}
     */
    #eventbusSecure = [];
 
@@ -153,8 +150,7 @@ export class PluginManager
     * along with not being able to set the plugin manager options by the eventbus. These must be explicitly turned
     * off.
     *
-    * @type {PluginManagerOptions}
-    * @private
+    * @type {import('.').PluginManagerOptions}
     */
    #options =
    {
@@ -172,23 +168,20 @@ export class PluginManager
     * in cases when PluginManager is being used incorrectly in a non-async / await manner.
     *
     * @type {Set<string>}
-    * @private
     */
    #pluginAddSet = new Set();
 
    /**
     * Stores the plugins by name with an associated PluginEntry.
     *
-    * @type {Map<string, PluginEntry>}
-    * @private
+    * @type {Map<string, import('./PluginEntry.js').PluginEntry>}
     */
    #pluginMap = new Map();
 
    /**
     * Provides an array of PluginSupportImpl interfaces to extend the plugin manager through the eventbus API.
     *
-    * @type {PluginSupportImpl[]}
-    * @private
+    * @type {import('./interfaces').PluginSupportImpl[]}
     */
    #pluginSupport = [];
 
@@ -203,11 +196,13 @@ export class PluginManager
     * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
     *                                                     eventbus.
     *
-    * @param {PluginManagerOptions}  [options.manager] - The plugin manager options.
+    * @param {import('.').PluginManagerOptions}  [options.manager] - The plugin manager options.
     *
-    * @param {PluginSupportImpl|Iterable<PluginSupportImpl>} [options.PluginSupport] - Optional classes to
-    *                                        pass in which extends the plugin manager. A default implementation is
-    *                                        available: {@link PluginInvokeSupport}
+    * @param {(
+    *    import('./interfaces').PluginSupportConstructor |
+    *    Iterable<import('./interfaces').PluginSupportConstructor>
+    * )} [options.PluginSupport] - Optional classes to pass in which extends the plugin manager. A default
+    * implementation is available: {@link PluginInvokeSupport}
     */
    constructor(options = {})
    {
@@ -236,16 +231,17 @@ export class PluginManager
       }
 
       // Instantiate any PluginSupport classes
-      if (isIterable(options.PluginSupport))
+      if (isIterable(options.PluginSupport) && Symbol.iterator in options.PluginSupport)
       {
          for (const PluginSupport of options.PluginSupport)
          {
             this.#pluginSupport.push(new PluginSupport(this));
          }
       }
-      else if (options.PluginSupport !== void 0)
+      else if (options.PluginSupport !== void 0 && !(Symbol.iterator in options.PluginSupport))
       {
-         this.#pluginSupport.push(new options.PluginSupport(this));
+         const PluginSupport = options.PluginSupport;
+         this.#pluginSupport.push(new PluginSupport(this));
       }
 
       this.setOptions(options.manager || {});
@@ -262,11 +258,11 @@ export class PluginManager
     * existing `instance` to use as the plugin. Then the `target` is chosen as the NPM module / local file to load.
     * By passing in `options` this will be stored and accessible to the plugin during all callbacks.
     *
-    * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
+    * @param {import('.').PluginConfig}   pluginConfig - Defines the plugin to load.
     *
     * @param {object}         [moduleData] - Optional object hash to associate with plugin.
     *
-    * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
+    * @returns {Promise<import('.').PluginData>} The PluginData that represents the plugin added.
     */
    async add(pluginConfig, moduleData)
    {
@@ -364,7 +360,7 @@ export class PluginManager
       /**
        * Create an object hash with data describing the plugin, manager, and any extra module data.
        *
-       * @type {PluginData}
+       * @type {import('.').PluginData}
        */
       const pluginData = JSON.parse(JSON.stringify(
       {
@@ -431,11 +427,11 @@ export class PluginManager
    /**
     * Initializes multiple plugins in a single call.
     *
-    * @param {Iterable<PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
+    * @param {Iterable<import('.').PluginConfig>}   pluginConfigs - An iterable list of plugin config object hash entries.
     *
     * @param {object}                   [moduleData] - Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
+    * @returns {Promise<import('.').PluginData[]>} An array of PluginData objects of all added plugins.
     */
    async addAll(pluginConfigs, moduleData)
    {
@@ -459,11 +455,11 @@ export class PluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {PluginConfig}   pluginConfig - Defines the plugin to load.
+    * @param {import('.').PluginConfig}   pluginConfig - Defines the plugin to load.
     *
     * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<PluginData>} The PluginData that represents the plugin added.
+    * @returns {Promise<import('.').PluginData>} The PluginData that represents the plugin added.
     * @private
     */
    async _addEventbus(pluginConfig, moduleData)
@@ -478,11 +474,11 @@ export class PluginManager
     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
     *
-    * @param {Iterable<PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
+    * @param {Iterable<import('.').PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
     *
     * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
     *
-    * @returns {Promise<PluginData[]>} An array of PluginData objects of all added plugins.
+    * @returns {Promise<import('.').PluginData[]>} An array of PluginData objects of all added plugins.
     * @private
     */
    async _addAllEventbus(pluginConfigs, moduleData)
@@ -497,7 +493,7 @@ export class PluginManager
     * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
     * It is added to `this.#eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
     *
-    * @returns {EventbusProxy} A proxy for the currently set Eventbus.
+    * @returns {import('#eventbus').EventbusProxy} A proxy for the currently set Eventbus.
     */
    createEventbusProxy()
    {
@@ -540,7 +536,7 @@ export class PluginManager
    /**
     * Destroys all managed plugins after unloading them.
     *
-    * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+    * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async destroy()
    {
@@ -602,7 +598,7 @@ export class PluginManager
     * code removing plugins in this manner.
     *
     * @private
-    * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+    * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async _destroyEventbus()
    {
@@ -629,7 +625,7 @@ export class PluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get state.
     *
-    * @returns {boolean|DataOutPluginEnabled[]} Enabled state for single plugin or array of results for multiple
+    * @returns {boolean|import('.').DataOutPluginEnabled[]} Enabled state for single plugin or array of results for multiple
     *                                                plugins.
     */
    getEnabled({ plugins = [] } = {})
@@ -688,7 +684,7 @@ export class PluginManager
    /**
     * Returns a copy of the plugin manager options.
     *
-    * @returns {PluginManagerOptions} A copy of the plugin manager options.
+    * @returns {import('.').PluginManagerOptions} A copy of the plugin manager options.
     */
    getOptions()
    {
@@ -704,7 +700,7 @@ export class PluginManager
     *
     * @param {string|RegExp}   opts.event - Event name or RegExp to match event names.
     *
-    * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
+    * @returns {string[] | import('.').DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
    getPluginByEvent({ event })
    {
@@ -751,7 +747,7 @@ export class PluginManager
     *
     * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get plugin data.
     *
-    * @returns {PluginData|PluginData[]|undefined} The plugin data for a plugin or list of plugins.
+    * @returns {import('.').PluginData | import('.').PluginData[] | undefined} The plugin data for a plugin or list of plugins.
     */
    getPluginData({ plugins = [] } = {})
    {
@@ -805,7 +801,7 @@ export class PluginManager
     *
     * @param {string} plugin - The plugin name to get.
     *
-    * @returns {void|PluginEntry} The PluginEntry for the given plugin name.
+    * @returns {import('./PluginEntry.js').PluginEntry} The PluginEntry for the given plugin name.
     */
    getPluginEntry(plugin)
    {
@@ -817,11 +813,11 @@ export class PluginManager
    /**
     * Returns the event binding names registered on any associated plugin EventbusProxy.
     *
-    * @param {object}                  [opts] - Options object. If undefined all plugin data is returned.
+    * @param {object}                     [opts] - Options object. If undefined all plugin data is returned.
     *
-    * @param {string|Iterable<string>} [opts.plugins] - Plugin name or iterable list of names to get plugin data.
+    * @param {string | Iterable<string>}  [opts.plugins] - Plugin name or iterable list of names to get plugin data.
     *
-    * @returns {string[]|DataOutPluginEvents[]} Event binding names registered from the plugin.
+    * @returns {import('.').DataOutPluginEvents[]} Event binding names registered from the plugin.
     */
    getPluginEvents({ plugins = [] } = {})
    {
@@ -836,10 +832,13 @@ export class PluginManager
       if (typeof plugins === 'string')
       {
          const entry = this.#pluginMap.get(plugins);
-         return entry !== void 0 && entry.eventbusProxy ?
-          Array.from(entry.eventbusProxy.proxyKeys()).sort() /* c8 ignore next */ : [];
+         return entry !== void 0 && entry.eventbusProxy ? [{
+            plugin: plugins,
+            events: Array.from(entry.eventbusProxy.proxyKeys()).sort()
+         }] /* c8 ignore next */ : [];
       }
 
+      /** @type {import('.').DataOutPluginEvents[]} */
       const results = [];
 
       let count = 0;
@@ -981,7 +980,7 @@ export class PluginManager
    /**
     * Performs validation of a PluginConfig.
     *
-    * @param {PluginConfig}   pluginConfig - A PluginConfig to validate.
+    * @param {import('.').PluginConfig}   pluginConfig - A PluginConfig to validate.
     *
     * @returns {boolean} True if the given PluginConfig is valid.
     */
@@ -1099,7 +1098,7 @@ export class PluginManager
     *
     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
     *
-    * @returns {Promise<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+    * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async remove({ plugins })
    {
@@ -1180,7 +1179,7 @@ export class PluginManager
    /**
     * Removes all plugins after unloading them and clearing any event bindings automatically.
     *
-    * @returns {Promise.<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+    * @returns {Promise.<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
    async removeAll()
    {
@@ -1197,7 +1196,7 @@ export class PluginManager
     *
     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
     *
-    * @returns {Promise<DataOutPluginRemoved>} A list of plugin names and removal success state.
+    * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     * @private
     */
    async _removeEventbus(opts)
@@ -1212,7 +1211,7 @@ export class PluginManager
     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
-    * @returns {Promise.<DataOutPluginRemoved[]>} A list of plugin names and removal success state.
+    * @returns {Promise.<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     * @private
     */
    async _removeAllEventbus()
@@ -1425,7 +1424,7 @@ export class PluginManager
    /**
     * Set optional parameters.
     *
-    * @param {PluginManagerOptions} options - Defines optional parameters to set.
+    * @param {import('.').PluginManagerOptions} options - Defines optional parameters to set.
     */
    setOptions(options)
    {
@@ -1464,7 +1463,7 @@ export class PluginManager
     * is enabled. This disables the ability for the plugin manager options to be set via events preventing any external
     * code modifying options.
     *
-    * @param {PluginManagerOptions} options - Defines optional parameters to set.
+    * @param {import('.').PluginManagerOptions} options - Defines optional parameters to set.
     *
     * @private
     */

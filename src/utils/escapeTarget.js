@@ -14,7 +14,13 @@ const s_REGEX_STRING_URL = /^(https?|file):/g;
  */
 export function escapeTarget(target)
 {
-   let targetEscaped = target;
+   if (typeof target !== 'string' && !(target instanceof URL))
+   {
+      throw new TypeError(`'target' is not a string or URL.`);
+   }
+
+   /** @type {string} */
+   let targetEscaped = typeof target === 'string' ? target : void 0;
 
    if (target instanceof URL)
    {

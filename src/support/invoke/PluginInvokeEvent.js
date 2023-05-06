@@ -22,29 +22,29 @@ export class PluginInvokeEvent
        * Provides the unified event data assigning any pass through data to the copied data supplied. Invoked functions
        * may add to or modify this data.
        *
-       * @type {PluginEventData}
+       * @type {import('../../').PluginEventData}
        */
       this.data = Object.assign(JSON.parse(JSON.stringify(copyProps)), passthruProps);
 
       /**
        * Unique data available in each plugin invoked.
        *
-       * @type {EventbusProxy} - The active EventbusProxy for that particular plugin.
+       * @type {import('#eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
        */
-      this.eventbus = void 0;
+      this.eventbus = null;
 
       /**
        * Unique data available in each plugin invoked.
        *
        * @type {string} - The active plugin name.
        */
-      this.pluginName = void 0;
+      this.pluginName = '';
 
       /**
        * Unique data available in each plugin invoked.
        *
        * @type {object} - The active plugin options.
        */
-      this.pluginOptions = void 0;
+      this.pluginOptions = '';
    }
 }

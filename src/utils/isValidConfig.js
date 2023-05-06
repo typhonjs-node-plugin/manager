@@ -1,7 +1,7 @@
 /**
  * Performs validation of a PluginConfig.
  *
- * @param {PluginConfig}   pluginConfig A PluginConfig to validate.
+ * @param {import('..').PluginConfig}   pluginConfig A PluginConfig to validate.
  *
  * @returns {boolean} True if the given PluginConfig is valid.
  */

@@ -6,8 +6,7 @@ export class PluginEntry
    /**
     * Data describing the plugin, manager, and optional module data.
     *
-    * @type {PluginData}
-    * @private
+    * @type {import('.').PluginData}
     */
    #data;
 
@@ -15,7 +14,6 @@ export class PluginEntry
     * The plugin enabled state.
     *
     * @type {boolean}
-    * @private
     */
    #enabled;
 
@@ -23,7 +21,6 @@ export class PluginEntry
     * The plugin name.
     *
     * @type {string}
-    * @private
     */
    #name;
 
@@ -31,7 +28,6 @@ export class PluginEntry
     * Any stored import.meta data.
     *
     * @type {object}
-    * @private
     */
    #importmeta;
 
@@ -39,23 +35,20 @@ export class PluginEntry
     * The loaded plugin instance.
     *
     * @type {object}
-    * @private
     */
    #instance;
 
    /**
     * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
     *
-    * @type {EventbusProxy}
-    * @private
+    * @type {import('#eventbus').EventbusProxy}
     */
    #eventbusProxy;
 
    /**
     * Stores the proxied event names, callback functions, context and guarded state when this plugin is disabled.
     *
-    * @type {Array<[string, Function, object, boolean]>}
-    * @private
+    * @type {Array<[string, Function, object, import('#eventbus').EventOptionsOut]>}
     */
    #events;
 
@@ -64,12 +57,12 @@ export class PluginEntry
     *
     * @param {string}      name - The plugin name.
     *
-    * @param {PluginData}  data - Describes the plugin, manager, and optional module data.
+    * @param {import('.').PluginData}  data - Describes the plugin, manager, and optional module data.
     *
     * @param {object}      instance - The loaded plugin instance.
     *
-    * @param {EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin wrapping the plugin manager
-    *                                         eventbus.
+    * @param {import('#eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin wrapping
+    *        the plugin manager eventbus.
     */
    constructor(name, data, instance, eventbusProxy = void 0)
    {
@@ -87,7 +80,7 @@ export class PluginEntry
    /**
     * Get plugin data.
     *
-    * @returns {PluginData} The associated PluginData.
+    * @returns {import('.').PluginData} The associated PluginData.
     */
    get data() { return this.#data; }
 
@@ -156,7 +149,7 @@ export class PluginEntry
    /**
     * Get associated EventbusProxy.
     *
-    * @returns {EventbusProxy} Associated EventbusProxy.
+    * @returns {import('#eventbus').EventbusProxy} Associated EventbusProxy.
     */
    get eventbusProxy() { return this.#eventbusProxy; }
 
@@ -178,7 +171,7 @@ export class PluginEntry
    /**
     * Set associated EventbusProxy.
     *
-    * @param {EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
+    * @param {import('#eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
     */
    set eventbusProxy(eventbusProxy) { this.#eventbusProxy = eventbusProxy; }
 

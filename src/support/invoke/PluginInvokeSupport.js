@@ -4,6 +4,10 @@ import { invokeAsyncEvent }   from './invokeAsyncEvent.js';
 import { invokeSyncEvent }    from './invokeSyncEvent.js';
 
 /**
+ * @typedef {import('../../interfaces').PluginSupportImpl} MyInterface
+ */
+
+/**
  * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
  * a wrapped instance of PluginManager depending on the use case.
  *
@@ -43,19 +47,19 @@ import { invokeSyncEvent }    from './invokeSyncEvent.js';
  * // There are two other properties `copyProps` and `passthruProps` which can be set with object data to _copy_ or
  * // _pass through_ to the invoked method.
  *
- * @implements {PluginSupportImpl}
+ * @implements {MyInterface}
  */
 export class PluginInvokeSupport
 {
    /**
-    * @type {PluginManager}
+    * @type {import('../..').PluginManager}
     */
    #pluginManager = null;
 
    /**
     * Create PluginInvokeSupport
     *
-    * @param {PluginManager} pluginManager - The plugin manager to associate.
+    * @param {import('../..').PluginManager} pluginManager - The plugin manager to associate.
     */
    constructor(pluginManager)
    {
@@ -75,7 +79,7 @@ export class PluginInvokeSupport
    /**
     * Returns the associated plugin manager options.
     *
-    * @returns {PluginManagerOptions} The associated plugin manager options.
+    * @returns {import('../../').PluginManagerOptions} The associated plugin manager options.
     */
    get options()
    {
@@ -88,7 +92,7 @@ export class PluginInvokeSupport
    /**
     * Gets the associated plugin manager.
     *
-    * @returns {PluginManager} The associated plugin manager
+    * @returns {import('../../').PluginManager} The associated plugin manager
     */
    get pluginManager()
    {
@@ -103,7 +107,7 @@ export class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {Eventbus}   opts.eventbus - The eventbus to disassociate.
+    * @param {import('#eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
     *
     * @param {string}     opts.eventPrepend - The current event prepend.
     */
@@ -447,9 +451,9 @@ export class PluginInvokeSupport
     *
     * @param {object}   [opts.passthruProps] - Properties that are passed through.
     *
-    * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
+    * @param {string | Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {Promise<PluginEventData>} The PluginEvent data.
+    * @returns {Promise<import('../../').PluginEventData>} The PluginEvent data.
     */
    async invokeAsyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 })
    {
@@ -567,7 +571,7 @@ export class PluginInvokeSupport
     *
     * @param {string|Iterable<string>} [opts.plugins] - Specific plugin name or iterable list of plugin names to invoke.
     *
-    * @returns {PluginEventData} The PluginEvent data.
+    * @returns {import('../../').PluginEventData} The PluginEvent data.
     */
    invokeSyncEvent({ method, copyProps = {}, passthruProps = {}, plugins = void 0 })
    {
@@ -584,9 +588,9 @@ export class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+    * @param {import('#eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
     *
-    * @param {Eventbus}   opts.newEventbus - The new eventbus to associate.
+    * @param {import('#eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
     *
     * @param {string}     opts.oldPrepend - The old event prepend.
     *
@@ -622,7 +626,7 @@ export class PluginInvokeSupport
    /**
     * Set optional parameters.
     *
-    * @param {PluginManagerOptions} options Defines optional parameters to set.
+    * @param {import('../../').PluginManagerOptions} options Defines optional parameters to set.
     */
    setOptions(options)  // eslint-disable-line no-unused-vars
    {

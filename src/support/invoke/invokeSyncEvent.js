@@ -12,7 +12,7 @@ import { PluginInvokeEvent }  from './PluginInvokeEvent.js';
  *
  * @param {string}                     opts.method - Method name to invoke.
  *
- * @param {PluginManager}              opts.manager - A plugin manager instance.
+ * @param {import('../../').PluginManager}              opts.manager - A plugin manager instance.
  *
  * @param {object}                     [opts.copyProps] - Properties that are copied.
  *
@@ -24,7 +24,7 @@ import { PluginInvokeEvent }  from './PluginInvokeEvent.js';
  *
  * @param {boolean}                    [opts.errorCheck=true] - If false optional error checking is disabled.
  *
- * @returns {PluginEventData} The PluginEvent data.
+ * @returns {import('../../').PluginEventData} The PluginEvent data.
  */
 export function invokeSyncEvent({ method, manager, copyProps = {}, passthruProps = {}, plugins = void 0,
  options = void 0, errorCheck = true })
