@@ -49,6 +49,11 @@ export function run({ Module, chai })
 
    describe('Utility:', () =>
    {
+      describe('escapeTarget (error):', () =>
+      {
+         expect(() => escapeTarget(false)).to.throw(TypeError, `'target' is not a string or URL.`);
+      });
+
       describe('escapeTarget:', () =>
       {
          for (let cntr = 0; cntr < s_TARGET_DATA.length; cntr++)

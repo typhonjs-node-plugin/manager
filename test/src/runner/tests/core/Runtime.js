@@ -213,12 +213,12 @@ export function run({ Module, ModuleEB, data, chai })
             results = eventbus.triggerSync('plugins:get:plugin:events', { plugins: 'PluginTest' });
 
             assert.strictEqual(JSON.stringify(results),
-             '["test:trigger","test:trigger2","test:trigger3"]');
+             '[{"plugin":"PluginTest","events":["test:trigger","test:trigger2","test:trigger3"]}]');
 
             results = eventbus.triggerSync('plugins:get:plugin:events', { plugins: 'objectPluginTest' });
 
             assert.strictEqual(JSON.stringify(results),
-             '["test:trigger","test:trigger4","test:trigger5"]');
+             '[{"plugin":"objectPluginTest","events":["test:trigger","test:trigger4","test:trigger5"]}]');
 
             results = eventbus.triggerSync('plugins:get:plugin:events', { plugins: ['PluginTest'] });
 
