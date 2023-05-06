@@ -3,7 +3,7 @@ import path                from 'path';
 import url                 from 'url';
 
 import * as ModuleEB       from '../../../dist/eventbus/index.js';
-import * as Module         from '../../../dist/node/PluginManager.js';
+import * as Module         from '../../../dist/manager/node/index.js';
 
 import TestsuiteRunner     from '../runner/TestsuiteRunner.js';
 
