@@ -125,21 +125,21 @@ export class PluginManager
    /**
     * Stores the associated eventbus.
     *
-    * @type {Eventbus}
+    * @type {import('#manager/eventbus').Eventbus}
     */
    #eventbus = null;
 
    /**
     * Stores any EventbusProxy instances created, so that they may be automatically destroyed.
     *
-    * @type {import('#eventbus').EventbusProxy[]}
+    * @type {import('#manager/eventbus').EventbusProxy[]}
     */
    #eventbusProxies = [];
 
    /**
     * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
     *
-    * @type {import('#eventbus').EventbusSecureObj[]}
+    * @type {import('#manager/eventbus').EventbusSecureObj[]}
     */
    #eventbusSecure = [];
 
@@ -189,8 +189,8 @@ export class PluginManager
     *
     * @param {object}   [options] - Provides various configuration options:
     *
-    * @param {Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus' used as the plugin
-    *                                        eventbus. If not provided a default eventbus is created.
+    * @param {import('#manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
+    *        used as the plugin eventbus. If not provided a default eventbus is created.
     *
     * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
     *                                                     eventbus.
@@ -492,7 +492,7 @@ export class PluginManager
     * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
     * It is added to `this.#eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
     *
-    * @returns {import('#eventbus').EventbusProxy} A proxy for the currently set Eventbus.
+    * @returns {import('#manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
     */
    createEventbusProxy()
    {
@@ -515,7 +515,7 @@ export class PluginManager
     *
     * @param {string}   [name] - Optional name for the EventbusSecure instance.
     *
-    * @returns {EventbusSecure} A secure wrapper for the currently set Eventbus.
+    * @returns {import('#manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
     */
    createEventbusSecure(name = void 0)
    {
@@ -671,7 +671,7 @@ export class PluginManager
    /**
     * Returns any associated eventbus.
     *
-    * @returns {Eventbus} The associated eventbus.
+    * @returns {import('#manager/eventbus').EventBus} The associated eventbus.
     */
    getEventbus()
    {
@@ -1305,7 +1305,7 @@ export class PluginManager
     *
     * @param {object}     opts - An options object.
     *
-    * @param {Eventbus}   opts.eventbus - The new eventbus to associate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
     *
     * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                     binding targets.
