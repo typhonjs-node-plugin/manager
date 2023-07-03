@@ -109,7 +109,7 @@ export class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
     *
     * @param {string}     opts.eventPrepend - The current event prepend.
     */
@@ -590,9 +590,9 @@ export class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
     *
-    * @param {import('#eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
     *
     * @param {string}     opts.oldPrepend - The old event prepend.
     *
