@@ -381,7 +381,7 @@ export class PluginManager
          }
       }));
 
-      deepFreeze(pluginData, ['manager']);
+      deepFreeze(pluginData, new Set(['manager']));
 
       const eventbusProxy = this.#eventbus !== null && this.#eventbus !== void 0 ?
        new EventbusProxy(this.#eventbus) /* c8 ignore next */ : void 0;
