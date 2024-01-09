@@ -1,3 +1,11 @@
+/**
+ * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
+ * and protected manner across NPM modules, local files, and preloaded object instances. This pattern facilitates
+ * message passing between modules versus direct dependencies / method invocation.
+ *
+ * @module
+ */
+
 export *                   from './PluginManager.js';
 
 export {
