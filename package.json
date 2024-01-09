@@ -1,11 +1,13 @@
 {
   "name": "@typhonjs-plugin/manager",
-  "description": "Provides a plugin manager & eventbus for Node & browser (supports ESM & CJS).",
+  "description": "Provides a plugin manager & eventbus for Node and in the browser.",
   "version": "0.0.17",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
   "imports": {
-    "#manager/*": "@typhonjs-plugin/manager/*"
+    "#runtime/plugin/manager/*": "@typhonjs-plugin/manager/*",
+    "#runtime/util/loader-module": "@typhonjs-utils/loader-module",
+    "#runtime/util/object": "@typhonjs-utils/object"
   },
   "exports": {
     ".": {
@@ -21,25 +23,27 @@
       "types": "./dist/eventbus/buses/index.d.ts",
       "import": "./dist/eventbus/buses/index.js"
     },
-    "./package.json": "./package.json",
-    "./types": "./dist/manager/node/index.d.ts"
+    "./src/manager": {
+      "import": "./src/manager/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "contributors": [
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
   "devDependencies": {
-    "@typhonjs-build-test/node-browser": "^0.0.3",
-    "@typhonjs-build-test/rollup-external-imports": "^0.0.1",
-    "@typhonjs-plugin/eventbus": "^0.0.19",
-    "@typhonjs-utils/loader-module": "^0.0.5",
-    "@typhonjs-utils/object": "^0.0.12",
-    "rollup": "^3"
+    "@typhonjs-build-test/esm-d-ts": "^0.2.0-next.4",
+    "@typhonjs-build-test/node-browser": "^0.0.4",
+    "@typhonjs-build-test/rollup-plugin-pkg-imports": "0.1.0",
+    "@typhonjs-plugin/eventbus": "^0.1.0",
+    "@typhonjs-utils/loader-module": "^0.1.0",
+    "@typhonjs-utils/object": "^0.1.0",
+    "rollup": "^4"
   },
   "engines": {
     "node": ">=14.18"
   },
   "files": [
-    "/npm-shrinkwrap.json",
     "/dist",
     "/src",
     "/types"
@@ -50,11 +54,20 @@
     "plugin",
     "manager"
   ],
+  "typedocOptions": {
+    "dmtLinksService": {
+      "Discord": "https://typhonjs.io/discord/",
+      "GitHub": "https://github.com/typhonjs-node-plugin/manager",
+      "NPM": "https://www.npmjs.com/package/@typhonjs-plugin/manager"
+    }
+  },
   "license": "MPL-2.0",
   "repository": "github:typhonjs-node-plugin/manager",
   "bugs": "https://github.com/typhonjs-node-plugin/manager/issues",
+  "apidocs": "https://typhonjs-node-plugin.github.io/manager/",
   "scripts": {
     "bundle": "rollup --config",
+    "docs": "typedoc-pkg --api-link esm",
     "eslint": "eslint .",
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "rollup --config rollup.config.browser-test.js",
