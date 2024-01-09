@@ -1,4 +1,4 @@
-import type { Eventbus }      from '#manager/eventbus';
+import type { Eventbus }      from '#runtime/plugin/manager/eventbus';
 
 import type { PluginManager } from './PluginManager.js';
 

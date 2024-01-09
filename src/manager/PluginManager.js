@@ -1,9 +1,9 @@
 import {
    Eventbus,
    EventbusProxy,
-   EventbusSecure }           from '#manager/eventbus';
+   EventbusSecure }           from '#runtime/plugin/manager/eventbus';
 
-import { ModuleLoader }       from '@typhonjs-utils/loader-module';
+import { ModuleLoader }       from '#runtime/util/loader-module';
 
 import { PluginEntry }        from './PluginEntry.js';
 
@@ -17,7 +17,7 @@ import {
 import {
    deepFreeze,
    isIterable,
-   isObject }                 from '@typhonjs-utils/object';
+   isObject }                 from '#runtime/util/object';
 
 /**
  * Provides a lightweight plugin manager for Node / NPM & the browser with eventbus integration for plugins in a safe
@@ -102,7 +102,7 @@ import {
  * TODO: add wiki link
  *
  * @example
- * import PluginManager from '@typhonjs-plugin/manager';
+ * import { PluginManager } from '@typhonjs-plugin/manager';
  *
  * const pluginManager = new PluginManager();
  *
@@ -125,21 +125,21 @@ export class PluginManager
    /**
     * Stores the associated eventbus.
     *
-    * @type {import('#manager/eventbus').Eventbus}
+    * @type {import('#runtime/plugin/manager/eventbus').Eventbus}
     */
    #eventbus = null;
 
    /**
     * Stores any EventbusProxy instances created, so that they may be automatically destroyed.
     *
-    * @type {import('#manager/eventbus').EventbusProxy[]}
+    * @type {import('#runtime/plugin/manager/eventbus').EventbusProxy[]}
     */
    #eventbusProxies = [];
 
    /**
     * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
     *
-    * @type {import('#manager/eventbus').EventbusSecureObj[]}
+    * @type {import('#runtime/plugin/manager/eventbus').EventbusSecureObj[]}
     */
    #eventbusSecure = [];
 
@@ -189,7 +189,7 @@ export class PluginManager
     *
     * @param {object}   [options] - Provides various configuration options:
     *
-    * @param {import('#manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
     *        used as the plugin eventbus. If not provided a default eventbus is created.
     *
     * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
@@ -492,7 +492,7 @@ export class PluginManager
     * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
     * It is added to `this.#eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
     *
-    * @returns {import('#manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
     */
    createEventbusProxy()
    {
@@ -515,7 +515,7 @@ export class PluginManager
     *
     * @param {string}   [name] - Optional name for the EventbusSecure instance.
     *
-    * @returns {import('#manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
     */
    createEventbusSecure(name = void 0)
    {
@@ -671,7 +671,7 @@ export class PluginManager
    /**
     * Returns any associated eventbus.
     *
-    * @returns {import('#manager/eventbus').EventBus} The associated eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventBus} The associated eventbus.
     */
    getEventbus()
    {
@@ -1305,7 +1305,7 @@ export class PluginManager
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
     *
     * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                     binding targets.

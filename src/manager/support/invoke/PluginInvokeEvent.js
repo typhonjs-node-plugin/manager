@@ -29,7 +29,7 @@ export class PluginInvokeEvent
       /**
        * Unique data available in each plugin invoked.
        *
-       * @type {import('#manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
+       * @type {import('#runtime/plugin/manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
        */
       this.eventbus = null;
 

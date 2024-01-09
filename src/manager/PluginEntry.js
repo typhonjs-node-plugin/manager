@@ -41,14 +41,14 @@ export class PluginEntry
    /**
     * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
     *
-    * @type {import('#manager/eventbus').EventbusProxy}
+    * @type {import('#runtime/plugin/manager/eventbus').EventbusProxy}
     */
    #eventbusProxy;
 
    /**
     * Stores the proxied event names, callback functions, context and guarded state when this plugin is disabled.
     *
-    * @type {Array<[string, Function, object, import('#manager/eventbus').EventOptionsOut]>}
+    * @type {Array<[string, Function, object, import('#runtime/plugin/manager/eventbus').EventOptionsOut]>}
     */
    #events;
 
@@ -61,7 +61,7 @@ export class PluginEntry
     *
     * @param {object}      instance - The loaded plugin instance.
     *
-    * @param {import('#manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
+    * @param {import('#runtime/plugin/manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
     *        wrapping the plugin manager eventbus.
     */
    constructor(name, data, instance, eventbusProxy = void 0)
@@ -149,7 +149,7 @@ export class PluginEntry
    /**
     * Get associated EventbusProxy.
     *
-    * @returns {import('#manager/eventbus').EventbusProxy} Associated EventbusProxy.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventbusProxy} Associated EventbusProxy.
     */
    get eventbusProxy() { return this.#eventbusProxy; }
 
@@ -171,7 +171,7 @@ export class PluginEntry
    /**
     * Set associated EventbusProxy.
     *
-    * @param {import('#manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
+    * @param {import('#runtime/plugin/manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
     */
    set eventbusProxy(eventbusProxy) { this.#eventbusProxy = eventbusProxy; }
 
