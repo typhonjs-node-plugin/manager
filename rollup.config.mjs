@@ -1,13 +1,14 @@
-import resolve             from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
+import resolve             from '@rollup/plugin-node-resolve';
 import { generateDTS }     from '@typhonjs-build-test/esm-d-ts';
-import { importsExternal } from "@typhonjs-build-test/rollup-external-imports";
+import {
+   importsExternal,
+   importsResolve }        from '@typhonjs-build-test/rollup-plugin-pkg-imports';
 
 // Produce sourcemaps or not.
 const sourcemap = true;
 
 // Bundle all top level external package exports.
-const dtsEventbusOptions = { bundlePackageExports: true, prependFiles: ['./module.desc'] };
-const dtsManagerOptions = { prependFiles: ['./module.desc'] };
+const dtsEventbusOptions = { bundlePackageExports: true };
 
 export default () =>
 {
@@ -51,9 +52,13 @@ export default () =>
             sourcemap
          }],
          plugins: [
-            importsExternal(),
+            importsExternal({ importKeys: ['#runtime/plugin/manager/*'] }),
+            importsResolve({
+               exportConditions: ['node', 'import'],
+               importKeys: ['#runtime/util/loader-module', '#runtime/util/object'] }
+            ),
             resolve({ exportConditions: ['node', 'import'] }),
-            generateDTS.plugin(dtsManagerOptions)
+            generateDTS.plugin()
          ]
       },
 
@@ -67,9 +72,13 @@ export default () =>
             sourcemap
          }],
          plugins: [
-            importsExternal(),
+            importsExternal({ importKeys: ['#runtime/plugin/manager/*'] }),
+            importsResolve({
+               exportConditions: ['browser', 'import'],
+               importKeys: ['#runtime/util/loader-module', '#runtime/util/object']
+            }),
             resolve({ exportConditions: ['browser', 'import'] }),
-            generateDTS.plugin(dtsManagerOptions)
+            generateDTS.plugin()
          ]
       }
    ];

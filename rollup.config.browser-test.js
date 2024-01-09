@@ -12,7 +12,9 @@
 import path                from 'node:path';
 
 import resolve             from '@rollup/plugin-node-resolve'; // This resolves NPM modules from node_modules.
-import { importsExternal } from "@typhonjs-build-test/rollup-external-imports";
+import {
+   importsExternal,
+   importsResolve }        from '@typhonjs-build-test/rollup-plugin-pkg-imports';
 
 import istanbul            from 'rollup-plugin-istanbul';      // Adds Istanbul instrumentation.
 
@@ -23,6 +25,8 @@ const s_TEST_BROWSER_PATH = './test/public';
 const s_SOURCEMAP = true;
 
 const relativeTestBrowserPath = path.relative(`${s_TEST_BROWSER_PATH}`, '.');
+
+const exportConditions = ['browser', 'import'];
 
 export default () =>
 {
@@ -53,8 +57,9 @@ export default () =>
             sourcemapPathTransform: (sourcePath) => sourcePath.replace(relativeTestBrowserPath, `.`)
          }],
          plugins: [
-            importsExternal(),
-            resolve({ browser: true }),
+            importsExternal({ importKeys: ['#runtime/plugin/manager/*'] }),
+            importsResolve({ exportConditions, importKeys: ['#runtime/util/loader-module', '#runtime/util/object'] }),
+            resolve({ exportConditions }),
             istanbul()
          ]
       },
