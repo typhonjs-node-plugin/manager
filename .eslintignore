@@ -2,6 +2,7 @@
 *.ts
 /.dts
 /dist
+/docs
 /test/fixture
 /test/public
 /types
