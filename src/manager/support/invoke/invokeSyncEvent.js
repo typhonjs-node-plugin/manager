@@ -1,4 +1,4 @@
-import { isIterable }         from '@typhonjs-utils/object';
+import { isIterable }         from '#runtime/util/object';
 
 import { PluginInvokeEvent }  from './PluginInvokeEvent.js';
 

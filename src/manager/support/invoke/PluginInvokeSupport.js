@@ -1,4 +1,4 @@
-import { isIterable }         from '@typhonjs-utils/object';
+import { isIterable }         from '#runtime/util/object';
 
 import { invokeAsyncEvent }   from './invokeAsyncEvent.js';
 import { invokeSyncEvent }    from './invokeSyncEvent.js';
