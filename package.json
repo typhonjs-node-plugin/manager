@@ -32,7 +32,7 @@
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
   "devDependencies": {
-    "@typhonjs-build-test/esm-d-ts": "^0.2.0-next.4",
+    "@typhonjs-build-test/esm-d-ts": "^0.2.0",
     "@typhonjs-build-test/node-browser": "^0.0.4",
     "@typhonjs-build-test/rollup-plugin-pkg-imports": "0.1.0",
     "@typhonjs-plugin/eventbus": "^0.1.0",
