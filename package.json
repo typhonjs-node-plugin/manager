@@ -36,6 +36,7 @@
     "@typhonjs-build-test/node-browser": "^0.0.4",
     "@typhonjs-build-test/rollup-plugin-pkg-imports": "0.1.0",
     "@typhonjs-plugin/eventbus": "^0.1.0",
+    "@typhonjs-typedoc/typedoc-pkg": "^0.0.2",
     "@typhonjs-utils/loader-module": "^0.1.0",
     "@typhonjs-utils/object": "^0.1.0",
     "rollup": "^4"
