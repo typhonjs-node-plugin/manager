@@ -32,11 +32,11 @@
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
   "devDependencies": {
-    "@typhonjs-build-test/esm-d-ts": "^0.2.0",
-    "@typhonjs-build-test/node-browser": "^0.0.4",
-    "@typhonjs-build-test/rollup-plugin-pkg-imports": "0.1.0",
+    "@typhonjs-build-test/esm-d-ts": "^0.2.2",
+    "@typhonjs-build-test/node-browser": "^0.0.5",
+    "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.3.0",
     "@typhonjs-plugin/eventbus": "^0.1.0",
-    "@typhonjs-typedoc/typedoc-pkg": "^0.0.2",
+    "@typhonjs-typedoc/typedoc-pkg": "^0.0.3",
     "@typhonjs-utils/loader-module": "^0.1.0",
     "@typhonjs-utils/object": "^0.1.0",
     "rollup": "^4"
@@ -67,6 +67,7 @@
   "bugs": "https://github.com/typhonjs-node-plugin/manager/issues",
   "apidocs": "https://typhonjs-node-plugin.github.io/manager/",
   "scripts": {
+    "checkJs": "esm-d-ts check src/manager/index.js",
     "bundle": "rollup --config",
     "docs": "typedoc-pkg --api-link esm",
     "eslint": "eslint .",
