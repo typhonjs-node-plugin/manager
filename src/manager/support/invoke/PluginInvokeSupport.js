@@ -4,10 +4,6 @@ import { invokeAsyncEvent }   from './invokeAsyncEvent.js';
 import { invokeSyncEvent }    from './invokeSyncEvent.js';
 
 /**
- * @typedef {import('../../interfaces').PluginSupportImpl} MyInterface
- */
-
-/**
  * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
  * a wrapped instance of PluginManager depending on the use case.
  *
@@ -49,7 +45,7 @@ import { invokeSyncEvent }    from './invokeSyncEvent.js';
  * // _pass through_ to the invoked method.
  * ```
  *
- * @implements {MyInterface}
+ * @implements {import('../../interfaces').PluginSupportImpl}
  */
 export class PluginInvokeSupport
 {
