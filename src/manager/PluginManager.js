@@ -144,6 +144,13 @@ export class PluginManager
    #eventbusSecure = [];
 
    /**
+    * Stores the prepend string for eventbus registration.
+    *
+    * @type {string}
+    */
+   #eventPrepend;
+
+   /**
     * Defines various options for the plugin manager. By default plugins are enabled, no event invoke, and no
     * event set options are enabled; the latter two preventing invoke dispatch methods functioning on the eventbus
     * along with not being able to set the plugin manager options by the eventbus. These must be explicitly turned
@@ -365,8 +372,8 @@ export class PluginManager
       {
          manager:
          {
-            eventPrepend: this._eventPrepend,
-            scopedName: `${this._eventPrepend}:${pluginConfig.name}`
+            eventPrepend: this.#eventPrepend,
+            scopedName: `${this.#eventPrepend}:${pluginConfig.name}`
          },
 
          module: moduleData || {},
@@ -459,9 +466,8 @@ export class PluginManager
     * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<import('.').PluginData>} The PluginData that represents the plugin added.
-    * @private
     */
-   async _addEventbus(pluginConfig, moduleData)
+   async #addEventbus(pluginConfig, moduleData)
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
@@ -478,9 +484,8 @@ export class PluginManager
     * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
     *
     * @returns {Promise<import('.').PluginData[]>} An array of PluginData objects of all added plugins.
-    * @private
     */
-   async _addAllEventbus(pluginConfigs, moduleData)
+   async #addAllEventbus(pluginConfigs, moduleData)
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
@@ -562,26 +567,26 @@ export class PluginManager
 
       if (this.#eventbus !== null && this.#eventbus !== void 0)
       {
-         this.#eventbus.off(`${this._eventPrepend}:async:add`, this._addEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:async:add:all`, this._addAllEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:async:remove`, this._removeEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:async:remove:all`, this._removeAllEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:get:enabled`, this.getEnabled, this);
-         this.#eventbus.off(`${this._eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
-         this.#eventbus.off(`${this._eventPrepend}:get:plugin:data`, this.getPluginData, this);
-         this.#eventbus.off(`${this._eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
-         this.#eventbus.off(`${this._eventPrepend}:get:plugin:names`, this.getPluginNames, this);
-         this.#eventbus.off(`${this._eventPrepend}:get:options`, this.getOptions, this);
-         this.#eventbus.off(`${this._eventPrepend}:has:plugin`, this.hasPlugins, this);
-         this.#eventbus.off(`${this._eventPrepend}:is:valid:config`, this.isValidConfig, this);
-         this.#eventbus.off(`${this._eventPrepend}:set:enabled`, this._setEnabledEventbus, this);
-         this.#eventbus.off(`${this._eventPrepend}:set:options`, this._setOptionsEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:async:add`, this.#addEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:async:add:all`, this.#addAllEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:async:destroy:manager`, this.#destroyEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:async:remove`, this.#removeEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:async:remove:all`, this.#removeAllEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:get:enabled`, this.getEnabled, this);
+         this.#eventbus.off(`${this.#eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
+         this.#eventbus.off(`${this.#eventPrepend}:get:plugin:data`, this.getPluginData, this);
+         this.#eventbus.off(`${this.#eventPrepend}:get:plugin:events`, this.getPluginEvents, this);
+         this.#eventbus.off(`${this.#eventPrepend}:get:plugin:names`, this.getPluginNames, this);
+         this.#eventbus.off(`${this.#eventPrepend}:get:options`, this.getOptions, this);
+         this.#eventbus.off(`${this.#eventPrepend}:has:plugin`, this.hasPlugins, this);
+         this.#eventbus.off(`${this.#eventPrepend}:is:valid:config`, this.isValidConfig, this);
+         this.#eventbus.off(`${this.#eventPrepend}:set:enabled`, this.#setEnabledEventbus, this);
+         this.#eventbus.off(`${this.#eventPrepend}:set:options`, this.#setOptionsEventbus, this);
       }
 
       for (const pluginSupport of this.#pluginSupport)
       {
-         await pluginSupport.destroy({ eventbus: this.#eventbus, eventPrepend: this._eventPrepend });
+         await pluginSupport.destroy({ eventbus: this.#eventbus, eventPrepend: this.#eventPrepend });
       }
 
       this.#pluginSupport = [];
@@ -596,10 +601,9 @@ export class PluginManager
     * enabled. This disables the ability for the plugin manager to be destroyed via events preventing any external
     * code removing plugins in this manner.
     *
-    * @private
     * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
     */
-   async _destroyEventbus()
+   async #destroyEventbus()
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
@@ -671,7 +675,7 @@ export class PluginManager
    /**
     * Returns any associated eventbus.
     *
-    * @returns {import('#runtime/plugin/manager/eventbus').EventBus} The associated eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').Eventbus} The associated eventbus.
     */
    getEventbus()
    {
@@ -1196,9 +1200,8 @@ export class PluginManager
     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
     *
     * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
-    * @private
     */
-   async _removeEventbus(opts)
+   async #removeEventbus(opts)
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
@@ -1211,9 +1214,8 @@ export class PluginManager
     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
     *
     * @returns {Promise.<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
-    * @private
     */
-   async _removeAllEventbus()
+   async #removeAllEventbus()
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
@@ -1287,10 +1289,8 @@ export class PluginManager
     * disables the ability for setting plugin enabled state via events preventing any external code from setting state.
     *
     * @param {object}   opts - Options object.
-    *
-    * @private
     */
-   _setEnabledEventbus(opts)
+   #setEnabledEventbus(opts)
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
@@ -1320,15 +1320,9 @@ export class PluginManager
       // Early escape if the eventbus is the same as the current eventbus.
       if (eventbus === this.#eventbus) { return; }
 
-      const oldPrepend = this._eventPrepend;
+      const oldPrepend = this.#eventPrepend;
 
-      /**
-       * Stores the prepend string for eventbus registration.
-       *
-       * @type {string}
-       * @private
-       */
-      this._eventPrepend = eventPrepend;
+      this.#eventPrepend = eventPrepend;
 
       // Unload and reload any existing plugins from the old eventbus to the target eventbus.
       if (this.#pluginMap.size > 0)
@@ -1368,11 +1362,11 @@ export class PluginManager
 
       if (this.#eventbus !== null)
       {
-         this.#eventbus.off(`${oldPrepend}:async:add`, this._addEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:async:add:all`, this._addAllEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:async:destroy:manager`, this._destroyEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:async:remove`, this._removeEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:async:remove:all`, this._removeAllEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:async:add`, this.#addEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:async:add:all`, this.#addAllEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:async:destroy:manager`, this.#destroyEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:async:remove`, this.#removeEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:async:remove:all`, this.#removeAllEventbus, this);
          this.#eventbus.off(`${oldPrepend}:get:enabled`, this.getEnabled, this);
          this.#eventbus.off(`${oldPrepend}:get:options`, this.getOptions, this);
          this.#eventbus.off(`${oldPrepend}:get:plugin:by:event`, this.getPluginByEvent, this);
@@ -1381,15 +1375,15 @@ export class PluginManager
          this.#eventbus.off(`${oldPrepend}:get:plugin:names`, this.getPluginNames, this);
          this.#eventbus.off(`${oldPrepend}:has:plugin`, this.hasPlugins, this);
          this.#eventbus.off(`${oldPrepend}:is:valid:config`, this.isValidConfig, this);
-         this.#eventbus.off(`${oldPrepend}:set:enabled`, this._setEnabledEventbus, this);
-         this.#eventbus.off(`${oldPrepend}:set:options`, this._setOptionsEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:set:enabled`, this.#setEnabledEventbus, this);
+         this.#eventbus.off(`${oldPrepend}:set:options`, this.#setOptionsEventbus, this);
       }
 
-      eventbus.on(`${eventPrepend}:async:add`, this._addEventbus, this, { guard: true });
-      eventbus.on(`${eventPrepend}:async:add:all`, this._addAllEventbus, this, { guard: true });
-      eventbus.on(`${eventPrepend}:async:destroy:manager`, this._destroyEventbus, this, { guard: true });
-      eventbus.on(`${eventPrepend}:async:remove`, this._removeEventbus, this, { guard: true });
-      eventbus.on(`${eventPrepend}:async:remove:all`, this._removeAllEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:add`, this.#addEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:add:all`, this.#addAllEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:destroy:manager`, this.#destroyEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:remove`, this.#removeEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:async:remove:all`, this.#removeAllEventbus, this, { guard: true });
       eventbus.on(`${eventPrepend}:get:enabled`, this.getEnabled, this, { guard: true });
       eventbus.on(`${eventPrepend}:get:options`, this.getOptions, this, { guard: true });
       eventbus.on(`${eventPrepend}:get:plugin:by:event`, this.getPluginByEvent, this, { guard: true });
@@ -1398,8 +1392,8 @@ export class PluginManager
       eventbus.on(`${eventPrepend}:get:plugin:names`, this.getPluginNames, this, { guard: true });
       eventbus.on(`${eventPrepend}:has:plugin`, this.hasPlugins, this, { guard: true });
       eventbus.on(`${eventPrepend}:is:valid:config`, this.isValidConfig, this, { guard: true });
-      eventbus.on(`${eventPrepend}:set:enabled`, this._setEnabledEventbus, this, { guard: true });
-      eventbus.on(`${eventPrepend}:set:options`, this._setOptionsEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:set:enabled`, this.#setEnabledEventbus, this, { guard: true });
+      eventbus.on(`${eventPrepend}:set:options`, this.#setOptionsEventbus, this, { guard: true });
 
       for (const pluginSupport of this.#pluginSupport)
       {
@@ -1463,10 +1457,8 @@ export class PluginManager
     * code modifying options.
     *
     * @param {import('.').PluginManagerOptions} options - Defines optional parameters to set.
-    *
-    * @private
     */
-   _setOptionsEventbus(options)
+   #setOptionsEventbus(options)
    {
       /* c8 ignore next */
       if (this.isDestroyed) { throw new ReferenceError('This PluginManager instance has been destroyed.'); }
