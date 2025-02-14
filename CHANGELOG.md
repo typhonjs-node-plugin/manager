@@ -1,4 +1,8 @@
 # Changelog
+## 0.2.0 release (minor)
+- Update dependencies
+- Fix `fs.Stat` warning on Node.
+
 ## 0.1.2 release
 - Switch to private methods for PluginManager.
 
