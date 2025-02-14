@@ -1,7 +1,7 @@
 {
   "name": "@typhonjs-plugin/manager",
   "description": "Provides a plugin manager & eventbus for Node and in the browser.",
-  "version": "0.1.2",
+  "version": "0.2.0-next.1",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
   "imports": {
@@ -74,7 +74,7 @@
   "scripts": {
     "checkJs": "esm-d-ts check src/manager/index.js",
     "bundle": "rollup --config",
-    "docs": "typedoc-pkg --api-link esm",
+    "docs": "typedoc-pkg --api-link es",
     "eslint": "eslint .",
     "posttest-browser": "nyc report --exclude-after-remap=true --reporter=lcov --reporter=text-summary --report-dir=coverage-browser",
     "pretest-browser": "rollup --config rollup.config.browser-test.js",
