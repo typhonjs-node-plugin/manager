@@ -11,9 +11,14 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/manager/node/index.d.ts",
-      "node": "./dist/manager/node/index.js",
-      "browser": "./dist/manager/browser/index.js"
+      "node": {
+        "types": "./dist/manager/node/index.d.ts",
+        "default": "./dist/manager/node/index.js"
+      },
+      "browser": {
+        "types": "./dist/manager/browser/index.d.ts",
+        "default": "./dist/manager/browser/index.js"
+      }
     },
     "./eventbus": {
       "types": "./dist/eventbus/index.d.ts",
@@ -32,17 +37,17 @@
     "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)"
   ],
   "devDependencies": {
-    "@typhonjs-build-test/esm-d-ts": "^0.2.2",
+    "@typhonjs-build-test/esm-d-ts": "^0.3.0-next.9",
     "@typhonjs-build-test/node-browser": "^0.0.5",
-    "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.3.0",
-    "@typhonjs-plugin/eventbus": "^0.1.0",
-    "@typhonjs-typedoc/typedoc-pkg": "^0.0.3",
-    "@typhonjs-utils/loader-module": "^0.1.0",
-    "@typhonjs-utils/object": "^0.1.0",
-    "rollup": "^4"
+    "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.6.0",
+    "@typhonjs-plugin/eventbus": "^0.2.0",
+    "@typhonjs-typedoc/typedoc-pkg": "^0.3.1",
+    "@typhonjs-utils/loader-module": "^0.2.0",
+    "@typhonjs-utils/object": "^0.2.0",
+    "rollup": "^4.34.6"
   },
   "engines": {
-    "node": ">=14.18"
+    "node": ">=18"
   },
   "files": [
     "/dist",
