@@ -1,7 +1,7 @@
 {
   "name": "@typhonjs-plugin/manager",
   "description": "Provides a plugin manager & eventbus for Node and in the browser.",
-  "version": "0.2.0-next.1",
+  "version": "0.2.0-next.2",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "type": "module",
   "imports": {
@@ -43,7 +43,7 @@
     "@typhonjs-plugin/eventbus": "^0.2.0",
     "@typhonjs-typedoc/typedoc-pkg": "^0.3.1",
     "@typhonjs-utils/loader-module": "^0.2.0",
-    "@typhonjs-utils/object": "^0.2.0",
+    "@typhonjs-utils/object": "^0.3.0",
     "rollup": "^4.34.6"
   },
   "engines": {
